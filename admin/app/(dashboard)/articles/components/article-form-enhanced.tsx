@@ -68,7 +68,6 @@ export function ArticleForm({
     featuredImageAlt: initialData?.featuredImageAlt || "",
     seoTitle: initialData?.seoTitle || "",
     seoDescription: initialData?.seoDescription || "",
-    seoKeywords: initialData?.seoKeywords || [],
     metaRobots: initialData?.metaRobots || "index, follow",
     ogTitle: initialData?.ogTitle || "",
     ogDescription: initialData?.ogDescription || "",
@@ -98,14 +97,12 @@ export function ArticleForm({
   const selectedCategory = categories.find((c) => c.id === formData.categoryId);
 
   useEffect(() => {
-    if (formData.title && !formData.slug) {
-      const newSlug = slugify(formData.title);
-      setFormData((prev) => ({
-        ...prev,
-        slug: newSlug,
-      }));
-    }
-  }, [formData.title, formData.slug]);
+    const newSlug = slugify(formData.title);
+    setFormData((prev) => ({
+      ...prev,
+      slug: newSlug,
+    }));
+  }, [formData.title]);
 
   useEffect(() => {
     if (formData.title && !formData.seoTitle) {
@@ -215,17 +212,10 @@ export function ArticleForm({
                       name="title"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      hint={formData.slug ? `الرابط المختصر: ${formData.slug}` : "سيتم إنشاء الرابط المختصر تلقائياً من العنوان"}
                       required
                     />
-                  </div>
-                  <div>
-                    <FormInput
-                      label="الرابط المختصر"
-                      name="slug"
-                      value={formData.slug}
-                      onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                      required
-                    />
+                    <input type="hidden" name="slug" value={formData.slug} />
                   </div>
                   <div>
                     <FormTextarea
@@ -379,14 +369,6 @@ export function ArticleForm({
                         {seoDescriptionValidation.message}
                       </p>
                     )}
-                  </div>
-                  <div>
-                    <Label>الكلمات المفتاحية</Label>
-                    <TagInput
-                      tags={formData.seoKeywords}
-                      onChange={(tags) => setFormData({ ...formData, seoKeywords: tags })}
-                      placeholder="أضف كلمة مفتاحية واضغط Enter"
-                    />
                   </div>
                   <div>
                     <Label>Meta Robots</Label>

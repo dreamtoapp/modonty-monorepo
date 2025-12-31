@@ -94,7 +94,6 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     return generateMetadataFromSEO({
       title,
       description,
-      keywords: article.seoKeywords || [],
       image,
       url: article.canonicalUrl || `/articles/${slug}`,
       type: "article",

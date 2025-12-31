@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FormInput, FormTextarea, FormNativeSelect } from "@/components/admin/form-field";
+import { slugify } from "@/lib/utils";
 
 interface AuthorFormProps {
   initialData?: any;
@@ -36,6 +37,11 @@ export function AuthorForm({ initialData, clients, onSubmit }: AuthorFormProps) 
     seoTitle: initialData?.seoTitle || "",
     seoDescription: initialData?.seoDescription || "",
   });
+
+  useEffect(() => {
+    const newSlug = slugify(formData.name);
+    setFormData((prev) => ({ ...prev, slug: newSlug }));
+  }, [formData.name]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,15 +96,10 @@ export function AuthorForm({ initialData, clients, onSubmit }: AuthorFormProps) 
               name="name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              hint={formData.slug ? `Slug: ${formData.slug}` : "Slug will be generated from name"}
               required
             />
-            <FormInput
-              label="Slug"
-              name="slug"
-              value={formData.slug}
-              onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-              required
-            />
+            <input type="hidden" name="slug" value={formData.slug} />
             <FormInput
               label="Job Title"
               name="jobTitle"

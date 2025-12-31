@@ -38,7 +38,6 @@ export async function generateMetadata({ params }: ClientPageProps): Promise<Met
         name: true,
         seoTitle: true,
         seoDescription: true,
-        seoKeywords: true,
         logo: true,
         ogImage: true,
       },
@@ -53,7 +52,6 @@ export async function generateMetadata({ params }: ClientPageProps): Promise<Met
     return generateMetadataFromSEO({
       title: client.seoTitle || client.name,
       description: client.seoDescription || `استكشف مقالات ${client.name}`,
-      keywords: client.seoKeywords.length > 0 ? client.seoKeywords : [client.name],
       image: client.ogImage || client.logo || undefined,
       url: `/clients/${slug}`,
       type: "website",

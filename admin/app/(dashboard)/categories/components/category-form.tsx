@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FormInput, FormTextarea, FormNativeSelect } from "@/components/admin/form-field";
+import { slugify } from "@/lib/utils";
 
 interface CategoryFormProps {
   initialData?: any;
@@ -24,8 +25,12 @@ export function CategoryForm({ initialData, categories, onSubmit }: CategoryForm
     parentId: initialData?.parentId || "",
     seoTitle: initialData?.seoTitle || "",
     seoDescription: initialData?.seoDescription || "",
-    seoKeywords: initialData?.seoKeywords?.join(", ") || "",
   });
+
+  useEffect(() => {
+    const newSlug = slugify(formData.name);
+    setFormData((prev) => ({ ...prev, slug: newSlug }));
+  }, [formData.name]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,9 +40,6 @@ export function CategoryForm({ initialData, categories, onSubmit }: CategoryForm
     const result = await onSubmit({
       ...formData,
       parentId: formData.parentId || undefined,
-      seoKeywords: formData.seoKeywords
-        ? formData.seoKeywords.split(",").map((k: string) => k.trim()).filter(Boolean)
-        : [],
     });
 
     if (result.success) {
@@ -70,15 +72,10 @@ export function CategoryForm({ initialData, categories, onSubmit }: CategoryForm
               name="name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              hint={formData.slug ? `Slug: ${formData.slug}` : "Slug will be generated from name"}
               required
             />
-            <FormInput
-              label="Slug"
-              name="slug"
-              value={formData.slug}
-              onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-              required
-            />
+            <input type="hidden" name="slug" value={formData.slug} />
             <FormTextarea
               label="Description"
               name="description"
@@ -119,12 +116,6 @@ export function CategoryForm({ initialData, categories, onSubmit }: CategoryForm
               value={formData.seoDescription}
               onChange={(e) => setFormData({ ...formData, seoDescription: e.target.value })}
               rows={3}
-            />
-            <FormInput
-              label="SEO Keywords (comma-separated)"
-              name="seoKeywords"
-              value={formData.seoKeywords}
-              onChange={(e) => setFormData({ ...formData, seoKeywords: e.target.value })}
             />
           </CardContent>
         </Card>

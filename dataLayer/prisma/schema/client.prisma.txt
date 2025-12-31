@@ -9,9 +9,7 @@ model Client {
 
   // Branding
   logo         String?
-  favicon      String?
   ogImage      String? // Default OG image for all articles
-  primaryColor String?
 
   // Schema.org Organization - Social profiles
   sameAs String[] // LinkedIn, Twitter, Facebook URLs
@@ -23,7 +21,24 @@ model Client {
   // SEO
   seoTitle       String?
   seoDescription String?
-  seoKeywords    String[]
+
+  // Business Information
+  businessBrief      String?  // Business description for content writers
+  industryId         String?  @db.ObjectId // Industry/category
+  industry           Industry? @relation(fields: [industryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  targetAudience     String?  // Target audience description
+  contentPriorities  String[] // Key topics/priorities
+
+  // GTM Integration
+  gtmId String? // Google Tag Manager ID
+
+  // Subscription Management
+  subscriptionTier      SubscriptionTier?
+  subscriptionStartDate DateTime?
+  subscriptionEndDate   DateTime?
+  articlesPerMonth      Int? // Calculated from tier
+  subscriptionStatus    SubscriptionStatus @default(PENDING)
+  paymentStatus         PaymentStatus      @default(PENDING)
 
   // Metadata
   foundingDate DateTime?
@@ -34,5 +49,6 @@ model Client {
   articles    Article[]
   subscribers Subscriber[]
 
+  @@index([industryId])
   @@map("clients")
 }

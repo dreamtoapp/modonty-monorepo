@@ -52,7 +52,6 @@ export const articleFormSchema = z.object({
 
   seoTitle: z.string().max(60, "عنوان SEO يجب أن يكون أقل من 60 حرف").optional(),
   seoDescription: z.string().max(160, "وصف SEO يجب أن يكون أقل من 160 حرف").optional(),
-  seoKeywords: z.array(z.string()).default([]),
   metaRobots: z.string().optional(),
 
   ogTitle: z.string().optional(),

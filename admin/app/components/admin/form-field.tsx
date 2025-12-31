@@ -9,10 +9,11 @@ interface FormFieldProps {
   name: string;
   error?: string;
   required?: boolean;
+  hint?: string;
   children: ReactNode;
 }
 
-export function FormField({ label, name, error, required, children }: FormFieldProps) {
+export function FormField({ label, name, error, required, hint, children }: FormFieldProps) {
   return (
     <div className="space-y-2">
       <Label htmlFor={name}>
@@ -20,6 +21,11 @@ export function FormField({ label, name, error, required, children }: FormFieldP
         {required && <span className="text-destructive ml-1">*</span>}
       </Label>
       {children}
+      {hint && (
+        <p className="text-xs text-muted-foreground mt-1.5 font-mono bg-muted/30 px-2 py-1 rounded border border-border/50">
+          {hint}
+        </p>
+      )}
       {error && <p className="text-sm text-destructive">{error}</p>}
     </div>
   );
@@ -35,6 +41,7 @@ interface FormInputProps {
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   disabled?: boolean;
+  hint?: string;
 }
 
 export function FormInput({
@@ -47,9 +54,10 @@ export function FormInput({
   value,
   onChange,
   disabled,
+  hint,
 }: FormInputProps) {
   return (
-    <FormField label={label} name={name} error={error} required={required}>
+    <FormField label={label} name={name} error={error} required={required} hint={hint}>
       <Input
         id={name}
         name={name}

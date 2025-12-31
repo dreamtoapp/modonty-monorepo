@@ -7,12 +7,12 @@ import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/admin/form-field";
 import { slugify } from "@/lib/utils";
 
-interface TagFormProps {
+interface IndustryFormProps {
   initialData?: any;
   onSubmit: (data: any) => Promise<{ success: boolean; error?: string }>;
 }
 
-export function TagForm({ initialData, onSubmit }: TagFormProps) {
+export function IndustryForm({ initialData, onSubmit }: IndustryFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,10 +35,10 @@ export function TagForm({ initialData, onSubmit }: TagFormProps) {
     const result = await onSubmit(formData);
 
     if (result.success) {
-      router.push("/tags");
+      router.push("/industries");
       router.refresh();
     } else {
-      setError(result.error || "Failed to save tag");
+      setError(result.error || "Failed to save industry");
       setLoading(false);
     }
   };
@@ -54,7 +54,7 @@ export function TagForm({ initialData, onSubmit }: TagFormProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Tag Information</CardTitle>
+            <CardTitle>Industry Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <FormInput
@@ -74,7 +74,7 @@ export function TagForm({ initialData, onSubmit }: TagFormProps) {
             Cancel
           </Button>
           <Button type="submit" disabled={loading}>
-            {loading ? "Saving..." : initialData ? "Update Tag" : "Create Tag"}
+            {loading ? "Saving..." : initialData ? "Update Industry" : "Create Industry"}
           </Button>
         </div>
       </div>

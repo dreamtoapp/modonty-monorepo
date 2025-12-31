@@ -2,20 +2,85 @@
 
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { ArticleStatus } from "@prisma/client";
 
-export async function getClients() {
+export interface ClientFilters {
+  createdFrom?: Date;
+  createdTo?: Date;
+  minArticleCount?: number;
+  maxArticleCount?: number;
+  hasArticles?: boolean;
+  search?: string;
+}
+
+export async function getClients(filters?: ClientFilters) {
   try {
+    const where: any = {};
+
+    if (filters?.createdFrom || filters?.createdTo) {
+      where.createdAt = {};
+      if (filters.createdFrom) {
+        where.createdAt.gte = filters.createdFrom;
+      }
+      if (filters.createdTo) {
+        where.createdAt.lte = filters.createdTo;
+      }
+    }
+
+    if (filters?.hasArticles !== undefined) {
+      if (filters.hasArticles) {
+        where.articles = {
+          some: {
+            status: ArticleStatus.PUBLISHED,
+          },
+        };
+      } else {
+        where.articles = {
+          none: {},
+        };
+      }
+    }
+
+    if (filters?.search) {
+      where.OR = [
+        { name: { contains: filters.search, mode: "insensitive" } },
+        { slug: { contains: filters.search, mode: "insensitive" } },
+        { email: { contains: filters.search, mode: "insensitive" } },
+      ];
+    }
+
     const clients = await db.client.findMany({
+      where,
       include: {
         _count: {
           select: {
-            articles: true,
+            articles: {
+              where: {
+                status: ArticleStatus.PUBLISHED,
+              },
+            },
           },
         },
       },
       orderBy: { createdAt: "desc" },
     });
-    return clients;
+
+    let filteredClients = clients;
+
+    if (filters?.minArticleCount !== undefined || filters?.maxArticleCount !== undefined) {
+      filteredClients = clients.filter((client) => {
+        const articleCount = client._count.articles;
+        if (filters.minArticleCount !== undefined && articleCount < filters.minArticleCount) {
+          return false;
+        }
+        if (filters.maxArticleCount !== undefined && articleCount > filters.maxArticleCount) {
+          return false;
+        }
+        return true;
+      });
+    }
+
+    return filteredClients;
   } catch (error) {
     console.error("Error fetching clients:", error);
     return [];
@@ -26,6 +91,19 @@ export async function getClientById(id: string) {
   try {
     const client = await db.client.findUnique({
       where: { id },
+      include: {
+        industry: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        _count: {
+          select: {
+            articles: true,
+          },
+        },
+      },
     });
     return client;
   } catch (error) {
@@ -40,15 +118,24 @@ export async function createClient(data: {
   legalName?: string;
   url?: string;
   logo?: string;
-  favicon?: string;
   ogImage?: string;
-  primaryColor?: string;
   sameAs?: string[];
   email?: string;
   phone?: string;
   seoTitle?: string;
   seoDescription?: string;
-  seoKeywords?: string[];
+  businessBrief?: string;
+  industryId?: string | null;
+  targetAudience?: string;
+  contentPriorities?: string[];
+  foundingDate?: Date | null;
+  gtmId?: string;
+  subscriptionTier?: string | null;
+  subscriptionStartDate?: Date | null;
+  subscriptionEndDate?: Date | null;
+  articlesPerMonth?: number;
+  subscriptionStatus?: string;
+  paymentStatus?: string;
 }) {
   try {
     const client = await db.client.create({
@@ -58,15 +145,24 @@ export async function createClient(data: {
         legalName: data.legalName,
         url: data.url,
         logo: data.logo,
-        favicon: data.favicon,
         ogImage: data.ogImage,
-        primaryColor: data.primaryColor,
         sameAs: data.sameAs || [],
         email: data.email,
         phone: data.phone,
         seoTitle: data.seoTitle,
         seoDescription: data.seoDescription,
-        seoKeywords: data.seoKeywords || [],
+        businessBrief: data.businessBrief,
+        industryId: data.industryId || null,
+        targetAudience: data.targetAudience,
+        contentPriorities: data.contentPriorities || [],
+        foundingDate: data.foundingDate || null,
+        gtmId: data.gtmId,
+        subscriptionTier: data.subscriptionTier as any || null,
+        subscriptionStartDate: data.subscriptionStartDate || null,
+        subscriptionEndDate: data.subscriptionEndDate || null,
+        articlesPerMonth: data.articlesPerMonth || null,
+        subscriptionStatus: (data.subscriptionStatus as any) || "PENDING",
+        paymentStatus: (data.paymentStatus as any) || "PENDING",
       },
     });
     revalidatePath("/clients");
@@ -85,15 +181,24 @@ export async function updateClient(
     legalName?: string;
     url?: string;
     logo?: string;
-    favicon?: string;
     ogImage?: string;
-    primaryColor?: string;
     sameAs?: string[];
     email?: string;
     phone?: string;
     seoTitle?: string;
     seoDescription?: string;
-    seoKeywords?: string[];
+    businessBrief?: string;
+    industry?: string;
+    targetAudience?: string;
+    contentPriorities?: string[];
+    foundingDate?: Date | null;
+    gtmId?: string;
+    subscriptionTier?: string | null;
+    subscriptionStartDate?: Date | null;
+    subscriptionEndDate?: Date | null;
+    articlesPerMonth?: number;
+    subscriptionStatus?: string;
+    paymentStatus?: string;
   }
 ) {
   try {
@@ -105,15 +210,24 @@ export async function updateClient(
         legalName: data.legalName,
         url: data.url,
         logo: data.logo,
-        favicon: data.favicon,
         ogImage: data.ogImage,
-        primaryColor: data.primaryColor,
         sameAs: data.sameAs || [],
         email: data.email,
         phone: data.phone,
         seoTitle: data.seoTitle,
         seoDescription: data.seoDescription,
-        seoKeywords: data.seoKeywords || [],
+        businessBrief: data.businessBrief,
+        industryId: data.industryId || null,
+        targetAudience: data.targetAudience,
+        contentPriorities: data.contentPriorities || [],
+        foundingDate: data.foundingDate || null,
+        gtmId: data.gtmId,
+        subscriptionTier: data.subscriptionTier as any || null,
+        subscriptionStartDate: data.subscriptionStartDate || null,
+        subscriptionEndDate: data.subscriptionEndDate || null,
+        articlesPerMonth: data.articlesPerMonth || null,
+        subscriptionStatus: (data.subscriptionStatus as any) || "PENDING",
+        paymentStatus: (data.paymentStatus as any) || "PENDING",
       },
     });
     revalidatePath("/clients");
@@ -127,6 +241,28 @@ export async function updateClient(
 
 export async function deleteClient(id: string) {
   try {
+    const client = await db.client.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: {
+            articles: true,
+          },
+        },
+      },
+    });
+
+    if (!client) {
+      return { success: false, error: "Client not found" };
+    }
+
+    if (client._count.articles > 0) {
+      return {
+        success: false,
+        error: `Cannot delete client. This client has ${client._count.articles} article(s). Please delete or reassign the articles first.`,
+      };
+    }
+
     await db.client.delete({
       where: { id },
     });
@@ -135,5 +271,180 @@ export async function deleteClient(id: string) {
   } catch (error: any) {
     console.error("Error deleting client:", error);
     return { success: false, error: error.message || "Failed to delete client" };
+  }
+}
+
+export async function getClientsStats() {
+  try {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const [total, withArticles, withoutArticles, createdThisMonth] =
+      await Promise.all([
+        db.client.count(),
+        db.client.count({
+          where: {
+            articles: {
+              some: {
+                status: ArticleStatus.PUBLISHED,
+              },
+            },
+          },
+        }),
+        db.client.count({
+          where: {
+            articles: {
+              none: {},
+            },
+          },
+        }),
+        db.client.count({
+          where: {
+            createdAt: { gte: startOfMonth },
+          },
+        }),
+      ]);
+
+    return {
+      total,
+      withArticles,
+      withoutArticles,
+      createdThisMonth,
+    };
+  } catch (error) {
+    console.error("Error fetching clients stats:", error);
+    return {
+      total: 0,
+      withArticles: 0,
+      withoutArticles: 0,
+      createdThisMonth: 0,
+    };
+  }
+}
+
+export async function bulkDeleteClients(clientIds: string[]) {
+  try {
+    if (clientIds.length === 0) {
+      return { success: false, error: "No clients selected" };
+    }
+
+    const clients = await db.client.findMany({
+      where: {
+        id: { in: clientIds },
+      },
+      include: {
+        _count: {
+          select: {
+            articles: true,
+          },
+        },
+      },
+    });
+
+    const clientsWithArticles = clients.filter((client) => client._count.articles > 0);
+
+    if (clientsWithArticles.length > 0) {
+      const clientNames = clientsWithArticles.map((c) => c.name).join(", ");
+      const totalArticles = clientsWithArticles.reduce((sum, c) => sum + c._count.articles, 0);
+      return {
+        success: false,
+        error: `Cannot delete ${clientsWithArticles.length} client(s) with articles: ${clientNames}. Total articles: ${totalArticles}. Please delete or reassign the articles first.`,
+      };
+    }
+
+    await db.client.deleteMany({
+      where: {
+        id: { in: clientIds },
+      },
+    });
+
+    revalidatePath("/clients");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error bulk deleting clients:", error);
+    return { success: false, error: error.message || "Failed to delete clients" };
+  }
+}
+
+export async function getClientArticles(clientId: string) {
+  try {
+    const articles = await db.article.findMany({
+      where: {
+        clientId,
+      },
+      include: {
+        category: { select: { name: true } },
+        author: { select: { name: true } },
+      },
+      orderBy: [
+        { datePublished: "desc" },
+        { createdAt: "desc" },
+      ],
+    });
+
+    const articleIds = articles.map((a) => a.id);
+
+    if (articleIds.length > 0) {
+      const viewsCounts = await db.analytics.groupBy({
+        by: ["articleId"],
+        where: {
+          articleId: { in: articleIds },
+        },
+        _count: {
+          id: true,
+        },
+      });
+
+      const viewsMap = new Map(
+        viewsCounts.map((v) => [v.articleId, v._count.id])
+      );
+
+      return articles.map((article) => ({
+        id: article.id,
+        title: article.title,
+        slug: article.slug,
+        status: article.status,
+        createdAt: article.createdAt,
+        datePublished: article.datePublished,
+        scheduledAt: article.scheduledAt,
+        category: article.category,
+        author: article.author,
+        views: viewsMap.get(article.id) || 0,
+      }));
+    }
+
+    return articles.map((article) => ({
+      id: article.id,
+      title: article.title,
+      slug: article.slug,
+      status: article.status,
+      createdAt: article.createdAt,
+      datePublished: article.datePublished,
+      scheduledAt: article.scheduledAt,
+      category: article.category,
+      author: article.author,
+      views: 0,
+    }));
+  } catch (error) {
+    console.error("Error fetching client articles:", error);
+    return [];
+  }
+}
+
+export async function getClientAnalytics(clientId: string) {
+  try {
+    const { getAnalyticsData } = await import("@/app/(dashboard)/analytics/actions/analytics-actions");
+    return await getAnalyticsData({ clientId });
+  } catch (error) {
+    console.error("Error fetching client analytics:", error);
+    return {
+      totalViews: 0,
+      uniqueSessions: 0,
+      avgTimeOnPage: 0,
+      bounceRate: 0,
+      avgScrollDepth: 0,
+      topArticles: [],
+      trafficSources: {},
+    };
   }
 }

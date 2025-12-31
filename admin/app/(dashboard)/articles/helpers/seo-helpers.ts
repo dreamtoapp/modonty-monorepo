@@ -121,15 +121,7 @@ export function generateBreadcrumbPath(
   return items;
 }
 
-export function slugify(text: string): string {
-  return text
-    .toString()
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/[^\u0600-\u06FF\w\-]+/g, "")
-    .replace(/\-\-+/g, "-");
-}
+export { slugify } from "@/lib/utils";
 
 export function extractExcerpt(content: string, maxLength: number = 155): string {
   if (!content) return "";

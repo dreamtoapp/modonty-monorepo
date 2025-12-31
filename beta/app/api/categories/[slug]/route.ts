@@ -69,7 +69,6 @@ export async function GET(
         description: category.description,
         seoTitle: category.seoTitle,
         seoDescription: category.seoDescription,
-        seoKeywords: category.seoKeywords,
         articleCount: category._count.articles,
         articles: category.articles,
       },

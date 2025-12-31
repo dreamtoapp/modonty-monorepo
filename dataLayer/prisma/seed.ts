@@ -62,7 +62,6 @@ async function seedClients() {
       seoTitle: "حلول التقنية المتقدمة - شركة تقنية رائدة",
       seoDescription:
         "شركة رائدة في مجال الحلول التقنية والبرمجيات. نقدم خدمات تطوير الويب والتطبيقات والذكاء الاصطناعي.",
-      seoKeywords: ["تقنية", "برمجة", "تطوير", "ذكاء اصطناعي"],
       foundingDate: new Date("2015-01-15"),
     },
     {
@@ -83,7 +82,6 @@ async function seedClients() {
       seoTitle: "استوديو التصميم المحترف - تصميم واجهات مستخدم متميز",
       seoDescription:
         "استوديو متخصص في تصميم واجهات المستخدم وتجربة المستخدم. نقدم حلول تصميم مبتكرة وعصرية.",
-      seoKeywords: ["تصميم", "واجهات مستخدم", "UX", "UI"],
       foundingDate: new Date("2018-03-20"),
     },
     {
@@ -104,7 +102,6 @@ async function seedClients() {
       seoTitle: "مركز التسويق الرقمي - حلول تسويق رقمي متكاملة",
       seoDescription:
         "مركز متخصص في التسويق الرقمي وتحسين محركات البحث. نساعد الشركات على النمو عبر الإنترنت.",
-      seoKeywords: ["تسويق رقمي", "SEO", "إعلانات", "وسائل التواصل"],
       foundingDate: new Date("2016-07-10"),
     },
     {
@@ -125,7 +122,6 @@ async function seedClients() {
       seoTitle: "مختبرات الابتكار - ابتكارات تقنية متقدمة",
       seoDescription:
         "مختبرات متخصصة في البحث والتطوير والابتكار التقني. نطور حلولاً مبتكرة للمستقبل.",
-      seoKeywords: ["ابتكار", "بحث وتطوير", "تقنيات ناشئة", "مستقبل"],
       foundingDate: new Date("2019-11-05"),
     },
   ];
@@ -333,7 +329,6 @@ async function seedCategories() {
       seoTitle: "مقالات تقنية - آخر أخبار التقنية والبرمجة",
       seoDescription:
         "اكتشف أحدث المقالات عن التقنية والبرمجة وتطوير الويب والتطبيقات.",
-      seoKeywords: ["تقنية", "برمجة", "تطوير", "تقنيات"],
     },
     {
       name: "تصميم",
@@ -342,7 +337,6 @@ async function seedCategories() {
       seoTitle: "مقالات تصميم - واجهات المستخدم وتجربة المستخدم",
       seoDescription:
         "مقالات متخصصة في التصميم وواجهات المستخدم وتجربة المستخدم.",
-      seoKeywords: ["تصميم", "UI", "UX", "واجهات مستخدم"],
     },
     {
       name: "تسويق",
@@ -351,7 +345,6 @@ async function seedCategories() {
       seoTitle: "مقالات تسويق - التسويق الرقمي وSEO",
       seoDescription:
         "تعلم أحدث استراتيجيات التسويق الرقمي وتحسين محركات البحث.",
-      seoKeywords: ["تسويق", "SEO", "تسويق رقمي", "إعلانات"],
     },
     {
       name: "ابتكار",
@@ -360,7 +353,6 @@ async function seedCategories() {
       seoTitle: "مقالات ابتكار - التقنيات الناشئة والابتكار",
       seoDescription:
         "اكتشف أحدث الابتكارات والتقنيات الناشئة التي تشكل المستقبل.",
-      seoKeywords: ["ابتكار", "تقنيات ناشئة", "مستقبل", "بحث وتطوير"],
     },
   ];
 
@@ -465,12 +457,10 @@ function generateArticleContent(
 function generateSEOFields(title: string, excerpt: string, category: string) {
   const seoTitle = `${title} | ${category}`;
   const seoDescription = excerpt.length > 155 ? excerpt.substring(0, 152) + "..." : excerpt;
-  const seoKeywords = [category, title.split(" ")[0], title.split(" ")[1]].filter(Boolean);
 
   return {
     seoTitle,
     seoDescription,
-    seoKeywords,
     metaRobots: "index, follow",
     canonicalUrl: `https://example.com/articles/${slugify(title)}`,
     sitemapPriority: 0.7,

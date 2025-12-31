@@ -39,9 +39,6 @@ export function generateArticleStructuredData(article: ArticleWithRelations) {
     ...(article.category && {
       articleSection: article.category.name,
     }),
-    ...(article.seoKeywords && article.seoKeywords.length > 0 && {
-      keywords: article.seoKeywords.join(", "),
-    }),
     ...(article.wordCount && { wordCount: article.wordCount }),
     inLanguage: article.inLanguage || "ar",
     isAccessibleForFree: article.isAccessibleForFree ?? true,

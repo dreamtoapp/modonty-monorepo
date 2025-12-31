@@ -74,7 +74,6 @@ export async function GET(
         phone: client.phone,
         seoTitle: client.seoTitle,
         seoDescription: client.seoDescription,
-        seoKeywords: client.seoKeywords,
         sameAs: client.sameAs,
         articleCount: client._count.articles,
         articles: client.articles,

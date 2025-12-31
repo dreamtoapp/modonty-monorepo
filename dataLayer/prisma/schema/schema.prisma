@@ -35,6 +35,26 @@ enum TrafficSource {
   PAID
 }
 
+enum SubscriptionTier {
+  BASIC
+  STANDARD
+  PRO
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PENDING
+}
+
+enum PaymentStatus {
+  PAID
+  PENDING
+  OVERDUE
+}
+
 // ============================================
 // AUTHENTICATION MODELS
 // ============================================
@@ -136,9 +156,7 @@ model Client {
 
   // Branding
   logo         String?
-  favicon      String?
   ogImage      String? // Default OG image for all articles
-  primaryColor String?
 
   // Schema.org Organization - Social profiles
   sameAs String[] // LinkedIn, Twitter, Facebook URLs
@@ -150,7 +168,24 @@ model Client {
   // SEO
   seoTitle       String?
   seoDescription String?
-  seoKeywords    String[]
+
+  // Business Information
+  businessBrief      String?  // Business description for content writers
+  industryId         String?  @db.ObjectId // Industry/category
+  industry           Industry? @relation(fields: [industryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  targetAudience     String?  // Target audience description
+  contentPriorities  String[] // Key topics/priorities
+
+  // GTM Integration
+  gtmId String? // Google Tag Manager ID
+
+  // Subscription Management
+  subscriptionTier      SubscriptionTier?
+  subscriptionStartDate DateTime?
+  subscriptionEndDate   DateTime?
+  articlesPerMonth      Int? // Calculated from tier
+  subscriptionStatus    SubscriptionStatus @default(PENDING)
+  paymentStatus         PaymentStatus      @default(PENDING)
 
   // Metadata
   foundingDate DateTime?
@@ -161,6 +196,7 @@ model Client {
   articles    Article[]
   subscribers Subscriber[]
 
+  @@index([industryId])
   @@map("clients")
 }
 
@@ -226,7 +262,6 @@ model Category {
   // SEO
   seoTitle       String?
   seoDescription String?
-  seoKeywords    String[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -250,6 +285,19 @@ model Tag {
   articles ArticleTag[]
 
   @@map("tags")
+}
+
+model Industry {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  clients Client[]
+
+  @@map("industries")
 }
 
 model Article {
@@ -293,7 +341,6 @@ model Article {
   // Meta tags
   seoTitle       String?
   seoDescription String? // 155-160 chars optimal
-  seoKeywords    String[]
   metaRobots     String? // index, noindex, follow, nofollow
 
   // Open Graph (Complete)

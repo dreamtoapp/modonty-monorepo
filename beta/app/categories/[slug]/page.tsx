@@ -38,7 +38,6 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
         description: true,
         seoTitle: true,
         seoDescription: true,
-        seoKeywords: true,
       },
     });
 
@@ -51,7 +50,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
     return generateMetadataFromSEO({
       title: category.seoTitle || category.name,
       description: category.seoDescription || category.description || `استكشف مقالات فئة ${category.name}`,
-      keywords: category.seoKeywords.length > 0 ? category.seoKeywords : [category.name],
+      keywords: [category.name],
       url: `/categories/${slug}`,
       type: "website",
     });

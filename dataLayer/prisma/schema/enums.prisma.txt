@@ -22,4 +22,24 @@ enum TrafficSource {
   PAID
 }
 
+enum SubscriptionTier {
+  BASIC
+  STANDARD
+  PRO
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PENDING
+}
+
+enum PaymentStatus {
+  PAID
+  PENDING
+  OVERDUE
+}
+
 

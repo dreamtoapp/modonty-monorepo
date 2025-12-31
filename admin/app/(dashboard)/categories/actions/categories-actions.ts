@@ -35,7 +35,6 @@ export async function createCategory(data: {
   parentId?: string;
   seoTitle?: string;
   seoDescription?: string;
-  seoKeywords?: string[];
 }) {
   try {
     const category = await db.category.create({
@@ -46,7 +45,6 @@ export async function createCategory(data: {
         parentId: data.parentId || null,
         seoTitle: data.seoTitle,
         seoDescription: data.seoDescription,
-        seoKeywords: data.seoKeywords || [],
       },
     });
     revalidatePath("/categories");
@@ -65,7 +63,6 @@ export async function updateCategory(
     parentId?: string;
     seoTitle?: string;
     seoDescription?: string;
-    seoKeywords?: string[];
   }
 ) {
   try {
@@ -78,7 +75,6 @@ export async function updateCategory(
         parentId: data.parentId || null,
         seoTitle: data.seoTitle,
         seoDescription: data.seoDescription,
-        seoKeywords: data.seoKeywords || [],
       },
     });
     revalidatePath("/categories");
