@@ -1,0 +1,43 @@
+// Analytics model - Event-based tracking for Core Web Vitals and Engagement metrics
+// Each record represents a single page view/event
+
+model Analytics {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  articleId String  @db.ObjectId
+  article   Article @relation(fields: [articleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  clientId  String? @db.ObjectId
+
+  // User/Session tracking (for unique visitor calculation)
+  sessionId String? // Browser session ID (cookie-based)
+  userId    String? @db.ObjectId // User ID if logged in
+
+  // Core Web Vitals (2025 Standard) - per view
+  lcp  Float? // Largest Contentful Paint (target < 2.5s)
+  cls  Float? // Cumulative Layout Shift (target < 0.1)
+  inp  Float? // Interaction to Next Paint (target < 200ms) - replaced FID in 2024
+  fid  Float? // First Input Delay (legacy, target < 100ms)
+  ttfb Float? // Time to First Byte (target < 800ms)
+  tbt  Float? // Total Blocking Time (target < 200ms)
+
+  // Engagement metrics - per view
+  timeOnPage    Float? // Seconds spent on page for THIS view
+  scrollDepth   Float? // Percentage scrolled (0-100) for THIS view
+  bounced       Boolean @default(false) // Did user leave immediately? (bounce)
+  clickThroughRate Float? // CTR for THIS view (if applicable)
+
+  // Traffic sources - per view
+  source         TrafficSource @default(ORGANIC)
+  searchEngine   String? // Google, Bing, etc.
+  referrerDomain String?
+  userAgent      String? // Browser user agent
+  ipAddress      String? // IP address (for geo-location if needed)
+
+  timestamp DateTime @default(now())
+
+  @@index([articleId, timestamp])
+  @@index([clientId, timestamp])
+  @@index([timestamp])
+  @@index([sessionId])
+  @@index([userId])
+  @@map("analytics")
+}

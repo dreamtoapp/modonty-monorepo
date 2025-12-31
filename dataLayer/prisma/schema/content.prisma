@@ -1,0 +1,177 @@
+// Content models - Articles, Categories, Tags
+
+model Category {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  slug        String  @unique
+  description String?
+  parentId    String? @db.ObjectId // Hierarchical categories
+
+  // SEO
+  seoTitle       String?
+  seoDescription String?
+  seoKeywords    String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  articles Article[]
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children Category[] @relation("CategoryHierarchy")
+
+  @@index([parentId])
+  @@map("categories")
+}
+
+model Tag {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  // Relationships
+  articles ArticleTag[]
+
+  @@map("tags")
+}
+
+model Article {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  // Basic content
+  title         String // Schema.org Article headline
+  slug          String
+  excerpt       String?
+  content       String // Article body (markdown/HTML)
+  contentFormat String  @default("markdown") // markdown, html, rich_text
+
+  // Relationships
+  clientId   String    @db.ObjectId
+  client     Client    @relation(fields: [clientId], references: [id])
+  categoryId String?   @db.ObjectId
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  authorId   String    @db.ObjectId
+  author     Author    @relation(fields: [authorId], references: [id])
+
+  // Status & workflow
+  status      ArticleStatus @default(DRAFT)
+  scheduledAt DateTime?
+  featured    Boolean       @default(false)
+
+  // Schema.org Article - Required fields
+  datePublished    DateTime? // ISO 8601
+  dateModified     DateTime  @updatedAt
+  lastReviewed     DateTime? // Content freshness signal
+  mainEntityOfPage String? // Canonical URL
+
+  // Schema.org Article - Extended fields
+  wordCount           Int? // Auto-calculated content depth
+  readingTimeMinutes  Int? // Auto-calculated (~200-250 words/min)
+  contentDepth        String? // short, medium, long
+  inLanguage          String  @default("ar") // For hreflang
+  isAccessibleForFree Boolean @default(true)
+  license             String?
+  creativeWorkStatus  String? // published, draft, etc.
+
+  // Meta tags
+  seoTitle       String?
+  seoDescription String? // 155-160 chars optimal
+  seoKeywords    String[]
+  metaRobots     String? // index, noindex, follow, nofollow
+
+  // Open Graph (Complete)
+  ogTitle                String?
+  ogDescription          String?
+  ogImage                String?
+  ogType                 String?   @default("article")
+  ogUrl                  String?
+  ogSiteName             String?
+  ogLocale               String?
+  ogUpdatedTime          DateTime?
+  ogArticleAuthor        String?
+  ogArticlePublishedTime DateTime?
+  ogArticleModifiedTime  DateTime?
+  ogArticleSection       String?
+  ogArticleTag           String[]
+
+  // Twitter Cards (Complete)
+  twitterCard        String? // summary_large_image, summary
+  twitterTitle       String?
+  twitterDescription String?
+  twitterImage       String?
+  twitterSite        String?
+  twitterCreator     String? // Author handle
+  twitterLabel1      String?
+  twitterData1       String?
+
+  // Technical SEO
+  canonicalUrl       String?
+  alternateLanguages Json? // Array of {hreflang, url} objects
+  robotsMeta         String? // Combined robots directive
+  sitemapPriority    Float?  @default(0.5) // 0.0 to 1.0
+  sitemapChangeFreq  String? @default("weekly") // always, hourly, daily, weekly, monthly, yearly, never
+
+  // Breadcrumb support
+  breadcrumbPath Json? // Array for BreadcrumbList schema
+
+  // Featured media
+  featuredImageId  String? @db.ObjectId
+  featuredImage    Media?  @relation("ArticleFeaturedImage", fields: [featuredImageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  featuredImageAlt String?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  tags        ArticleTag[]
+  versions    ArticleVersion[]
+  analytics   Analytics[]
+  relatedFrom RelatedArticle[] @relation("ArticleRelatedFrom")
+  relatedTo   RelatedArticle[] @relation("ArticleRelatedTo")
+  faqs        FAQ[]
+  media       Media[]          @relation("ArticleMedia")
+
+  @@unique([clientId, slug]) // Slug unique per client
+  @@index([clientId, status, datePublished])
+  @@index([status, datePublished])
+  @@index([categoryId, status, datePublished])
+  @@index([authorId, status, datePublished])
+  @@index([dateModified])
+  @@index([datePublished])
+  @@map("articles")
+}
+
+model ArticleVersion {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  articleId String  @db.ObjectId
+  article   Article @relation(fields: [articleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  // Snapshot of article data
+  title          String
+  content        String
+  excerpt        String?
+  seoTitle       String?
+  seoDescription String?
+
+  // Audit trail
+  createdBy String?  @db.ObjectId // User ID
+  createdAt DateTime @default(now())
+
+  @@index([articleId, createdAt])
+  @@map("article_versions")
+}
+
+model ArticleTag {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  articleId String  @db.ObjectId
+  tagId     String  @db.ObjectId
+  article   Article @relation(fields: [articleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([articleId, tagId])
+  @@index([articleId])
+  @@index([tagId])
+  @@map("article_tags")
+}

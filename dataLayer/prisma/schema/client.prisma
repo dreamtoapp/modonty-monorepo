@@ -1,0 +1,38 @@
+// Client/Organization model - Schema.org Organization
+
+model Client {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId // wiil use as unique for gtm integration
+  name      String
+  slug      String  @unique
+  legalName String? // Schema.org Organization
+  url       String? // Organization website
+
+  // Branding
+  logo         String?
+  favicon      String?
+  ogImage      String? // Default OG image for all articles
+  primaryColor String?
+
+  // Schema.org Organization - Social profiles
+  sameAs String[] // LinkedIn, Twitter, Facebook URLs
+
+  // Contact
+  email String?
+  phone String?
+
+  // SEO
+  seoTitle       String?
+  seoDescription String?
+  seoKeywords    String[]
+
+  // Metadata
+  foundingDate DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relationships
+  articles    Article[]
+  subscribers Subscriber[]
+
+  @@map("clients")
+}

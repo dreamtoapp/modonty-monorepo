@@ -1,0 +1,85 @@
+// Authentication models - NextAuth.js compatible
+
+model User {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  // NextAuth.js required fields
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime? // Email verification timestamp
+  image         String? // NextAuth standard field (profile image URL)
+
+  // Custom fields
+  password String? // Hashed password (optional for OAuth users)
+  role     UserRole @default(EDITOR)
+  avatar   String? // Keep for compatibility, prefer using 'image'
+
+  // Links to clients (for client users)
+  clientAccess String[] @db.ObjectId // Array of client IDs this user can access
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // NextAuth.js relations
+  accounts Account[]
+  sessions Session[]
+
+  @@index([role])
+  @@map("users")
+}
+
+model Account {
+  id                String @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String @db.ObjectId
+  type              String // OAuth or email
+  provider          String // google, facebook, credentials, etc.
+  providerAccountId String // Provider's unique user ID
+
+  // OAuth tokens (optional, for OAuth providers)
+  refresh_token String?
+  access_token  String?
+  expires_at    Int?
+  token_type    String?
+  scope         String?
+  id_token      String?
+  session_state String?
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  userId       String   @db.ObjectId
+  expires      DateTime
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String // Email address or other identifier
+  token      String   @unique
+  expires    DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}

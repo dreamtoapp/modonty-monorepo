@@ -1,0 +1,35 @@
+// Relation models - FAQ and Related Articles
+
+model FAQ {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  articleId String  @db.ObjectId
+  article   Article @relation(fields: [articleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  question String // Schema.org Question
+  answer   String // Schema.org Answer
+  position Int // Order in FAQ list
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([articleId, position])
+  @@map("faqs")
+}
+
+model RelatedArticle {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  articleId String  @db.ObjectId
+  relatedId String  @db.ObjectId
+  article   Article @relation("ArticleRelatedFrom", fields: [articleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  related   Article @relation("ArticleRelatedTo", fields: [relatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  relationshipType String? @default("related") // related, similar, recommended
+  weight           Float?  @default(1.0) // Relationship strength
+
+  createdAt DateTime @default(now())
+
+  @@unique([articleId, relatedId])
+  @@index([articleId])
+  @@index([relatedId])
+  @@map("related_articles")
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@modonty/monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev:admin": "pnpm --filter @modonty/admin dev",
+    "dev:beta": "pnpm --filter @modonty/beta dev",
+    "dev:home": "pnpm --filter @modonty/home dev",
+    "build:admin": "pnpm --filter @modonty/admin build",
+    "build:beta": "pnpm --filter @modonty/beta build",
+    "build:home": "pnpm --filter @modonty/home build",
+    "build:all": "pnpm build:admin && pnpm build:beta && pnpm build:home",
+    "lint": "pnpm --filter \"@modonty/*\" lint",
+    "format": "prettier --write .",
+    "prisma:generate": "pnpm --filter @modonty/database prisma:generate",
+    "prisma:studio": "pnpm --filter @modonty/database prisma:studio",
+    "prisma:format": "pnpm --filter @modonty/database prisma:format",
+    "prisma:validate": "pnpm --filter @modonty/database prisma:validate",
+    "seed": "pnpm --filter @modonty/database seed",
+    "seed:clear": "pnpm --filter @modonty/database seed:clear"
+  },
+  "devDependencies": {
+    "eslint": "^8.0.0",
+    "prettier": "^2.8.0"
+  }
+}

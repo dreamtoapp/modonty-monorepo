@@ -1,0 +1,47 @@
+// Author model - Schema.org Person with E-E-A-T support
+
+model Author {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  name String // Schema.org Person
+  slug String @unique
+
+  // Schema.org Person - E-E-A-T fields
+  jobTitle String? // WorksFor job title
+  worksFor String? @db.ObjectId // Organization/Client reference
+  bio      String?
+  image    String? // Profile image
+  url      String? // Author page URL
+
+  // Social profiles for verification (sameAs)
+  linkedIn String?
+  twitter  String?
+  facebook String?
+  sameAs   String[] // Additional social profiles
+
+  // E-E-A-T Signals
+  credentials        String[] // Degrees, certifications
+  qualifications     String[] // Professional qualifications
+  expertiseAreas     String[] // Topics of specialization (knowsAbout)
+  experienceYears    Int?
+  verificationStatus Boolean  @default(false)
+
+  // Education (optional structured data)
+  education Json? // Array of education objects
+
+  // SEO
+  seoTitle       String?
+  seoDescription String?
+
+  // Optional user link
+  userId String? @unique @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  articles Article[]
+
+  @@map("authors")
+}
+
+
