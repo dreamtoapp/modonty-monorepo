@@ -164,6 +164,13 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
       return;
     }
 
+    if (!formData.subscriptionTier) {
+      setError("Subscription Tier is required");
+      setLoading(false);
+      setOpenSections((prev) => ({ ...prev, subscription: true }));
+      return;
+    }
+
     if (formData.gtmId && !/^GTM-[A-Z0-9]+$/.test(formData.gtmId)) {
       setError("GTM ID must be in format GTM-XXXXXXX");
       setLoading(false);
