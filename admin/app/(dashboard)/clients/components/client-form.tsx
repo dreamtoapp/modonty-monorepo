@@ -15,13 +15,16 @@ import { SEODoctor } from "@/components/shared/seo-doctor";
 import { organizationSEOConfig } from "@/components/shared/seo-configs";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
+import { updateClient } from "../actions/clients-actions";
+
 interface ClientFormProps {
   initialData?: any;
   industries?: Array<{ id: string; name: string }>;
   onSubmit: (data: any) => Promise<{ success: boolean; error?: string }>;
+  clientId?: string;
 }
 
-export function ClientForm({ initialData, industries = [], onSubmit }: ClientFormProps) {
+export function ClientForm({ initialData, industries = [], onSubmit, clientId }: ClientFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -178,7 +181,7 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
       return;
     }
 
-    const result = await onSubmit({
+    const submitData = {
       ...formData,
       sameAs: Array.isArray(formData.sameAs) ? formData.sameAs : [],
       contentPriorities: formData.contentPriorities
@@ -207,7 +210,11 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
       twitterImage: formData.twitterImage || null,
       twitterSite: formData.twitterSite || null,
       canonicalUrl: formData.canonicalUrl || null,
-    });
+    };
+
+    const result = clientId
+      ? await updateClient(clientId, submitData)
+      : await onSubmit(submitData);
 
     if (result.success) {
       router.push("/clients");

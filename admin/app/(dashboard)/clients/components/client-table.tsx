@@ -7,9 +7,11 @@ import Link from "next/link";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Search, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, ArrowUpDown, ArrowUp, ArrowDown, Stethoscope } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ClientRowActions } from "./client-row-actions";
+import { SEOHealthGauge } from "@/components/shared/seo-health-gauge";
+import { organizationSEOConfig } from "@/components/shared/seo-configs";
 
 interface Client {
   id: string;
@@ -18,6 +20,7 @@ interface Client {
   email: string | null;
   phone: string | null;
   createdAt: Date;
+  [key: string]: any;
   _count: {
     articles: number;
   };
@@ -181,6 +184,9 @@ export function ClientTable({ clients, onSelectionChange }: ClientTableProps) {
                   className="h-4 w-4 rounded border-gray-300"
                 />
               </TableHead>
+              <TableHead className="w-[70px]">
+                <Stethoscope className="h-4 w-4 text-primary" />
+              </TableHead>
               <TableHead
                 className="cursor-pointer hover:bg-muted/50"
                 onClick={() => handleSort("name")}
@@ -232,7 +238,7 @@ export function ClientTable({ clients, onSelectionChange }: ClientTableProps) {
           <TableBody>
             {paginatedData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                   <div className="flex flex-col items-center gap-2">
                     <p className="text-sm font-medium">No clients found</p>
                     <p className="text-xs">Try adjusting your filters or search terms</p>
@@ -258,6 +264,9 @@ export function ClientTable({ clients, onSelectionChange }: ClientTableProps) {
                       }}
                       className="h-4 w-4 rounded border-gray-300"
                     />
+                  </TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <SEOHealthGauge data={client} config={organizationSEOConfig} size="xs" />
                   </TableCell>
                   <TableCell>
                     <Link

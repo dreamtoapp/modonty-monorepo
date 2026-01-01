@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getClientById, updateClient } from "../../actions/clients-actions";
+import { getClientById, createClient } from "../../actions/clients-actions";
 import { getIndustries } from "../../../industries/actions/industries-actions";
 import { PageHeader } from "@/components/shared/page-header";
 import { ClientForm } from "../../components/client-form";
@@ -15,14 +15,11 @@ export default async function EditClientPage({ params }: { params: Promise<{ id:
 
   return (
     <div className="container mx-auto max-w-[1128px]">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-semibold leading-tight">Edit Client</h1>
-          <p className="text-muted-foreground mt-1">Update client information</p>
-        </div>
+      <PageHeader title="Edit Client" description="Update client information" />
+      <div className="mb-6">
         <DeleteClientButton clientId={id} />
       </div>
-      <ClientForm initialData={client} industries={industries} onSubmit={(data) => updateClient(id, data)} />
+      <ClientForm initialData={client} industries={industries} onSubmit={createClient} clientId={id} />
     </div>
   );
 }
