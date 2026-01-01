@@ -10,6 +10,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { slugify } from "@/lib/utils";
 import { SubscriptionTierCards } from "./subscription-tier-cards";
 import { CharacterCounter } from "./character-counter";
+import { SocialProfilesInput } from "./social-profiles-input";
+import { SEODoctor } from "@/components/shared/seo-doctor";
+import { organizationSEOConfig } from "@/components/shared/seo-configs";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface ClientFormProps {
@@ -30,7 +33,42 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
     seo: false,
   });
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    slug: string;
+    legalName: string;
+    url: string;
+    logo: string;
+    ogImage: string;
+    email: string;
+    phone: string;
+    seoTitle: string;
+    seoDescription: string;
+    sameAs: string[];
+    businessBrief: string;
+    industryId: string;
+    targetAudience: string;
+    contentPriorities: string;
+    foundingDate: string;
+    gtmId: string;
+    subscriptionTier: string;
+    subscriptionStartDate: string;
+    subscriptionEndDate: string;
+    subscriptionStatus: string;
+    paymentStatus: string;
+    description?: string;
+    contactType?: string;
+    addressStreet?: string;
+    addressCity?: string;
+    addressCountry?: string;
+    addressPostalCode?: string;
+    twitterCard?: string;
+    twitterTitle?: string;
+    twitterDescription?: string;
+    twitterImage?: string;
+    twitterSite?: string;
+    canonicalUrl?: string;
+  }>({
     name: initialData?.name || "",
     slug: initialData?.slug || "",
     legalName: initialData?.legalName || "",
@@ -41,7 +79,7 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
     phone: initialData?.phone || "",
     seoTitle: initialData?.seoTitle || "",
     seoDescription: initialData?.seoDescription || "",
-    sameAs: initialData?.sameAs?.join("\n") || "",
+    sameAs: initialData?.sameAs || [],
     businessBrief: initialData?.businessBrief || "",
     industryId: initialData?.industryId || initialData?.industry?.id || "",
     targetAudience: initialData?.targetAudience || "",
@@ -59,6 +97,18 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
       : "",
     subscriptionStatus: initialData?.subscriptionStatus || "PENDING",
     paymentStatus: initialData?.paymentStatus || "PENDING",
+    description: initialData?.description || "",
+    contactType: initialData?.contactType || "",
+    addressStreet: initialData?.addressStreet || "",
+    addressCity: initialData?.addressCity || "",
+    addressCountry: initialData?.addressCountry || "",
+    addressPostalCode: initialData?.addressPostalCode || "",
+    twitterCard: initialData?.twitterCard || "",
+    twitterTitle: initialData?.twitterTitle || "",
+    twitterDescription: initialData?.twitterDescription || "",
+    twitterImage: initialData?.twitterImage || "",
+    twitterSite: initialData?.twitterSite || "",
+    canonicalUrl: initialData?.canonicalUrl || "",
   });
 
   useEffect(() => {
@@ -123,9 +173,7 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
 
     const result = await onSubmit({
       ...formData,
-      sameAs: formData.sameAs
-        ? formData.sameAs.split("\n").map((s: string) => s.trim()).filter(Boolean)
-        : [],
+      sameAs: Array.isArray(formData.sameAs) ? formData.sameAs : [],
       contentPriorities: formData.contentPriorities
         ? formData.contentPriorities.split(",").map((p: string) => p.trim()).filter(Boolean)
         : [],
@@ -140,6 +188,18 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
       subscriptionTier: formData.subscriptionTier || null,
       subscriptionStatus: formData.subscriptionStatus || "PENDING",
       paymentStatus: formData.paymentStatus || "PENDING",
+      description: formData.description || null,
+      contactType: formData.contactType || null,
+      addressStreet: formData.addressStreet || null,
+      addressCity: formData.addressCity || null,
+      addressCountry: formData.addressCountry || null,
+      addressPostalCode: formData.addressPostalCode || null,
+      twitterCard: formData.twitterCard || null,
+      twitterTitle: formData.twitterTitle || null,
+      twitterDescription: formData.twitterDescription || null,
+      twitterImage: formData.twitterImage || null,
+      twitterSite: formData.twitterSite || null,
+      canonicalUrl: formData.canonicalUrl || null,
     });
 
     if (result.success) {
@@ -154,14 +214,16 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="space-y-4">
-        {error && (
-          <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
-            {error}
-          </div>
-        )}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Form Data */}
+        <div className="lg:col-span-2 space-y-4">
+          {error && (
+            <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
+              {error}
+            </div>
+          )}
 
-        <Collapsible open={openSections.basic} onOpenChange={() => toggleSection("basic")}>
+          <Collapsible open={openSections.basic} onOpenChange={() => toggleSection("basic")}>
           <Card>
             <CollapsibleTrigger className="w-full">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 cursor-pointer hover:bg-muted/50 transition-colors">
@@ -182,8 +244,8 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   hint={
                     formData.slug && formData.slug.trim()
-                      ? `Slug: ${formData.slug}`
-                      : "Slug will be generated from name"
+                      ? `Slug: ${formData.slug} - Used in URLs and article mentions`
+                      : "Client name used in articles and Authority Blog. Slug auto-generated."
                   }
                   required
                 />
@@ -193,6 +255,7 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
                   name="legalName"
                   value={formData.legalName}
                   onChange={(e) => setFormData({ ...formData, legalName: e.target.value })}
+                  hint="Official registered business name for Schema.org structured data"
                 />
                 <FormInput
                   label="URL"
@@ -200,12 +263,14 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
                   type="url"
                   value={formData.url}
                   onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                  hint="Client's main website URL - used for backlinks and Schema.org"
                 />
                 <FormInput
                   label="Logo URL"
                   name="logo"
                   value={formData.logo}
                   onChange={(e) => setFormData({ ...formData, logo: e.target.value })}
+                  hint="Logo image URL displayed in client profile and articles"
                 />
               </CardContent>
             </CollapsibleContent>
@@ -235,6 +300,7 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
                     rows={6}
                     required
                     placeholder="Describe the client's business, products/services, target audience, and unique selling points. This helps content writers create relevant, customized content. (Minimum 100 characters)"
+                    hint="Essential for content writers to create relevant, customized articles. Include business description, products/services, and unique selling points."
                   />
                   <div className="mt-1">
                     <CharacterCounter
@@ -250,6 +316,7 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
                   value={formData.industryId}
                   onChange={(e) => setFormData({ ...formData, industryId: e.target.value })}
                   placeholder="Select an industry"
+                  hint="Categorizes client for better content targeting and organization"
                 >
                   {industries.map((industry) => (
                     <option key={industry.id} value={industry.id}>
@@ -264,6 +331,7 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
                   onChange={(e) => setFormData({ ...formData, targetAudience: e.target.value })}
                   rows={3}
                   placeholder="Describe the target audience for this client"
+                  hint="Helps writers tailor content tone, style, and topics to the right audience"
                 />
                 <FormInput
                   label="Content Priorities (comma-separated)"
@@ -271,6 +339,7 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
                   value={formData.contentPriorities}
                   onChange={(e) => setFormData({ ...formData, contentPriorities: e.target.value })}
                   placeholder="keyword1, keyword2, keyword3"
+                  hint="Key topics/keywords to prioritize in articles for better SEO targeting"
                 />
                 <FormInput
                   label="Founding Date"
@@ -278,6 +347,7 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
                   type="date"
                   value={formData.foundingDate}
                   onChange={(e) => setFormData({ ...formData, foundingDate: e.target.value })}
+                  hint="Used in Schema.org structured data to establish business credibility"
                 />
               </CardContent>
             </CollapsibleContent>
@@ -316,6 +386,7 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
                   type="date"
                   value={formData.subscriptionStartDate}
                   onChange={(e) => setFormData({ ...formData, subscriptionStartDate: e.target.value })}
+                  hint="When subscription begins - end date auto-calculated (18 months)"
                 />
                 <FormInput
                   label="Subscription End Date"
@@ -323,7 +394,7 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
                   type="date"
                   value={formData.subscriptionEndDate}
                   onChange={(e) => setFormData({ ...formData, subscriptionEndDate: e.target.value })}
-                  hint="Automatically calculated (18 months from start date)"
+                  hint="Auto-calculated: 18 months from start (ensures clients see full SEO results)"
                 />
                 {articlesPerMonth > 0 && (
                   <div className="rounded-md border bg-muted p-4">
@@ -339,6 +410,7 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
                     name="subscriptionStatus"
                     value={formData.subscriptionStatus}
                     onValueChange={(value) => setFormData({ ...formData, subscriptionStatus: value })}
+                    hint="Current subscription state - Active enables content delivery"
                   >
                     <SelectItem value="PENDING">Pending</SelectItem>
                     <SelectItem value="ACTIVE">Active</SelectItem>
@@ -350,6 +422,7 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
                     name="paymentStatus"
                     value={formData.paymentStatus}
                     onValueChange={(value) => setFormData({ ...formData, paymentStatus: value })}
+                    hint="Track payment status for billing and subscription management"
                   >
                     <SelectItem value="PENDING">Pending</SelectItem>
                     <SelectItem value="PAID">Paid</SelectItem>
@@ -382,27 +455,72 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    hint="Contact email for notifications and communication"
                   />
                   <FormInput
                     label="Phone"
                     name="phone"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    hint="Contact phone number for business inquiries"
                   />
                 </div>
-                <FormTextarea
-                  label="Social Profiles (one per line)"
-                  name="sameAs"
-                  value={formData.sameAs}
-                  onChange={(e) => setFormData({ ...formData, sameAs: e.target.value })}
-                  rows={4}
-                  placeholder="https://linkedin.com/company/example&#10;https://twitter.com/example"
+                <FormInput
+                  label="Contact Type"
+                  name="contactType"
+                  value={formData.contactType || ""}
+                  onChange={(e) => setFormData({ ...formData, contactType: e.target.value })}
+                  placeholder="e.g., customer service, technical support, sales"
+                  hint="Contact type for Schema.org ContactPoint structure (improves structured data)"
+                />
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Address (for Local SEO)</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormInput
+                      label="Street Address"
+                      name="addressStreet"
+                      value={formData.addressStreet || ""}
+                      onChange={(e) => setFormData({ ...formData, addressStreet: e.target.value })}
+                      hint="Street address for local businesses"
+                    />
+                    <FormInput
+                      label="City"
+                      name="addressCity"
+                      value={formData.addressCity || ""}
+                      onChange={(e) => setFormData({ ...formData, addressCity: e.target.value })}
+                      hint="City name"
+                    />
+                    <FormInput
+                      label="Country"
+                      name="addressCountry"
+                      value={formData.addressCountry || ""}
+                      onChange={(e) => setFormData({ ...formData, addressCountry: e.target.value })}
+                      hint="Country name"
+                    />
+                    <FormInput
+                      label="Postal Code"
+                      name="addressPostalCode"
+                      value={formData.addressPostalCode || ""}
+                      onChange={(e) => setFormData({ ...formData, addressPostalCode: e.target.value })}
+                      hint="Postal/ZIP code"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Address fields enable LocalBusiness schema for local SEO (optional - only needed for local businesses)
+                  </p>
+                </div>
+                <SocialProfilesInput
+                  label="Social Profiles"
+                  value={Array.isArray(formData.sameAs) ? formData.sameAs : []}
+                  onChange={(urls) => setFormData({ ...formData, sameAs: urls })}
+                  hint="Add social media URLs one at a time. Used in Schema.org for SEO and brand verification."
                 />
                 <FormInput
                   label="OG Image URL"
                   name="ogImage"
                   value={formData.ogImage}
                   onChange={(e) => setFormData({ ...formData, ogImage: e.target.value })}
+                  hint="Default Open Graph image for social media shares (1200x630px recommended)"
                 />
               </CardContent>
             </CollapsibleContent>
@@ -428,6 +546,7 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
                   name="seoTitle"
                   value={formData.seoTitle}
                   onChange={(e) => setFormData({ ...formData, seoTitle: e.target.value })}
+                  hint="Meta title for search engines (50-60 chars optimal) - improves search visibility"
                 />
                 <div>
                   <FormTextarea
@@ -436,6 +555,7 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
                     value={formData.seoDescription}
                     onChange={(e) => setFormData({ ...formData, seoDescription: e.target.value })}
                     rows={3}
+                    hint="Meta description shown in search results (150-160 chars) - influences click-through rate"
                   />
                   <div className="mt-1">
                     <CharacterCounter
@@ -444,6 +564,78 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
                       className="ml-1"
                     />
                   </div>
+                </div>
+                <div>
+                  <FormTextarea
+                    label="Organization Description"
+                    name="description"
+                    value={formData.description || ""}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    rows={3}
+                    hint="Schema.org Organization description (separate from SEO description) - used in structured data"
+                  />
+                  <div className="mt-1">
+                    <CharacterCounter
+                      current={(formData.description || "").length}
+                      min={100}
+                      className="ml-1"
+                    />
+                  </div>
+                </div>
+                <FormInput
+                  label="Canonical URL"
+                  name="canonicalUrl"
+                  type="url"
+                  value={formData.canonicalUrl || ""}
+                  onChange={(e) => setFormData({ ...formData, canonicalUrl: e.target.value })}
+                  placeholder="https://example.com/page"
+                  hint="Canonical URL prevents duplicate content issues - auto-generated if not provided"
+                />
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Twitter Cards (for Social SEO)</p>
+                  <FormSelect
+                    label="Twitter Card Type"
+                    name="twitterCard"
+                    value={formData.twitterCard || ""}
+                    onValueChange={(value) => setFormData({ ...formData, twitterCard: value })}
+                    hint="Card type for Twitter/X sharing"
+                  >
+                    <SelectItem value="">Auto-generate from OG tags</SelectItem>
+                    <SelectItem value="summary_large_image">Summary Large Image</SelectItem>
+                    <SelectItem value="summary">Summary</SelectItem>
+                  </FormSelect>
+                  <FormInput
+                    label="Twitter Title"
+                    name="twitterTitle"
+                    value={formData.twitterTitle || ""}
+                    onChange={(e) => setFormData({ ...formData, twitterTitle: e.target.value })}
+                    hint="Twitter-specific title (auto-generated from SEO title if not provided)"
+                  />
+                  <FormInput
+                    label="Twitter Description"
+                    name="twitterDescription"
+                    value={formData.twitterDescription || ""}
+                    onChange={(e) => setFormData({ ...formData, twitterDescription: e.target.value })}
+                    hint="Twitter-specific description (auto-generated from SEO description if not provided)"
+                  />
+                  <FormInput
+                    label="Twitter Image"
+                    name="twitterImage"
+                    value={formData.twitterImage || ""}
+                    onChange={(e) => setFormData({ ...formData, twitterImage: e.target.value })}
+                    hint="Twitter-specific image (auto-generated from OG image if not provided)"
+                  />
+                  <FormInput
+                    label="Twitter Site"
+                    name="twitterSite"
+                    value={formData.twitterSite || ""}
+                    onChange={(e) => setFormData({ ...formData, twitterSite: e.target.value })}
+                    placeholder="@username"
+                    hint="Twitter/X username (e.g., @company) for attribution"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Twitter Cards improve social SEO signals and engagement. Fields auto-generate from existing SEO data if not provided.
+                  </p>
                 </div>
                 <FormInput
                   label="Google Tag Manager ID"
@@ -463,13 +655,21 @@ export function ClientForm({ initialData, industries = [], onSubmit }: ClientFor
           </Card>
         </Collapsible>
 
-        <div className="flex justify-end gap-4 pt-4 border-t">
+          <div className="flex justify-end gap-4 pt-4 border-t">
           <Button type="button" variant="outline" onClick={() => router.back()} disabled={loading}>
             Cancel
           </Button>
           <Button type="submit" disabled={loading}>
             {loading ? "Saving..." : initialData ? "Update Client" : "Create Client"}
           </Button>
+        </div>
+        </div>
+
+        {/* Right Column - SEO Doctor (Always Visible) */}
+        <div className="lg:col-span-1">
+          <div className="sticky top-6">
+            <SEODoctor data={formData} config={organizationSEOConfig} />
+          </div>
         </div>
       </div>
     </form>

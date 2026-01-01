@@ -168,6 +168,7 @@ model Client {
   // SEO
   seoTitle       String?
   seoDescription String?
+  description    String? // Schema.org Organization description (separate from seoDescription)
 
   // Business Information
   businessBrief      String?  // Business description for content writers
@@ -175,6 +176,25 @@ model Client {
   industry           Industry? @relation(fields: [industryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   targetAudience     String?  // Target audience description
   contentPriorities  String[] // Key topics/priorities
+
+  // Contact Point (Schema.org)
+  contactType String? // customer service, technical support, sales, etc.
+
+  // Address (for Local SEO)
+  addressStreet  String?
+  addressCity    String?
+  addressCountry String?
+  addressPostalCode String?
+
+  // Twitter Cards
+  twitterCard        String? // summary_large_image, summary
+  twitterTitle       String?
+  twitterDescription String?
+  twitterImage       String?
+  twitterSite        String? // @username
+
+  // Canonical URL
+  canonicalUrl String?
 
   // GTM Integration
   gtmId String? // Google Tag Manager ID

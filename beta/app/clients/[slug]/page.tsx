@@ -120,7 +120,7 @@ export default async function ClientPage({ params }: ClientPageProps) {
     const structuredData = generateStructuredData({
       type: "Client",
       name: client.name,
-      description: client.seoDescription || undefined,
+      description: (client as any).description || client.seoDescription || undefined,
       url: `/clients/${slug}`,
       image: client.logo || client.ogImage || undefined,
       "@type": "Organization",
@@ -129,6 +129,11 @@ export default async function ClientPage({ params }: ClientPageProps) {
       email: client.email || undefined,
       telephone: client.phone || undefined,
       sameAs: client.sameAs.length > 0 ? client.sameAs : undefined,
+      foundingDate: (client as any).foundingDate ? 
+        (typeof (client as any).foundingDate === "string" 
+          ? (client as any).foundingDate.split("T")[0] 
+          : (client as any).foundingDate.toISOString().split("T")[0]) 
+        : undefined,
     });
 
     const breadcrumbData = generateBreadcrumbStructuredData([

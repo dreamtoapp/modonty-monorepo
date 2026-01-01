@@ -22,7 +22,7 @@ export function FormField({ label, name, error, required, hint, children }: Form
       </Label>
       {children}
       {hint && (
-        <p className="text-xs text-muted-foreground mt-1.5 font-mono bg-muted/30 px-2 py-1 rounded border border-border/50">
+        <p className="text-xs text-muted-foreground mt-1.5">
           {hint}
         </p>
       )}
@@ -82,6 +82,7 @@ interface FormTextareaProps {
   onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   rows?: number;
   disabled?: boolean;
+  hint?: string;
 }
 
 export function FormTextarea({
@@ -94,9 +95,10 @@ export function FormTextarea({
   onChange,
   rows = 4,
   disabled,
+  hint,
 }: FormTextareaProps) {
   return (
-    <FormField label={label} name={name} error={error} required={required}>
+    <FormField label={label} name={name} error={error} required={required} hint={hint}>
       <Textarea
         id={name}
         name={name}
@@ -120,6 +122,7 @@ interface FormSelectProps {
   value?: string;
   onValueChange?: (value: string) => void;
   disabled?: boolean;
+  hint?: string;
   children: ReactNode;
 }
 
@@ -132,10 +135,11 @@ export function FormSelect({
   value,
   onValueChange,
   disabled,
+  hint,
   children,
 }: FormSelectProps) {
   return (
-    <FormField label={label} name={name} error={error} required={required}>
+    <FormField label={label} name={name} error={error} required={required} hint={hint}>
       <Select value={value} onValueChange={onValueChange} disabled={disabled}>
         <SelectTrigger className={error ? "border-destructive" : ""}>
           <SelectValue placeholder={placeholder} />
@@ -155,6 +159,7 @@ interface FormNativeSelectProps {
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   disabled?: boolean;
+  hint?: string;
   children: ReactNode;
 }
 
@@ -167,10 +172,11 @@ export function FormNativeSelect({
   value,
   onChange,
   disabled,
+  hint,
   children,
 }: FormNativeSelectProps) {
   return (
-    <FormField label={label} name={name} error={error} required={required}>
+    <FormField label={label} name={name} error={error} required={required} hint={hint}>
       <select
         id={name}
         name={name}

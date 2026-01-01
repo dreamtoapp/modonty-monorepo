@@ -10,9 +10,23 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronDown } from "lucide-react";
+import {
+  ChevronDown,
+  Linkedin,
+  Twitter,
+  Facebook,
+  Instagram,
+  Youtube,
+  Music,
+  Link as LinkIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import {
+  detectPlatform,
+  getPlatformName,
+  type Platform,
+} from "../../helpers/url-validation";
 
 interface Client {
   id: string;
@@ -188,18 +202,41 @@ export function ClientView({ client }: ClientViewProps) {
           {client.sameAs && client.sameAs.length > 0 && (
             <div>
               <p className="text-sm text-muted-foreground mb-2">Social Profiles</p>
-              <div className="flex flex-col gap-1">
-                {client.sameAs.map((url, index) => (
-                  <a
-                    key={index}
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-primary hover:underline break-all"
-                  >
-                    {url}
-                  </a>
-                ))}
+              <div className="flex flex-col gap-2">
+                {client.sameAs.map((url, index) => {
+                  const platform = detectPlatform(url);
+                  const platformName = getPlatformName(platform);
+                  
+                  const platformIcons: Record<Platform, React.ComponentType<{ className?: string }>> = {
+                    linkedin: Linkedin,
+                    twitter: Twitter,
+                    facebook: Facebook,
+                    instagram: Instagram,
+                    youtube: Youtube,
+                    tiktok: Music,
+                    other: LinkIcon,
+                  };
+                  
+                  const Icon = platformIcons[platform] || LinkIcon;
+                  
+                  return (
+                    <a
+                      key={index}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 p-2 rounded-md border bg-card hover:bg-muted/50 transition-colors group"
+                    >
+                      <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-primary group-hover:underline break-all">
+                          {url}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{platformName}</p>
+                      </div>
+                    </a>
+                  );
+                })}
               </div>
             </div>
           )}

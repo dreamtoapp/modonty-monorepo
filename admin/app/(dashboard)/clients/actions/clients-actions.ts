@@ -4,6 +4,51 @@ import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { ArticleStatus } from "@prisma/client";
 
+/**
+ * Validates and normalizes social profile URLs on server side
+ */
+function validateAndNormalizeUrls(urls: string[] | undefined): string[] {
+  if (!urls || !Array.isArray(urls)) return [];
+
+  const normalized: string[] = [];
+  const seen = new Set<string>();
+
+  for (const url of urls) {
+    if (!url || typeof url !== "string") continue;
+
+    const trimmed = url.trim();
+    if (!trimmed) continue;
+
+    // Normalize URL (add https:// if missing)
+    let normalizedUrl: string;
+    try {
+      if (/^https?:\/\//i.test(trimmed)) {
+        normalizedUrl = trimmed;
+      } else {
+        normalizedUrl = `https://${trimmed}`;
+      }
+
+      // Validate URL format
+      const urlObj = new URL(normalizedUrl);
+      if (!["http:", "https:"].includes(urlObj.protocol)) continue;
+      if (!urlObj.hostname || urlObj.hostname.length === 0) continue;
+      if (normalizedUrl.length > 2048) continue;
+
+      // Check for duplicates (case-insensitive)
+      const lowerUrl = normalizedUrl.toLowerCase();
+      if (seen.has(lowerUrl)) continue;
+      seen.add(lowerUrl);
+
+      normalized.push(normalizedUrl);
+    } catch {
+      // Invalid URL, skip it
+      continue;
+    }
+  }
+
+  return normalized;
+}
+
 export interface ClientFilters {
   createdFrom?: Date;
   createdTo?: Date;
@@ -124,11 +169,23 @@ export async function createClient(data: {
   phone?: string;
   seoTitle?: string;
   seoDescription?: string;
+  description?: string | null;
   businessBrief?: string;
   industryId?: string | null;
   targetAudience?: string;
   contentPriorities?: string[];
   foundingDate?: Date | null;
+  contactType?: string | null;
+  addressStreet?: string | null;
+  addressCity?: string | null;
+  addressCountry?: string | null;
+  addressPostalCode?: string | null;
+  twitterCard?: string | null;
+  twitterTitle?: string | null;
+  twitterDescription?: string | null;
+  twitterImage?: string | null;
+  twitterSite?: string | null;
+  canonicalUrl?: string | null;
   gtmId?: string;
   subscriptionTier?: string | null;
   subscriptionStartDate?: Date | null;
@@ -138,6 +195,8 @@ export async function createClient(data: {
   paymentStatus?: string;
 }) {
   try {
+    const validatedSameAs = validateAndNormalizeUrls(data.sameAs);
+
     const client = await db.client.create({
       data: {
         name: data.name,
@@ -146,16 +205,28 @@ export async function createClient(data: {
         url: data.url,
         logo: data.logo,
         ogImage: data.ogImage,
-        sameAs: data.sameAs || [],
+        sameAs: validatedSameAs,
         email: data.email,
         phone: data.phone,
         seoTitle: data.seoTitle,
         seoDescription: data.seoDescription,
+        description: data.description || null,
         businessBrief: data.businessBrief,
         industryId: data.industryId || null,
         targetAudience: data.targetAudience,
         contentPriorities: data.contentPriorities || [],
         foundingDate: data.foundingDate || null,
+        contactType: data.contactType || null,
+        addressStreet: data.addressStreet || null,
+        addressCity: data.addressCity || null,
+        addressCountry: data.addressCountry || null,
+        addressPostalCode: data.addressPostalCode || null,
+        twitterCard: data.twitterCard || null,
+        twitterTitle: data.twitterTitle || null,
+        twitterDescription: data.twitterDescription || null,
+        twitterImage: data.twitterImage || null,
+        twitterSite: data.twitterSite || null,
+        canonicalUrl: data.canonicalUrl || null,
         gtmId: data.gtmId,
         subscriptionTier: data.subscriptionTier as any || null,
         subscriptionStartDate: data.subscriptionStartDate || null,
@@ -187,11 +258,23 @@ export async function updateClient(
     phone?: string;
     seoTitle?: string;
     seoDescription?: string;
+    description?: string | null;
     businessBrief?: string;
     industry?: string;
     targetAudience?: string;
     contentPriorities?: string[];
     foundingDate?: Date | null;
+    contactType?: string | null;
+    addressStreet?: string | null;
+    addressCity?: string | null;
+    addressCountry?: string | null;
+    addressPostalCode?: string | null;
+    twitterCard?: string | null;
+    twitterTitle?: string | null;
+    twitterDescription?: string | null;
+    twitterImage?: string | null;
+    twitterSite?: string | null;
+    canonicalUrl?: string | null;
     gtmId?: string;
     subscriptionTier?: string | null;
     subscriptionStartDate?: Date | null;
@@ -202,6 +285,8 @@ export async function updateClient(
   }
 ) {
   try {
+    const validatedSameAs = validateAndNormalizeUrls(data.sameAs);
+
     const client = await db.client.update({
       where: { id },
       data: {
@@ -211,16 +296,28 @@ export async function updateClient(
         url: data.url,
         logo: data.logo,
         ogImage: data.ogImage,
-        sameAs: data.sameAs || [],
+        sameAs: validatedSameAs,
         email: data.email,
         phone: data.phone,
         seoTitle: data.seoTitle,
         seoDescription: data.seoDescription,
+        description: data.description || null,
         businessBrief: data.businessBrief,
         industryId: data.industryId || null,
         targetAudience: data.targetAudience,
         contentPriorities: data.contentPriorities || [],
         foundingDate: data.foundingDate || null,
+        contactType: data.contactType || null,
+        addressStreet: data.addressStreet || null,
+        addressCity: data.addressCity || null,
+        addressCountry: data.addressCountry || null,
+        addressPostalCode: data.addressPostalCode || null,
+        twitterCard: data.twitterCard || null,
+        twitterTitle: data.twitterTitle || null,
+        twitterDescription: data.twitterDescription || null,
+        twitterImage: data.twitterImage || null,
+        twitterSite: data.twitterSite || null,
+        canonicalUrl: data.canonicalUrl || null,
         gtmId: data.gtmId,
         subscriptionTier: data.subscriptionTier as any || null,
         subscriptionStartDate: data.subscriptionStartDate || null,

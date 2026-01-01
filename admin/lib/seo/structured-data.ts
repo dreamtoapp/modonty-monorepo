@@ -118,10 +118,39 @@ export function generateOrganizationStructuredData(client: Client) {
     ...(client.legalName && { legalName: client.legalName }),
     ...(client.url && { url: client.url }),
     ...(client.logo && { logo: { "@type": "ImageObject", url: client.logo } }),
-    ...(client.email && { email: client.email }),
-    ...(client.phone && { telephone: client.phone }),
-    ...(client.seoDescription && { description: client.seoDescription }),
+    ...(client.description && { description: client.description }),
+    ...(!client.description && client.seoDescription && { description: client.seoDescription }),
+    ...(client.foundingDate && { foundingDate: client.foundingDate.toISOString().split("T")[0] }),
   };
+
+  // ContactPoint structure
+  if (client.email || client.phone) {
+    const contactPoint: any = {
+      "@type": "ContactPoint",
+    };
+    if (client.contactType) {
+      contactPoint.contactType = client.contactType;
+    }
+    if (client.email) {
+      contactPoint.email = client.email;
+    }
+    if (client.phone) {
+      contactPoint.telephone = client.phone;
+    }
+    structuredData.contactPoint = contactPoint;
+  }
+
+  // Address structure (for LocalBusiness)
+  if (client.addressStreet || client.addressCity || client.addressCountry) {
+    const address: any = {
+      "@type": "PostalAddress",
+    };
+    if (client.addressStreet) address.streetAddress = client.addressStreet;
+    if (client.addressCity) address.addressLocality = client.addressCity;
+    if (client.addressCountry) address.addressCountry = client.addressCountry;
+    if (client.addressPostalCode) address.postalCode = client.addressPostalCode;
+    structuredData.address = address;
+  }
 
   if (client.sameAs && client.sameAs.length > 0) {
     structuredData.sameAs = client.sameAs;
