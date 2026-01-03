@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const ArticleStatusEnum = z.enum(["DRAFT", "PUBLISHED", "ARCHIVED", "SCHEDULED"]);
+export const ArticleStatusEnum = z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]);
 
 export const ContentFormatEnum = z.enum(["markdown", "html", "rich_text"]);
 
@@ -89,17 +89,6 @@ export const articleFormSchema = z.object({
   faqs: z.array(FAQSchema).default([]),
   relatedArticles: z.array(RelatedArticleSchema).default([]),
 }).refine(
-  (data) => {
-    if (data.status === "SCHEDULED" && !data.scheduledAt) {
-      return false;
-    }
-    return true;
-  },
-  {
-    message: "تاريخ النشر المجدول مطلوب عند اختيار حالة 'مجدول'",
-    path: ["scheduledAt"],
-  }
-).refine(
   (data) => {
     if (data.featuredImageId && !data.featuredImageAlt) {
       return false;

@@ -1,5 +1,6 @@
-import { StatsCard } from "@/app/(dashboard)/components/stats-card";
+import { AnalticCard } from "@/components/shared/analtic-card";
 import { FileText, CheckCircle2, Edit, Archive, Calendar } from "lucide-react";
+import { SEOScoreOverall } from "@/components/shared/seo-doctor";
 
 interface ArticlesStatsProps {
   stats: {
@@ -9,42 +10,44 @@ interface ArticlesStatsProps {
     scheduled: number;
     archived: number;
     publishedThisMonth: number;
+    averageSEO: number;
   };
 }
 
 export function ArticlesStats({ stats }: ArticlesStatsProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-      <StatsCard
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <AnalticCard
         title="Total Articles"
         value={stats.total}
         icon={FileText}
         description="All articles in the system"
       />
-      <StatsCard
+      <AnalticCard
         title="Published"
         value={stats.published}
         icon={CheckCircle2}
         description="Live articles"
       />
-      <StatsCard
+      <AnalticCard
         title="Drafts"
         value={stats.draft}
         icon={Edit}
         description="In progress"
       />
-      <StatsCard
+      <AnalticCard
         title="Archived"
         value={stats.archived}
         icon={Archive}
         description="Archived articles"
       />
-      <StatsCard
+      <AnalticCard
         title="This Month"
         value={stats.publishedThisMonth}
         icon={Calendar}
         description="Published this month"
       />
+      <SEOScoreOverall value={stats.averageSEO} />
     </div>
   );
 }

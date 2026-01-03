@@ -7,13 +7,14 @@ import { Button } from "@/components/ui/button";
 import { FormInput, FormTextarea, FormNativeSelect } from "@/components/admin/form-field";
 import { ArticleStatus } from "@prisma/client";
 import { getStatusLabel, getAvailableStatuses } from "../helpers/status-utils";
+import { ArticleFormData, ArticleWithRelations, FormSubmitResult } from "@/lib/types";
 
 interface ArticleFormProps {
-  initialData?: any;
+  initialData?: Partial<ArticleWithRelations>;
   clients: Array<{ id: string; name: string }>;
   categories: Array<{ id: string; name: string }>;
   authors: Array<{ id: string; name: string }>;
-  onSubmit: (data: any) => Promise<{ success: boolean; error?: string }>;
+  onSubmit: (data: ArticleFormData) => Promise<FormSubmitResult>;
 }
 
 export function ArticleForm({

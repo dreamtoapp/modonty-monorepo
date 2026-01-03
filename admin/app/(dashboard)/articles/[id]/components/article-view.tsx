@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ArticleStatus } from "@prisma/client";
 import { getStatusLabel, getStatusVariant } from "../../helpers/status-utils";
+import { SEOHealthGauge } from "@/components/shared/seo-doctor/seo-health-gauge";
+import { articleSEOConfig } from "@/components/shared/seo-doctor/seo-configs";
 
 interface Article {
   id: string;
@@ -38,13 +40,16 @@ export function ArticleView({ article }: ArticleViewProps) {
             {getStatusLabel(article.status)}
           </Badge>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" asChild>
-            <Link href="/articles">Back</Link>
-          </Button>
-          <Button asChild>
-            <Link href={`/articles/${article.id}/edit`}>Edit</Link>
-          </Button>
+        <div className="flex items-center gap-4">
+          <SEOHealthGauge data={article} config={articleSEOConfig} size="md" />
+          <div className="flex gap-2">
+            <Button variant="outline" asChild>
+              <Link href="/articles">Back</Link>
+            </Button>
+            <Button asChild>
+              <Link href={`/articles/${article.id}/edit`}>Edit</Link>
+            </Button>
+          </div>
         </div>
       </div>
 

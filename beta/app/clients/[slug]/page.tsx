@@ -86,7 +86,7 @@ export default async function ClientPage({ params }: ClientPageProps) {
             featuredImage: {
               select: {
                 url: true,
-                alt: true,
+                altText: true,
               },
             },
           },
@@ -121,11 +121,10 @@ export default async function ClientPage({ params }: ClientPageProps) {
       type: "Client",
       name: client.name,
       description: (client as any).description || client.seoDescription || undefined,
-      url: `/clients/${slug}`,
+      url: client.url || `/clients/${slug}`,
       image: client.logo || client.ogImage || undefined,
       "@type": "Organization",
       legalName: client.legalName || undefined,
-      url: client.url || undefined,
       email: client.email || undefined,
       telephone: client.phone || undefined,
       sameAs: client.sameAs.length > 0 ? client.sameAs : undefined,
@@ -219,7 +218,7 @@ export default async function ClientPage({ params }: ClientPageProps) {
                     <div className="flex items-center gap-2 text-sm">
                       <Building2 className="h-4 w-4 text-muted-foreground" />
                       <Badge variant="secondary">
-                        {client._count.articles} مقال
+                        {(client as any)._count?.articles ?? 0} مقال
                       </Badge>
                     </div>
                   </div>
@@ -227,7 +226,7 @@ export default async function ClientPage({ params }: ClientPageProps) {
               </Card>
             </div>
 
-            {client.articles.length === 0 ? (
+            {((client as any).articles ?? []).length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
                   <p className="text-muted-foreground">لا توجد مقالات من هذا العميل بعد.</p>
@@ -237,7 +236,7 @@ export default async function ClientPage({ params }: ClientPageProps) {
               <>
                 <h2 className="text-2xl font-bold mb-6">المقالات</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {client.articles.map((article) => (
+                  {((client as any).articles ?? []).map((article: any) => (
                     <Link key={article.id} href={`/articles/${article.slug}`}>
                       <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
                         {article.featuredImage && (

@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { ArticleStatus } from "@prisma/client";
+import { ArticleStatus, Prisma } from "@prisma/client";
 import {
   calculateWordCount,
   calculateReadingTime,
@@ -12,6 +12,9 @@ import {
   generateCanonicalUrl,
   generateBreadcrumbPath,
 } from "../helpers/seo-helpers";
+import { ArticleFormData, FAQItem } from "@/lib/types";
+import { calculateSEOScore } from "@/helpers/utils/seo-score-calculator";
+import { articleSEOConfig } from "@/components/shared/seo-doctor/seo-configs";
 
 export interface ArticleFilters {
   status?: ArticleStatus;
@@ -30,11 +33,10 @@ export async function getArticles(filters?: ArticleFilters) {
       ArticleStatus.DRAFT,
       ArticleStatus.PUBLISHED,
       ArticleStatus.ARCHIVED,
-      ArticleStatus.SCHEDULED,
     ];
     
     // Build where clause
-    const where: any = {};
+    const where: Prisma.ArticleWhereInput = {};
 
     // Status filter
     if (filters?.status && validStatuses.includes(filters.status)) {
@@ -83,7 +85,7 @@ export async function getArticles(filters?: ArticleFilters) {
     }
 
     // Clean the where clause - remove any undefined values from nested objects
-    const cleanWhere: any = {};
+    const cleanWhere = {} as Prisma.ArticleWhereInput;
     for (const [key, value] of Object.entries(where)) {
       if (value !== undefined) {
         if (value && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date) && !('in' in value)) {
@@ -92,10 +94,10 @@ export async function getArticles(filters?: ArticleFilters) {
             Object.entries(value).filter(([_, v]) => v !== undefined)
           );
           if (Object.keys(cleaned).length > 0) {
-            cleanWhere[key] = cleaned;
+            (cleanWhere as Record<string, unknown>)[key] = cleaned;
           }
         } else {
-          cleanWhere[key] = value;
+          (cleanWhere as Record<string, unknown>)[key] = value;
         }
       }
     }
@@ -187,7 +189,6 @@ export async function getArticleById(id: string) {
       ArticleStatus.DRAFT,
       ArticleStatus.PUBLISHED,
       ArticleStatus.ARCHIVED,
-      ArticleStatus.SCHEDULED,
     ];
     if (article && !validStatuses.includes(article.status)) {
       console.warn(`Article ${id} has invalid status: ${article.status}`);
@@ -200,7 +201,7 @@ export async function getArticleById(id: string) {
   }
 }
 
-export async function createArticle(data: any) {
+export async function createArticle(data: ArticleFormData) {
   try {
     const client = await db.client.findUnique({
       where: { id: data.clientId },
@@ -242,7 +243,7 @@ export async function createArticle(data: any) {
     const creativeWorkStatus =
       data.status === ArticleStatus.PUBLISHED
         ? "published"
-        : data.status === ArticleStatus.SCHEDULED
+        : (data.status as string) === "SCHEDULED"
         ? "scheduled"
         : "draft";
 
@@ -287,6 +288,9 @@ export async function createArticle(data: any) {
         ogImage: data.ogImage || data.featuredImageId
           ? null
           : client?.ogImage || null,
+        ogImageAlt: data.ogImageAlt || null,
+        ogImageWidth: data.ogImageWidth || null,
+        ogImageHeight: data.ogImageHeight || null,
         ogUrl: data.ogUrl || canonicalUrl,
         ogSiteName: data.ogSiteName || "مودونتي",
         ogLocale: data.ogLocale || "ar_SA",
@@ -294,6 +298,7 @@ export async function createArticle(data: any) {
         ogArticleAuthor: data.ogArticleAuthor || null,
         ogArticlePublishedTime: datePublished,
         ogArticleModifiedTime: new Date(),
+        ogUpdatedTime: null,
         ogArticleSection: data.ogArticleSection || category?.name || null,
         ogArticleTag: data.ogArticleTag || data.tags || [],
         twitterCard: data.twitterCard || "summary_large_image",
@@ -305,6 +310,7 @@ export async function createArticle(data: any) {
           data.excerpt ||
           null,
         twitterImage: data.twitterImage || data.ogImage || null,
+        twitterImageAlt: data.twitterImageAlt || null,
         twitterSite: data.twitterSite || null,
         twitterCreator: data.twitterCreator || null,
         twitterLabel1: data.twitterLabel1 || null,
@@ -314,7 +320,7 @@ export async function createArticle(data: any) {
         sitemapPriority,
         sitemapChangeFreq: data.sitemapChangeFreq || "weekly",
         alternateLanguages: data.alternateLanguages || [],
-        breadcrumbPath: breadcrumbPath as any,
+        breadcrumbPath: JSON.parse(JSON.stringify(breadcrumbPath)) as Prisma.InputJsonValue,
       },
     });
 
@@ -348,7 +354,7 @@ export async function createArticle(data: any) {
 
     if (data.faqs && data.faqs.length > 0) {
       await db.fAQ.createMany({
-        data: data.faqs.map((faq: any, index: number) => ({
+        data: data.faqs.map((faq: FAQItem, index: number) => ({
           articleId: article.id,
           question: faq.question,
           answer: faq.answer,
@@ -359,16 +365,17 @@ export async function createArticle(data: any) {
 
     revalidatePath("/articles");
     return { success: true, article };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error creating article:", error);
+    const message = error instanceof Error ? error.message : "فشل في إنشاء المقال";
     return {
       success: false,
-      error: error.message || "فشل في إنشاء المقال",
+      error: message,
     };
   }
 }
 
-export async function updateArticle(id: string, data: any) {
+export async function updateArticle(id: string, data: ArticleFormData) {
   try {
     const existingArticle = await db.article.findUnique({
       where: { id },
@@ -417,8 +424,6 @@ export async function updateArticle(id: string, data: any) {
     const creativeWorkStatus =
       data.status === ArticleStatus.PUBLISHED
         ? "published"
-        : data.status === ArticleStatus.SCHEDULED
-        ? "scheduled"
         : "draft";
 
     const metaRobots =
@@ -459,6 +464,9 @@ export async function updateArticle(id: string, data: any) {
         ogTitle: data.ogTitle || seoTitle || data.title,
         ogDescription: data.ogDescription || seoDescription || data.excerpt || null,
         ogImage: data.ogImage || null,
+        ogImageAlt: data.ogImageAlt || null,
+        ogImageWidth: data.ogImageWidth || null,
+        ogImageHeight: data.ogImageHeight || null,
         ogUrl: data.ogUrl || canonicalUrl,
         ogSiteName: data.ogSiteName || "مودونتي",
         ogLocale: data.ogLocale || "ar_SA",
@@ -466,6 +474,7 @@ export async function updateArticle(id: string, data: any) {
         ogArticleAuthor: data.ogArticleAuthor || null,
         ogArticlePublishedTime: datePublished,
         ogArticleModifiedTime: new Date(),
+        ogUpdatedTime: new Date(),
         ogArticleSection: data.ogArticleSection || category?.name || null,
         ogArticleTag: data.ogArticleTag || data.tags || [],
         twitterCard: data.twitterCard || "summary_large_image",
@@ -477,6 +486,7 @@ export async function updateArticle(id: string, data: any) {
           data.excerpt ||
           null,
         twitterImage: data.twitterImage || data.ogImage || null,
+        twitterImageAlt: data.twitterImageAlt || null,
         twitterSite: data.twitterSite || null,
         twitterCreator: data.twitterCreator || null,
         twitterLabel1: data.twitterLabel1 || null,
@@ -486,7 +496,7 @@ export async function updateArticle(id: string, data: any) {
         sitemapPriority,
         sitemapChangeFreq: data.sitemapChangeFreq || "weekly",
         alternateLanguages: data.alternateLanguages || [],
-        breadcrumbPath: breadcrumbPath as any,
+        breadcrumbPath: JSON.parse(JSON.stringify(breadcrumbPath)) as Prisma.InputJsonValue,
       },
     });
 
@@ -528,7 +538,7 @@ export async function updateArticle(id: string, data: any) {
 
     if (data.faqs && data.faqs.length > 0) {
       await db.fAQ.createMany({
-        data: data.faqs.map((faq: any, index: number) => ({
+        data: data.faqs.map((faq: FAQItem, index: number) => ({
           articleId: id,
           question: faq.question,
           answer: faq.answer,
@@ -540,30 +550,18 @@ export async function updateArticle(id: string, data: any) {
     revalidatePath("/articles");
     revalidatePath(`/articles/${id}`);
     return { success: true, article };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error updating article:", error);
+    const message = error instanceof Error ? error.message : "فشل في تحديث المقال";
     return {
       success: false,
-      error: error.message || "فشل في تحديث المقال",
+      error: message,
     };
   }
 }
 
 export async function createUpdateArticleAction(id: string) {
-  return async (data: {
-    title: string;
-    slug: string;
-    excerpt?: string;
-    content: string;
-    clientId: string;
-    categoryId?: string;
-    authorId: string;
-    status: ArticleStatus;
-    featuredImageId?: string;
-    seoTitle?: string;
-    seoDescription?: string;
-    datePublished?: Date;
-  }) => {
+  return async (data: ArticleFormData) => {
     return updateArticle(id, data);
   };
 }
@@ -589,9 +587,10 @@ export async function deleteArticle(id: string) {
     });
     revalidatePath("/articles");
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error deleting article:", error);
-    return { success: false, error: error.message || "Failed to delete article" };
+    const message = error instanceof Error ? error.message : "Failed to delete article";
+    return { success: false, error: message };
   }
 }
 
@@ -648,9 +647,10 @@ export async function duplicateArticle(id: string) {
 
     revalidatePath("/articles");
     return { success: true, article: newArticle };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error duplicating article:", error);
-    return { success: false, error: error.message || "Failed to duplicate article" };
+    const message = error instanceof Error ? error.message : "Failed to duplicate article";
+    return { success: false, error: message };
   }
 }
 
@@ -692,12 +692,12 @@ export async function getArticlesStats() {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    const [total, published, draft, scheduled, archived, publishedThisMonth] =
+    const [total, published, draft, scheduled, archived, publishedThisMonth, allArticles] =
       await Promise.all([
         db.article.count(),
         db.article.count({ where: { status: ArticleStatus.PUBLISHED } }),
         db.article.count({ where: { status: ArticleStatus.DRAFT } }),
-        db.article.count({ where: { status: ArticleStatus.SCHEDULED } }),
+        db.article.count({ where: { scheduledAt: { not: null }, status: { not: ArticleStatus.PUBLISHED } } }),
         db.article.count({ where: { status: ArticleStatus.ARCHIVED } }),
         db.article.count({
           where: {
@@ -705,7 +705,42 @@ export async function getArticlesStats() {
             datePublished: { gte: startOfMonth },
           },
         }),
+        db.article.findMany({
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            excerpt: true,
+            content: true,
+            seoTitle: true,
+            seoDescription: true,
+            ogTitle: true,
+            ogDescription: true,
+            ogImage: true,
+            ogImageAlt: true,
+            ogImageWidth: true,
+            ogImageHeight: true,
+            twitterCard: true,
+            twitterTitle: true,
+            twitterDescription: true,
+            twitterImage: true,
+            twitterImageAlt: true,
+            canonicalUrl: true,
+            featuredImageAlt: true,
+          },
+        }),
       ]);
+
+    let averageSEO = 0;
+    if (allArticles.length > 0) {
+      const scores = allArticles.map((article) => {
+        const scoreResult = calculateSEOScore(article, articleSEOConfig);
+        return scoreResult.percentage;
+      });
+      averageSEO = Math.round(
+        scores.reduce((sum, score) => sum + score, 0) / scores.length
+      );
+    }
 
     return {
       total,
@@ -714,6 +749,7 @@ export async function getArticlesStats() {
       scheduled,
       archived,
       publishedThisMonth,
+      averageSEO,
     };
   } catch (error) {
     console.error("Error fetching articles stats:", error);
@@ -724,6 +760,7 @@ export async function getArticlesStats() {
       scheduled: 0,
       archived: 0,
       publishedThisMonth: 0,
+      averageSEO: 0,
     };
   }
 }
@@ -754,9 +791,10 @@ export async function bulkDeleteArticles(articleIds: string[]) {
     });
     revalidatePath("/articles");
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error bulk deleting articles:", error);
-    return { success: false, error: error.message || "Failed to delete articles" };
+    const message = error instanceof Error ? error.message : "Failed to delete articles";
+    return { success: false, error: message };
   }
 }
 
@@ -773,8 +811,9 @@ export async function bulkUpdateArticleStatus(articleIds: string[], status: Arti
     });
     revalidatePath("/articles");
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error bulk updating article status:", error);
-    return { success: false, error: error.message || "Failed to update article status" };
+    const message = error instanceof Error ? error.message : "Failed to update article status";
+    return { success: false, error: message };
   }
 }

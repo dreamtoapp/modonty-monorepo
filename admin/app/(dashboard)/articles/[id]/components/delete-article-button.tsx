@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Trash2 } from "lucide-react";
 import { deleteArticle } from "../../actions/articles-actions";
+import { useToast } from "@/hooks/use-toast";
 
 interface DeleteArticleButtonProps {
   articleId: string;
@@ -21,6 +22,7 @@ interface DeleteArticleButtonProps {
 
 export function DeleteArticleButton({ articleId }: DeleteArticleButtonProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -33,7 +35,11 @@ export function DeleteArticleButton({ articleId }: DeleteArticleButtonProps) {
     } else {
       setLoading(false);
       setOpen(false);
-      alert(result.error || "Failed to delete article");
+      toast({
+        title: "Error",
+        description: result.error || "Failed to delete article",
+        variant: "destructive",
+      });
     }
   };
 

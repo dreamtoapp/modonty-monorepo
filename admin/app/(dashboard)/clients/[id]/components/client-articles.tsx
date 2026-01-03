@@ -1,5 +1,7 @@
 "use client";
 
+import { SortableValue } from "@/lib/types";
+
 import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -53,8 +55,8 @@ export function ClientArticles({ articles, clientId }: ClientArticlesProps) {
 
     if (sortKey && sortDirection) {
       result = [...result].sort((a, b) => {
-        let aValue: any;
-        let bValue: any;
+        let aValue: SortableValue;
+        let bValue: SortableValue;
 
         if (sortKey === "views") {
           aValue = a.views;

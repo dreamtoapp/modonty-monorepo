@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { ArticleTable } from "./article-table";
 import { BulkActionsToolbar } from "./bulk-actions-toolbar";
+import { ArticleStatus } from "@prisma/client";
 
 interface Article {
   id: string;
   title: string;
-  status: string;
+  status: ArticleStatus;
   createdAt: Date;
   datePublished: Date | null;
   scheduledAt: Date | null;
@@ -15,6 +16,7 @@ interface Article {
   client: { name: string } | null;
   category: { name: string } | null;
   author: { name: string } | null;
+  [key: string]: unknown;
 }
 
 interface ArticlesPageClientProps {

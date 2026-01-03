@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { ArticleStatus } from "@prisma/client";
+import { ArticleStatus, Prisma } from "@prisma/client";
 import { ArticleFilters } from "./articles-actions";
 
 function escapeCsvValue(value: string | null | undefined): string {
@@ -28,10 +28,9 @@ export async function exportArticlesToCSV(filters?: ArticleFilters): Promise<str
       ArticleStatus.DRAFT,
       ArticleStatus.PUBLISHED,
       ArticleStatus.ARCHIVED,
-      ArticleStatus.SCHEDULED,
     ];
     
-    const where: any = {};
+    const where: Prisma.ArticleWhereInput = {};
 
     if (filters?.status && validStatuses.includes(filters.status)) {
       where.status = filters.status;

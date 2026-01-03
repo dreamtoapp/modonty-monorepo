@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Trash2 } from "lucide-react";
 import { deleteCategory } from "../../actions/categories-actions";
+import { useToast } from "@/hooks/use-toast";
 
 interface DeleteCategoryButtonProps {
   categoryId: string;
@@ -21,6 +22,7 @@ interface DeleteCategoryButtonProps {
 
 export function DeleteCategoryButton({ categoryId }: DeleteCategoryButtonProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -33,7 +35,11 @@ export function DeleteCategoryButton({ categoryId }: DeleteCategoryButtonProps) 
     } else {
       setLoading(false);
       setOpen(false);
-      alert(result.error || "Failed to delete category");
+      toast({
+        title: "Error",
+        description: result.error || "Failed to delete category",
+        variant: "destructive",
+      });
     }
   };
 

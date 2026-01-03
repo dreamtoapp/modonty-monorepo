@@ -1,5 +1,7 @@
 "use client";
 
+import { SortableValue } from "@/lib/types";
+
 import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -9,9 +11,11 @@ import { getStatusLabel, getStatusVariant } from "../helpers/status-utils";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Search, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, ArrowUpDown, ArrowUp, ArrowDown, Stethoscope } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ArticleRowActions } from "./article-row-actions";
+import { SEOHealthGauge } from "@/components/shared/seo-doctor/seo-health-gauge";
+import { articleSEOConfig } from "@/components/shared/seo-doctor/seo-configs";
 
 interface Article {
   id: string;
@@ -24,6 +28,17 @@ interface Article {
   client: { name: string } | null;
   category: { name: string } | null;
   author: { name: string } | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  ogImage?: string | null;
+  ogImageAlt?: string | null;
+  ogImageWidth?: number | null;
+  ogImageHeight?: number | null;
+  twitterImage?: string | null;
+  twitterImageAlt?: string | null;
+  featuredImageAlt?: string | null;
+  canonicalUrl?: string | null;
+  [key: string]: unknown;
 }
 
 interface ArticleTableProps {
@@ -54,8 +69,8 @@ export function ArticleTable({ articles, onSelectionChange }: ArticleTableProps)
 
     if (sortKey && sortDirection) {
       result = [...result].sort((a, b) => {
-        let aValue: any;
-        let bValue: any;
+        let aValue: SortableValue;
+        let bValue: SortableValue;
 
         if (sortKey === "views") {
           aValue = a.views;
@@ -194,6 +209,9 @@ export function ArticleTable({ articles, onSelectionChange }: ArticleTableProps)
                   className="h-4 w-4 rounded border-gray-300"
                 />
               </TableHead>
+              <TableHead className="w-[70px]">
+                <Stethoscope className="h-4 w-4 text-primary" />
+              </TableHead>
               <TableHead
                 className="cursor-pointer hover:bg-muted/50"
                 onClick={() => handleSort("title")}
@@ -264,7 +282,7 @@ export function ArticleTable({ articles, onSelectionChange }: ArticleTableProps)
           <TableBody>
             {paginatedData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={11} className="text-center text-muted-foreground py-8">
                   <div className="flex flex-col items-center gap-2">
                     <p className="text-sm font-medium">No articles found</p>
                     <p className="text-xs">Try adjusting your filters or search terms</p>
@@ -291,6 +309,9 @@ export function ArticleTable({ articles, onSelectionChange }: ArticleTableProps)
                       className="h-4 w-4 rounded border-gray-300"
                     />
                   </TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <SEOHealthGauge data={article} config={articleSEOConfig} size="xs" />
+                  </TableCell>
                   <TableCell>
                     <Link
                       href={`/articles/${article.id}`}
@@ -310,11 +331,9 @@ export function ArticleTable({ articles, onSelectionChange }: ArticleTableProps)
                     <span className="font-medium">{article.views.toLocaleString()}</span>
                   </TableCell>
                   <TableCell>
-                    {article.status === "SCHEDULED" && article.scheduledAt
-                      ? format(new Date(article.scheduledAt), "MMM d, yyyy")
-                      : article.datePublished
-                        ? format(new Date(article.datePublished), "MMM d, yyyy")
-                        : "-"}
+                    {article.datePublished
+                      ? format(new Date(article.datePublished), "MMM d, yyyy")
+                      : "-"}
                   </TableCell>
                   <TableCell>{format(new Date(article.createdAt), "MMM d, yyyy")}</TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>

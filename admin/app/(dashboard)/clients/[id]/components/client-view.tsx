@@ -28,8 +28,8 @@ import {
   getPlatformName,
   type Platform,
 } from "../../helpers/url-validation";
-import { SEOHealthGauge } from "@/components/shared/seo-health-gauge";
-import { organizationSEOConfig } from "@/components/shared/seo-configs";
+import { SEOHealthGauge } from "@/components/shared/seo-doctor/seo-health-gauge";
+import { organizationSEOConfig } from "@/components/shared/seo-doctor/seo-configs";
 
 interface Client {
   id: string;
@@ -38,7 +38,9 @@ interface Client {
   legalName: string | null;
   url: string | null;
   logo: string | null;
+  logoAlt: string | null;
   ogImage: string | null;
+  ogImageAlt: string | null;
   email: string | null;
   phone: string | null;
   sameAs: string[];
@@ -69,6 +71,7 @@ interface Client {
   twitterTitle: string | null;
   twitterDescription: string | null;
   twitterImage: string | null;
+  twitterImageAlt: string | null;
   twitterSite: string | null;
   gtmId: string | null;
   foundingDate: Date | null;
@@ -197,10 +200,13 @@ export function ClientView({ client }: ClientViewProps) {
                   <div className="flex items-center gap-4">
                     <img
                       src={client.logo}
-                      alt={`${client.name} logo`}
+                      alt={client.logoAlt || `${client.name} logo`}
                       className="h-24 w-24 rounded object-contain"
                     />
                   </div>
+                  {client.logoAlt && (
+                    <p className="text-xs text-muted-foreground mt-1">Alt: {client.logoAlt}</p>
+                  )}
                 </div>
               )}
               <div>
@@ -317,8 +323,8 @@ export function ClientView({ client }: ClientViewProps) {
                     client.subscriptionStatus === "ACTIVE"
                       ? "default"
                       : client.subscriptionStatus === "EXPIRED"
-                      ? "destructive"
-                      : "secondary"
+                        ? "destructive"
+                        : "secondary"
                   }
                 >
                   {client.subscriptionStatus}
@@ -331,8 +337,8 @@ export function ClientView({ client }: ClientViewProps) {
                     client.paymentStatus === "PAID"
                       ? "default"
                       : client.paymentStatus === "OVERDUE"
-                      ? "destructive"
-                      : "secondary"
+                        ? "destructive"
+                        : "secondary"
                   }
                 >
                   {client.paymentStatus}
@@ -389,22 +395,22 @@ export function ClientView({ client }: ClientViewProps) {
                 client.addressCity ||
                 client.addressCountry ||
                 client.addressPostalCode) && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Address</p>
-                  <div className="space-y-1">
-                    {client.addressStreet && (
-                      <p className="text-sm">{client.addressStreet}</p>
-                    )}
-                    {(client.addressCity || client.addressCountry || client.addressPostalCode) && (
-                      <p className="text-sm">
-                        {[client.addressCity, client.addressCountry, client.addressPostalCode]
-                          .filter(Boolean)
-                          .join(", ")}
-                      </p>
-                    )}
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">Address</p>
+                    <div className="space-y-1">
+                      {client.addressStreet && (
+                        <p className="text-sm">{client.addressStreet}</p>
+                      )}
+                      {(client.addressCity || client.addressCountry || client.addressPostalCode) && (
+                        <p className="text-sm">
+                          {[client.addressCity, client.addressCountry, client.addressPostalCode]
+                            .filter(Boolean)
+                            .join(", ")}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
               {client.sameAs && client.sameAs.length > 0 && (
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">Social Profiles</p>
@@ -455,7 +461,7 @@ export function ClientView({ client }: ClientViewProps) {
                   <div className="space-y-2">
                     <img
                       src={client.ogImage}
-                      alt={`${client.name} OG image`}
+                      alt={client.ogImageAlt || `${client.name} OG image`}
                       className="h-32 w-32 rounded object-cover"
                     />
                     <a
@@ -466,6 +472,9 @@ export function ClientView({ client }: ClientViewProps) {
                     >
                       {client.ogImage}
                     </a>
+                    {client.ogImageAlt && (
+                      <p className="text-xs text-muted-foreground">Alt: {client.ogImageAlt}</p>
+                    )}
                   </div>
                 </div>
               )}
@@ -523,48 +532,52 @@ export function ClientView({ client }: ClientViewProps) {
                 client.twitterTitle ||
                 client.twitterDescription ||
                 client.twitterImage ||
+                client.twitterImageAlt ||
                 client.twitterSite) && (
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Twitter Cards</p>
-                  {client.twitterCard && (
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Twitter Card Type</p>
-                      <p className="text-sm">{client.twitterCard}</p>
-                    </div>
-                  )}
-                  {client.twitterTitle && (
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Twitter Title</p>
-                      <p className="text-sm">{client.twitterTitle}</p>
-                    </div>
-                  )}
-                  {client.twitterDescription && (
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Twitter Description</p>
-                      <p className="text-sm">{client.twitterDescription}</p>
-                    </div>
-                  )}
-                  {client.twitterImage && (
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Twitter Image</p>
-                      <a
-                        href={client.twitterImage}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-primary hover:underline"
-                      >
-                        {client.twitterImage}
-                      </a>
-                    </div>
-                  )}
-                  {client.twitterSite && (
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Twitter Site</p>
-                      <p className="text-sm">{client.twitterSite}</p>
-                    </div>
-                  )}
-                </div>
-              )}
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">Twitter Cards</p>
+                    {client.twitterCard && (
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Twitter Card Type</p>
+                        <p className="text-sm">{client.twitterCard}</p>
+                      </div>
+                    )}
+                    {client.twitterTitle && (
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Twitter Title</p>
+                        <p className="text-sm">{client.twitterTitle}</p>
+                      </div>
+                    )}
+                    {client.twitterDescription && (
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Twitter Description</p>
+                        <p className="text-sm">{client.twitterDescription}</p>
+                      </div>
+                    )}
+                    {client.twitterImage && (
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Twitter Image</p>
+                        <a
+                          href={client.twitterImage}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary hover:underline"
+                        >
+                          {client.twitterImage}
+                        </a>
+                        {client.twitterImageAlt && (
+                          <p className="text-xs text-muted-foreground mt-1">Alt: {client.twitterImageAlt}</p>
+                        )}
+                      </div>
+                    )}
+                    {client.twitterSite && (
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Twitter Site</p>
+                        <p className="text-sm">{client.twitterSite}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               {client.gtmId && (
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Google Tag Manager ID</p>

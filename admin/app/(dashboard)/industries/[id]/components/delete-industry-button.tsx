@@ -14,9 +14,11 @@ import {
 } from "@/components/ui/dialog";
 import { Trash2 } from "lucide-react";
 import { deleteIndustry } from "../../actions/industries-actions";
+import { useToast } from "@/hooks/use-toast";
 
 export function DeleteIndustryButton({ industryId }: { industryId: string }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -29,7 +31,11 @@ export function DeleteIndustryButton({ industryId }: { industryId: string }) {
     } else {
       setLoading(false);
       setOpen(false);
-      alert(result.error || "Failed to delete industry");
+      toast({
+        title: "Error",
+        description: result.error || "Failed to delete industry",
+        variant: "destructive",
+      });
     }
   };
 

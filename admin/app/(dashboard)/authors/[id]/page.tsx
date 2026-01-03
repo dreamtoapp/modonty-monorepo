@@ -1,12 +1,17 @@
 import { redirect } from "next/navigation";
-import { getAuthorById, getClients, updateAuthor } from "../actions/authors-actions";
+import { getAuthorById, getAuthorArticles } from "../actions/authors-actions";
 import { PageHeader } from "@/components/shared/page-header";
-import { AuthorForm } from "../components/author-form";
+import { AuthorView } from "./components/author-view";
+import { AuthorArticles } from "./components/author-articles";
 import { DeleteAuthorButton } from "./components/delete-author-button";
 
-export default async function EditAuthorPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AuthorViewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [author, clients] = await Promise.all([getAuthorById(id), getClients()]);
+  
+  const [author, articles] = await Promise.all([
+    getAuthorById(id),
+    getAuthorArticles(id),
+  ]);
 
   if (!author) {
     redirect("/authors");
@@ -14,18 +19,17 @@ export default async function EditAuthorPage({ params }: { params: Promise<{ id:
 
   return (
     <div className="container mx-auto max-w-[1128px]">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-semibold leading-tight">Edit Author</h1>
-          <p className="text-muted-foreground mt-1">Update author information</p>
-        </div>
+      <PageHeader
+        title="Author Details"
+        description="View author information and articles"
+      />
+      <div className="mb-6">
         <DeleteAuthorButton authorId={id} />
       </div>
-      <AuthorForm
-        initialData={author}
-        clients={clients}
-        onSubmit={(data) => updateAuthor(id, data)}
-      />
+      <div className="space-y-6">
+        <AuthorView author={author} />
+        <AuthorArticles articles={articles} authorId={id} />
+      </div>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { ArticleStatus } from "@prisma/client";
+import { ArticleStatus, Prisma } from "@prisma/client";
 import { ClientFilters } from "./clients-actions";
 
 function escapeCsvValue(value: string | null | undefined): string {
@@ -24,7 +24,7 @@ function formatDate(date: Date | null | undefined): string {
 
 export async function exportClientsToCSV(filters?: ClientFilters): Promise<string> {
   try {
-    const where: any = {};
+    const where: Prisma.ClientWhereInput = {};
 
     if (filters?.createdFrom || filters?.createdTo) {
       where.createdAt = {};

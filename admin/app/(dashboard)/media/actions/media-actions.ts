@@ -56,8 +56,9 @@ export async function createMedia(data: {
     });
     revalidatePath("/media");
     return { success: true, media };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to create media" };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to create media";
+    return { success: false, error: message };
   }
 }
 
@@ -86,8 +87,9 @@ export async function updateMedia(
     });
     revalidatePath("/media");
     return { success: true, media };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to update media" };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to update media";
+    return { success: false, error: message };
   }
 }
 
@@ -96,7 +98,8 @@ export async function deleteMedia(id: string) {
     await db.media.delete({ where: { id } });
     revalidatePath("/media");
     return { success: true };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to delete media" };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to delete media";
+    return { success: false, error: message };
   }
 }

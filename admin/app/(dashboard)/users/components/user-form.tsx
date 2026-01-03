@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FormInput, FormNativeSelect } from "@/components/admin/form-field";
-import { UserRole } from "@prisma/client";
+import { UserRole, User } from "@prisma/client";
+import { UserFormData, FormSubmitResult } from "@/lib/types";
 
 interface UserFormProps {
-  initialData?: any;
+  initialData?: Partial<User>;
   clients: Array<{ id: string; name: string }>;
-  onSubmit: (data: any) => Promise<{ success: boolean; error?: string }>;
+  onSubmit: (data: UserFormData) => Promise<FormSubmitResult>;
 }
 
 export function UserForm({ initialData, clients, onSubmit }: UserFormProps) {
@@ -34,6 +35,7 @@ export function UserForm({ initialData, clients, onSubmit }: UserFormProps) {
 
     const result = await onSubmit({
       ...formData,
+      role: formData.role as UserRole | undefined,
       password: formData.password || undefined,
       clientAccess: formData.clientAccess
         ? formData.clientAccess.split(",").map((c: string) => c.trim()).filter(Boolean)

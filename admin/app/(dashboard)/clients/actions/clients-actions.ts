@@ -2,7 +2,10 @@
 
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { ArticleStatus } from "@prisma/client";
+import { ArticleStatus, Prisma, SubscriptionTier, SubscriptionStatus, PaymentStatus } from "@prisma/client";
+import { ClientFormData } from "@/lib/types";
+import { calculateSEOScore } from "@/helpers/utils/seo-score-calculator";
+import { organizationSEOConfig } from "@/components/shared/seo-doctor/seo-configs";
 
 /**
  * Validates and normalizes social profile URLs on server side
@@ -60,7 +63,7 @@ export interface ClientFilters {
 
 export async function getClients(filters?: ClientFilters) {
   try {
-    const where: any = {};
+    const where: Prisma.ClientWhereInput = {};
 
     if (filters?.createdFrom || filters?.createdTo) {
       where.createdAt = {};
@@ -157,43 +160,7 @@ export async function getClientById(id: string) {
   }
 }
 
-export async function createClient(data: {
-  name: string;
-  slug: string;
-  legalName?: string;
-  url?: string;
-  logo?: string;
-  ogImage?: string;
-  sameAs?: string[];
-  email?: string;
-  phone?: string;
-  seoTitle?: string;
-  seoDescription?: string;
-  description?: string | null;
-  businessBrief?: string;
-  industryId?: string | null;
-  targetAudience?: string;
-  contentPriorities?: string[];
-  foundingDate?: Date | null;
-  contactType?: string | null;
-  addressStreet?: string | null;
-  addressCity?: string | null;
-  addressCountry?: string | null;
-  addressPostalCode?: string | null;
-  twitterCard?: string | null;
-  twitterTitle?: string | null;
-  twitterDescription?: string | null;
-  twitterImage?: string | null;
-  twitterSite?: string | null;
-  canonicalUrl?: string | null;
-  gtmId?: string;
-  subscriptionTier?: string | null;
-  subscriptionStartDate?: Date | null;
-  subscriptionEndDate?: Date | null;
-  articlesPerMonth?: number;
-  subscriptionStatus?: string;
-  paymentStatus?: string;
-}) {
+export async function createClient(data: ClientFormData) {
   try {
     const validatedSameAs = validateAndNormalizeUrls(data.sameAs);
 
@@ -204,7 +171,9 @@ export async function createClient(data: {
         legalName: data.legalName,
         url: data.url,
         logo: data.logo,
+        logoAlt: data.logoAlt || null,
         ogImage: data.ogImage,
+        ogImageAlt: data.ogImageAlt || null,
         sameAs: validatedSameAs,
         email: data.email,
         phone: data.phone,
@@ -225,6 +194,7 @@ export async function createClient(data: {
         twitterTitle: data.twitterTitle || null,
         twitterDescription: data.twitterDescription || null,
         twitterImage: data.twitterImage || null,
+        twitterImageAlt: data.twitterImageAlt || null,
         twitterSite: data.twitterSite || null,
         canonicalUrl: data.canonicalUrl || null,
         gtmId: data.gtmId,
@@ -238,52 +208,14 @@ export async function createClient(data: {
     });
     revalidatePath("/clients");
     return { success: true, client };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error creating client:", error);
-    return { success: false, error: error.message || "Failed to create client" };
+    const message = error instanceof Error ? error.message : "Failed to create client";
+    return { success: false, error: message };
   }
 }
 
-export async function updateClient(
-  id: string,
-  data: {
-    name: string;
-    slug: string;
-    legalName?: string;
-    url?: string;
-    logo?: string;
-    ogImage?: string;
-    sameAs?: string[];
-    email?: string;
-    phone?: string;
-    seoTitle?: string;
-    seoDescription?: string;
-    description?: string | null;
-    businessBrief?: string;
-    industry?: string;
-    targetAudience?: string;
-    contentPriorities?: string[];
-    foundingDate?: Date | null;
-    contactType?: string | null;
-    addressStreet?: string | null;
-    addressCity?: string | null;
-    addressCountry?: string | null;
-    addressPostalCode?: string | null;
-    twitterCard?: string | null;
-    twitterTitle?: string | null;
-    twitterDescription?: string | null;
-    twitterImage?: string | null;
-    twitterSite?: string | null;
-    canonicalUrl?: string | null;
-    gtmId?: string;
-    subscriptionTier?: string | null;
-    subscriptionStartDate?: Date | null;
-    subscriptionEndDate?: Date | null;
-    articlesPerMonth?: number;
-    subscriptionStatus?: string;
-    paymentStatus?: string;
-  }
-) {
+export async function updateClient(id: string, data: ClientFormData) {
   try {
     const validatedSameAs = validateAndNormalizeUrls(data.sameAs);
 
@@ -295,7 +227,9 @@ export async function updateClient(
         legalName: data.legalName,
         url: data.url,
         logo: data.logo,
+        logoAlt: data.logoAlt || null,
         ogImage: data.ogImage,
+        ogImageAlt: data.ogImageAlt || null,
         sameAs: validatedSameAs,
         email: data.email,
         phone: data.phone,
@@ -316,6 +250,7 @@ export async function updateClient(
         twitterTitle: data.twitterTitle || null,
         twitterDescription: data.twitterDescription || null,
         twitterImage: data.twitterImage || null,
+        twitterImageAlt: data.twitterImageAlt || null,
         twitterSite: data.twitterSite || null,
         canonicalUrl: data.canonicalUrl || null,
         gtmId: data.gtmId,
@@ -330,9 +265,10 @@ export async function updateClient(
     revalidatePath("/clients");
     revalidatePath(`/clients/${id}`);
     return { success: true, client };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error updating client:", error);
-    return { success: false, error: error.message || "Failed to update client" };
+    const message = error instanceof Error ? error.message : "Failed to update client";
+    return { success: false, error: message };
   }
 }
 
@@ -365,9 +301,10 @@ export async function deleteClient(id: string) {
     });
     revalidatePath("/clients");
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error deleting client:", error);
-    return { success: false, error: error.message || "Failed to delete client" };
+    const message = error instanceof Error ? error.message : "Failed to delete client";
+    return { success: false, error: message };
   }
 }
 
@@ -376,7 +313,7 @@ export async function getClientsStats() {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    const [total, withArticles, withoutArticles, createdThisMonth] =
+    const [total, withArticles, withoutArticles, createdThisMonth, allClients] =
       await Promise.all([
         db.client.count(),
         db.client.count({
@@ -400,13 +337,59 @@ export async function getClientsStats() {
             createdAt: { gte: startOfMonth },
           },
         }),
+        db.client.findMany({
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            legalName: true,
+            url: true,
+            email: true,
+            phone: true,
+            description: true,
+            seoTitle: true,
+            seoDescription: true,
+            logo: true,
+            logoAlt: true,
+            ogImage: true,
+            ogImageAlt: true,
+            sameAs: true,
+            businessBrief: true,
+            gtmId: true,
+            foundingDate: true,
+            contactType: true,
+            addressStreet: true,
+            addressCity: true,
+            addressCountry: true,
+            addressPostalCode: true,
+            twitterCard: true,
+            twitterTitle: true,
+            twitterDescription: true,
+            twitterImage: true,
+            twitterImageAlt: true,
+            twitterSite: true,
+            canonicalUrl: true,
+          },
+        }),
       ]);
+
+    let averageSEO = 0;
+    if (allClients.length > 0) {
+      const scores = allClients.map((client) => {
+        const scoreResult = calculateSEOScore(client, organizationSEOConfig);
+        return scoreResult.percentage;
+      });
+      averageSEO = Math.round(
+        scores.reduce((sum, score) => sum + score, 0) / scores.length
+      );
+    }
 
     return {
       total,
       withArticles,
       withoutArticles,
       createdThisMonth,
+      averageSEO,
     };
   } catch (error) {
     console.error("Error fetching clients stats:", error);
@@ -415,6 +398,7 @@ export async function getClientsStats() {
       withArticles: 0,
       withoutArticles: 0,
       createdThisMonth: 0,
+      averageSEO: 0,
     };
   }
 }
@@ -457,9 +441,10 @@ export async function bulkDeleteClients(clientIds: string[]) {
 
     revalidatePath("/clients");
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error bulk deleting clients:", error);
-    return { success: false, error: error.message || "Failed to delete clients" };
+    const message = error instanceof Error ? error.message : "Failed to delete clients";
+    return { success: false, error: message };
   }
 }
 

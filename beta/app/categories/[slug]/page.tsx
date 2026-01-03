@@ -91,7 +91,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             featuredImage: {
               select: {
                 url: true,
-                alt: true,
+                altText: true,
               },
             },
           },
@@ -161,13 +161,13 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                 </div>
                 <div className="flex items-center gap-2 mt-4">
                   <Badge variant="secondary" className="text-sm">
-                    {category._count.articles} مقال
+                    {(category as any)._count?.articles ?? 0} مقال
                   </Badge>
                 </div>
               </div>
             </div>
 
-            {category.articles.length === 0 ? (
+            {((category as any).articles ?? []).length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
                   <p className="text-muted-foreground">لا توجد مقالات في هذه الفئة بعد.</p>
@@ -175,7 +175,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {category.articles.map((article) => (
+                {((category as any).articles ?? []).map((article: any) => (
                   <Link key={article.id} href={`/articles/${article.slug}`}>
                     <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
                       {article.featuredImage && (

@@ -10,8 +10,9 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Search, ArrowUpDown, ArrowUp, ArrowDown, Stethoscope } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ClientRowActions } from "./client-row-actions";
-import { SEOHealthGauge } from "@/components/shared/seo-health-gauge";
-import { organizationSEOConfig } from "@/components/shared/seo-configs";
+import { SEOHealthGauge } from "@/components/shared/seo-doctor/seo-health-gauge";
+import { organizationSEOConfig } from "@/components/shared/seo-doctor/seo-configs";
+import { SortableValue } from "@/lib/types";
 
 interface Client {
   id: string;
@@ -20,7 +21,6 @@ interface Client {
   email: string | null;
   phone: string | null;
   createdAt: Date;
-  [key: string]: any;
   _count: {
     articles: number;
   };
@@ -54,8 +54,8 @@ export function ClientTable({ clients, onSelectionChange }: ClientTableProps) {
 
     if (sortKey && sortDirection) {
       result = [...result].sort((a, b) => {
-        let aValue: any;
-        let bValue: any;
+        let aValue: SortableValue;
+        let bValue: SortableValue;
 
         if (sortKey === "name") {
           aValue = a.name;
@@ -254,7 +254,7 @@ export function ClientTable({ clients, onSelectionChange }: ClientTableProps) {
                     window.location.href = `/clients/${client.id}`;
                   }}
                 >
-                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
                     <input
                       type="checkbox"
                       checked={selectedIds.has(client.id)}

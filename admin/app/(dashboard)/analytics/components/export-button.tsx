@@ -2,16 +2,23 @@
 
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface ExportButtonProps {
-  data: any[];
+  data: Record<string, string | number>[];
   filename?: string;
 }
 
 export function ExportButton({ data, filename = "analytics-data" }: ExportButtonProps) {
+  const { toast } = useToast();
+
   const handleExport = () => {
     if (!data || data.length === 0) {
-      alert("No data to export");
+      toast({
+        title: "No data",
+        description: "No data to export",
+        variant: "destructive",
+      });
       return;
     }
 

@@ -6,17 +6,36 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FormInput, FormTextarea, FormNativeSelect } from "@/components/admin/form-field";
 import { slugify } from "@/lib/utils";
+import { SEODoctor } from "@/components/shared/seo-doctor";
+import { authorSEOConfig } from "@/components/shared/seo-doctor/seo-configs";
+import { CharacterCounter } from "@/components/shared/character-counter";
+import { AuthorFormData, AuthorWithRelations, FormSubmitResult } from "@/lib/types";
+import { EducationBuilder, EducationItem } from "./education-builder";
 
 interface AuthorFormProps {
-  initialData?: any;
+  initialData?: Partial<AuthorWithRelations>;
   clients: Array<{ id: string; name: string }>;
-  onSubmit: (data: any) => Promise<{ success: boolean; error?: string }>;
+  users?: Array<{ id: string; name: string | null; email: string | null }>;
+  onSubmit: (data: AuthorFormData) => Promise<FormSubmitResult>;
 }
 
-export function AuthorForm({ initialData, clients, onSubmit }: AuthorFormProps) {
+export function AuthorForm({ initialData, clients, users = [], onSubmit }: AuthorFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const parseEducation = (edu: unknown): EducationItem[] => {
+    if (!edu) return [];
+    if (Array.isArray(edu)) {
+      return edu as EducationItem[];
+    }
+    try {
+      const parsed = typeof edu === "string" ? JSON.parse(edu) : edu;
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
 
   const [formData, setFormData] = useState({
     name: initialData?.name || "",
@@ -25,6 +44,7 @@ export function AuthorForm({ initialData, clients, onSubmit }: AuthorFormProps) 
     worksFor: initialData?.worksFor || "",
     bio: initialData?.bio || "",
     image: initialData?.image || "",
+    imageAlt: initialData?.imageAlt || "",
     url: initialData?.url || "",
     linkedIn: initialData?.linkedIn || "",
     twitter: initialData?.twitter || "",
@@ -34,6 +54,8 @@ export function AuthorForm({ initialData, clients, onSubmit }: AuthorFormProps) 
     expertiseAreas: initialData?.expertiseAreas?.join(", ") || "",
     experienceYears: initialData?.experienceYears?.toString() || "",
     verificationStatus: initialData?.verificationStatus || false,
+    education: parseEducation(initialData?.education),
+    userId: initialData?.userId || "",
     seoTitle: initialData?.seoTitle || "",
     seoDescription: initialData?.seoDescription || "",
   });
@@ -66,6 +88,9 @@ export function AuthorForm({ initialData, clients, onSubmit }: AuthorFormProps) 
         formData.twitter,
         formData.facebook,
       ].filter(Boolean) as string[],
+      imageAlt: formData.imageAlt || undefined,
+      education: formData.education.length > 0 ? formData.education as Array<Record<string, string | number | boolean>> : undefined,
+      userId: formData.userId || undefined,
     });
 
     if (result.success) {
@@ -79,7 +104,8 @@ export function AuthorForm({ initialData, clients, onSubmit }: AuthorFormProps) 
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
         {error && (
           <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
             {error}
@@ -119,18 +145,35 @@ export function AuthorForm({ initialData, clients, onSubmit }: AuthorFormProps) 
                 </option>
               ))}
             </FormNativeSelect>
-            <FormTextarea
-              label="Bio"
-              name="bio"
-              value={formData.bio}
-              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              rows={4}
-            />
+            <div>
+              <FormTextarea
+                label="Bio"
+                name="bio"
+                value={formData.bio}
+                onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                rows={4}
+                hint="Author biography for E-E-A-T signals (minimum 100 characters recommended)"
+              />
+              <div className="mt-1">
+                <CharacterCounter
+                  current={formData.bio.length}
+                  min={100}
+                  className="ml-1"
+                />
+              </div>
+            </div>
             <FormInput
               label="Image URL"
               name="image"
               value={formData.image}
               onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+            />
+            <FormInput
+              label="Image Alt Text"
+              name="imageAlt"
+              value={formData.imageAlt}
+              onChange={(e) => setFormData({ ...formData, imageAlt: e.target.value })}
+              hint="Alt text for profile image (required for accessibility and SEO when image exists)"
             />
             <FormInput
               label="URL"
@@ -217,6 +260,43 @@ export function AuthorForm({ initialData, clients, onSubmit }: AuthorFormProps) 
 
         <Card>
           <CardHeader>
+            <CardTitle>Education</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <EducationBuilder
+              education={formData.education}
+              onChange={(education) => setFormData({ ...formData, education })}
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>User Link</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <FormNativeSelect
+              label="Link to User Account (Optional)"
+              name="userId"
+              value={formData.userId}
+              onChange={(e) => setFormData({ ...formData, userId: e.target.value })}
+              placeholder="None"
+            >
+              <option value="">None</option>
+              {users.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.name || user.email || user.id}
+                </option>
+              ))}
+            </FormNativeSelect>
+            <p className="text-xs text-muted-foreground">
+              Link this author to an existing user account (optional, for advanced use cases)
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
             <CardTitle>SEO</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -225,14 +305,25 @@ export function AuthorForm({ initialData, clients, onSubmit }: AuthorFormProps) 
               name="seoTitle"
               value={formData.seoTitle}
               onChange={(e) => setFormData({ ...formData, seoTitle: e.target.value })}
+              hint="Meta title for search engines (50-60 chars optimal) - improves search visibility"
             />
-            <FormTextarea
-              label="SEO Description"
-              name="seoDescription"
-              value={formData.seoDescription}
-              onChange={(e) => setFormData({ ...formData, seoDescription: e.target.value })}
-              rows={3}
-            />
+            <div>
+              <FormTextarea
+                label="SEO Description"
+                name="seoDescription"
+                value={formData.seoDescription}
+                onChange={(e) => setFormData({ ...formData, seoDescription: e.target.value })}
+                rows={3}
+                hint="Meta description shown in search results (150-160 chars) - influences click-through rate"
+              />
+              <div className="mt-1">
+                <CharacterCounter
+                  current={formData.seoDescription.length}
+                  max={160}
+                  className="ml-1"
+                />
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -243,6 +334,14 @@ export function AuthorForm({ initialData, clients, onSubmit }: AuthorFormProps) 
           <Button type="submit" disabled={loading}>
             {loading ? "Saving..." : initialData ? "Update Author" : "Create Author"}
           </Button>
+        </div>
+        </div>
+
+        {/* Right Column - SEO Doctor (Always Visible) */}
+        <div className="lg:col-span-1">
+          <div className="sticky top-6">
+            <SEODoctor data={formData} config={authorSEOConfig} />
+          </div>
         </div>
       </div>
     </form>

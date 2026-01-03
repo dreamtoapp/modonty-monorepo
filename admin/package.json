@@ -11,7 +11,8 @@
     "start": "next start",
     "lint": "next lint",
     "add-admin": "tsx scripts/add-admin-user.ts",
-    "migrate-scheduled": "tsx scripts/migrate-scheduled-articles.ts"
+    "migrate-scheduled": "tsx scripts/migrate-scheduled-articles.ts",
+    "fix-tags": "tsx scripts/fix-tag-updated-at.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.2",

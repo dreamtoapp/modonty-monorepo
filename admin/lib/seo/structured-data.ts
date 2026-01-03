@@ -1,4 +1,5 @@
 import { Article, Client, Author, Category, FAQ } from "@prisma/client";
+import { ArticleStructuredData } from "@/lib/types";
 
 interface ArticleWithRelations extends Article {
   client: Client;
@@ -8,11 +9,11 @@ interface ArticleWithRelations extends Article {
   featuredImage?: { url: string; altText?: string | null } | null;
 }
 
-export function generateArticleStructuredData(article: ArticleWithRelations) {
+export function generateArticleStructuredData(article: ArticleWithRelations): ArticleStructuredData {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://modonty.com";
   const articleUrl = article.canonicalUrl || `${siteUrl}/articles/${article.slug}`;
 
-  const structuredData: any = {
+  const structuredData: ArticleStructuredData = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: article.title,
@@ -79,8 +80,10 @@ export function generateBreadcrumbStructuredData(
   };
 }
 
-export function generateAuthorStructuredData(author: Author) {
-  const structuredData: any = {
+import { PersonStructuredData } from "@/lib/types";
+
+export function generateAuthorStructuredData(author: Author): PersonStructuredData {
+  const structuredData: PersonStructuredData = {
     "@context": "https://schema.org",
     "@type": "Person",
     name: author.name,
@@ -110,8 +113,10 @@ export function generateAuthorStructuredData(author: Author) {
   return structuredData;
 }
 
-export function generateOrganizationStructuredData(client: Client) {
-  const structuredData: any = {
+import { OrganizationStructuredData } from "@/lib/types";
+
+export function generateOrganizationStructuredData(client: Client): OrganizationStructuredData {
+  const structuredData: OrganizationStructuredData = {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: client.name,
@@ -125,7 +130,12 @@ export function generateOrganizationStructuredData(client: Client) {
 
   // ContactPoint structure
   if (client.email || client.phone) {
-    const contactPoint: any = {
+    const contactPoint: {
+      "@type": "ContactPoint";
+      contactType?: string;
+      email?: string;
+      telephone?: string;
+    } = {
       "@type": "ContactPoint",
     };
     if (client.contactType) {
@@ -142,7 +152,13 @@ export function generateOrganizationStructuredData(client: Client) {
 
   // Address structure (for LocalBusiness)
   if (client.addressStreet || client.addressCity || client.addressCountry) {
-    const address: any = {
+    const address: {
+      "@type": "PostalAddress";
+      streetAddress?: string;
+      addressLocality?: string;
+      addressCountry?: string;
+      postalCode?: string;
+    } = {
       "@type": "PostalAddress",
     };
     if (client.addressStreet) address.streetAddress = client.addressStreet;

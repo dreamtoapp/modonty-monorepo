@@ -17,10 +17,13 @@ import { FormInput, FormTextarea, FormNativeSelect } from "@/components/admin/fo
 import { ArticleStatus } from "@prisma/client";
 import { getStatusLabel, getAvailableStatuses } from "../helpers/status-utils";
 import { RichTextEditor } from "./rich-text-editor";
-import { CharacterCounter } from "./character-counter";
+import { CharacterCounter } from "@/components/shared/character-counter";
 import { SEOPreviewCard } from "./seo-preview-card";
 import { TagInput } from "./tag-input";
 import { FAQBuilder, FAQItem } from "./faq-builder";
+import { SEODoctor } from "@/components/shared/seo-doctor";
+import { articleSEOConfig } from "@/components/shared/seo-doctor/seo-configs";
+import { ArticleFormData, ArticleWithRelations, FormSubmitResult } from "@/lib/types";
 import {
   calculateWordCount,
   calculateReadingTime,
@@ -34,11 +37,11 @@ import {
 } from "../helpers/seo-helpers";
 
 interface ArticleFormProps {
-  initialData?: any;
+  initialData?: Partial<ArticleWithRelations>;
   clients: Array<{ id: string; name: string; slug?: string }>;
   categories: Array<{ id: string; name: string; slug?: string }>;
   authors: Array<{ id: string; name: string }>;
-  onSubmit: (data: any) => Promise<{ success: boolean; error?: string }>;
+  onSubmit: (data: ArticleFormData) => Promise<FormSubmitResult>;
 }
 
 export function ArticleForm({
@@ -72,6 +75,9 @@ export function ArticleForm({
     ogTitle: initialData?.ogTitle || "",
     ogDescription: initialData?.ogDescription || "",
     ogImage: initialData?.ogImage || "",
+    ogImageAlt: initialData?.ogImageAlt || "",
+    ogImageWidth: initialData?.ogImageWidth?.toString() || "",
+    ogImageHeight: initialData?.ogImageHeight?.toString() || "",
     ogUrl: initialData?.ogUrl || "",
     ogSiteName: initialData?.ogSiteName || "مودونتي",
     ogLocale: initialData?.ogLocale || "ar_SA",
@@ -82,14 +88,31 @@ export function ArticleForm({
     twitterTitle: initialData?.twitterTitle || "",
     twitterDescription: initialData?.twitterDescription || "",
     twitterImage: initialData?.twitterImage || "",
+    twitterImageAlt: initialData?.twitterImageAlt || "",
     twitterSite: initialData?.twitterSite || "",
     twitterCreator: initialData?.twitterCreator || "",
+    twitterLabel1: initialData?.twitterLabel1 || "",
+    twitterData1: initialData?.twitterData1 || "",
     canonicalUrl: initialData?.canonicalUrl || "",
     sitemapPriority: initialData?.sitemapPriority || 0.5,
     sitemapChangeFreq: initialData?.sitemapChangeFreq || "weekly",
+    alternateLanguages: (initialData?.alternateLanguages 
+      ? (Array.isArray(initialData.alternateLanguages) 
+          ? initialData.alternateLanguages 
+          : []) 
+      : []) as Array<{ hreflang: string; url: string }>,
     license: initialData?.license || "",
     lastReviewed: initialData?.lastReviewed || null,
-    tags: initialData?.tags?.map((t: any) => t.name || t) || [],
+    tags: initialData?.tags?.map((t) => {
+      if (typeof t === "string") return t;
+      if (t && typeof t === "object" && "tag" in t && t.tag && typeof t.tag === "object" && "name" in t.tag) {
+        return t.tag.name as string;
+      }
+      if (t && typeof t === "object" && "name" in t) {
+        return t.name as string;
+      }
+      return "";
+    }).filter(Boolean) || [],
     faqs: (initialData?.faqs || []) as FAQItem[],
   });
 
@@ -175,6 +198,8 @@ export function ArticleForm({
       wordCount,
       readingTimeMinutes: readingTime,
       contentDepth,
+      ogImageWidth: formData.ogImageWidth ? parseInt(formData.ogImageWidth) : undefined,
+      ogImageHeight: formData.ogImageHeight ? parseInt(formData.ogImageHeight) : undefined,
       ogArticlePublishedTime:
         formData.status === "PUBLISHED" ? new Date() : undefined,
       ogArticleModifiedTime: new Date(),
@@ -193,7 +218,8 @@ export function ArticleForm({
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
         {error && (
           <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
             {error}
@@ -335,10 +361,8 @@ export function ArticleForm({
                       placeholder="سيتم إنشاؤه تلقائياً من العنوان"
                     />
                     <CharacterCounter
-                      value={formData.seoTitle}
-                      maxLength={60}
-                      optimalMin={50}
-                      optimalMax={60}
+                      current={formData.seoTitle.length}
+                      max={60}
                       className="mt-1"
                     />
                     {seoTitleValidation.message && (
@@ -358,10 +382,8 @@ export function ArticleForm({
                       rows={3}
                     />
                     <CharacterCounter
-                      value={formData.seoDescription}
-                      maxLength={160}
-                      optimalMin={155}
-                      optimalMax={160}
+                      current={formData.seoDescription.length}
+                      max={160}
                       className="mt-1"
                     />
                     {seoDescriptionValidation.message && (
@@ -371,8 +393,8 @@ export function ArticleForm({
                     )}
                   </div>
                   <div>
-                    <Label>Meta Robots</Label>
                     <FormNativeSelect
+                      label="Meta Robots"
                       name="metaRobots"
                       value={formData.metaRobots}
                       onChange={(e) => setFormData({ ...formData, metaRobots: e.target.value })}
@@ -428,6 +450,34 @@ export function ArticleForm({
                     />
                   </div>
                   <div>
+                    <Label>OG Image Alt Text</Label>
+                    <Input
+                      value={formData.ogImageAlt}
+                      onChange={(e) => setFormData({ ...formData, ogImageAlt: e.target.value })}
+                      placeholder="Alt text for OG image (required for accessibility and SEO)"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>OG Image Width</Label>
+                      <Input
+                        value={formData.ogImageWidth}
+                        onChange={(e) => setFormData({ ...formData, ogImageWidth: e.target.value })}
+                        placeholder="1200"
+                        type="number"
+                      />
+                    </div>
+                    <div>
+                      <Label>OG Image Height</Label>
+                      <Input
+                        value={formData.ogImageHeight}
+                        onChange={(e) => setFormData({ ...formData, ogImageHeight: e.target.value })}
+                        placeholder="630"
+                        type="number"
+                      />
+                    </div>
+                  </div>
+                  <div>
                     <Label>OG URL</Label>
                     <Input
                       value={formData.ogUrl}
@@ -470,8 +520,8 @@ export function ArticleForm({
               <Card>
                 <CardContent className="space-y-4 pt-6">
                   <div>
-                    <Label>Twitter Card Type</Label>
                     <FormNativeSelect
+                      label="Twitter Card Type"
                       name="twitterCard"
                       value={formData.twitterCard}
                       onChange={(e) => setFormData({ ...formData, twitterCard: e.target.value })}
@@ -513,6 +563,16 @@ export function ArticleForm({
                     />
                   </div>
                   <div>
+                    <Label>Twitter Image Alt Text</Label>
+                    <Input
+                      value={formData.twitterImageAlt}
+                      onChange={(e) =>
+                        setFormData({ ...formData, twitterImageAlt: e.target.value })
+                      }
+                      placeholder="Alt text for Twitter image (required for accessibility and SEO)"
+                    />
+                  </div>
+                  <div>
                     <Label>Twitter Site</Label>
                     <Input
                       value={formData.twitterSite}
@@ -528,6 +588,26 @@ export function ArticleForm({
                         setFormData({ ...formData, twitterCreator: e.target.value })
                       }
                       placeholder="@username"
+                    />
+                  </div>
+                  <div>
+                    <Label>Twitter Label 1</Label>
+                    <Input
+                      value={formData.twitterLabel1 || ""}
+                      onChange={(e) =>
+                        setFormData({ ...formData, twitterLabel1: e.target.value })
+                      }
+                      placeholder="Optional label for Twitter card"
+                    />
+                  </div>
+                  <div>
+                    <Label>Twitter Data 1</Label>
+                    <Input
+                      value={formData.twitterData1 || ""}
+                      onChange={(e) =>
+                        setFormData({ ...formData, twitterData1: e.target.value })
+                      }
+                      placeholder="Optional data for Twitter card"
                     />
                   </div>
                 </CardContent>
@@ -570,8 +650,8 @@ export function ArticleForm({
                     </p>
                   </div>
                   <div>
-                    <Label>Sitemap Change Frequency</Label>
                     <FormNativeSelect
+                      label="Sitemap Change Frequency"
                       name="sitemapChangeFreq"
                       value={formData.sitemapChangeFreq}
                       onChange={(e) =>
@@ -586,6 +666,63 @@ export function ArticleForm({
                       <option value="yearly">yearly</option>
                       <option value="never">never</option>
                     </FormNativeSelect>
+                  </div>
+                  <div>
+                    <Label>Alternate Languages (hreflang)</Label>
+                    <div className="space-y-2">
+                      {(formData.alternateLanguages || []).map((lang, index) => (
+                        <div key={index} className="flex gap-2">
+                          <Input
+                            placeholder="hreflang (e.g., en, fr)"
+                            value={lang.hreflang || ""}
+                            onChange={(e) => {
+                              const updated = [...(formData.alternateLanguages || [])];
+                              updated[index] = { ...updated[index], hreflang: e.target.value };
+                              setFormData({ ...formData, alternateLanguages: updated });
+                            }}
+                            className="flex-1"
+                          />
+                          <Input
+                            placeholder="URL"
+                            value={lang.url || ""}
+                            onChange={(e) => {
+                              const updated = [...(formData.alternateLanguages || [])];
+                              updated[index] = { ...updated[index], url: e.target.value };
+                              setFormData({ ...formData, alternateLanguages: updated });
+                            }}
+                            className="flex-[2]"
+                            type="url"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const updated = (formData.alternateLanguages || []).filter((_, i) => i !== index);
+                              setFormData({ ...formData, alternateLanguages: updated });
+                            }}
+                          >
+                            حذف
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setFormData({
+                            ...formData,
+                            alternateLanguages: [...(formData.alternateLanguages || []), { hreflang: "", url: "" }],
+                          });
+                        }}
+                      >
+                        إضافة لغة
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      أضف روابط بديلة للمقال بلغات أخرى (hreflang)
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -624,6 +761,14 @@ export function ArticleForm({
           <Button type="submit" disabled={loading}>
             {loading ? "جاري الحفظ..." : initialData ? "تحديث المقال" : "إنشاء المقال"}
           </Button>
+        </div>
+        </div>
+
+        {/* Right Column - SEO Doctor (Always Visible) */}
+        <div className="lg:col-span-1">
+          <div className="sticky top-6">
+            <SEODoctor data={formData} config={articleSEOConfig} />
+          </div>
         </div>
       </div>
     </form>

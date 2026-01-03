@@ -1,6 +1,5 @@
 import { getAnalyticsData, getViewsTrendData } from "./actions/analytics-actions";
 import { PageHeader } from "@/components/shared/page-header";
-import { MetricsCards } from "./components/metrics-cards";
 import { AnalyticsCharts } from "./components/analytics-charts";
 import { ViewsChart } from "./components/views-chart";
 import { TrafficSourcesChart } from "./components/traffic-sources-chart";

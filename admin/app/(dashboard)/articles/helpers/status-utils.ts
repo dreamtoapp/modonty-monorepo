@@ -4,18 +4,13 @@ export const statusLabels: Record<ArticleStatus, string> = {
   DRAFT: "Draft",
   PUBLISHED: "Published",
   ARCHIVED: "Archived",
-  SCHEDULED: "Scheduled",
 };
 
-export const statusVariants: Record<
-  ArticleStatus,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
+export const statusVariants = {
   DRAFT: "secondary",
   PUBLISHED: "default",
   ARCHIVED: "destructive",
-  SCHEDULED: "outline",
-};
+} as Record<ArticleStatus, "default" | "secondary" | "destructive" | "outline">;
 
 export function getStatusLabel(status: ArticleStatus): string {
   return statusLabels[status] || status;

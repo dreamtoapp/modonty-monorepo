@@ -41,7 +41,7 @@ export function AnalyticsCharts({ topArticles, trafficSources }: AnalyticsCharts
                   </TableCell>
                 </TableRow>
               ) : (
-                topArticles.map((article: any) => (
+                topArticles.map((article) => (
                   <TableRow key={article.articleId}>
                     <TableCell className="font-medium">{article.title}</TableCell>
                     <TableCell>{article.client}</TableCell>

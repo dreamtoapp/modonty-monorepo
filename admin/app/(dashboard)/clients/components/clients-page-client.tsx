@@ -3,21 +3,10 @@
 import { useState } from "react";
 import { ClientTable } from "./client-table";
 import { BulkActionsToolbar } from "./bulk-actions-toolbar";
-
-interface Client {
-  id: string;
-  name: string;
-  slug: string;
-  email: string | null;
-  phone: string | null;
-  createdAt: Date;
-  _count: {
-    articles: number;
-  };
-}
+import { ClientWithCount } from "@/lib/types";
 
 interface ClientsPageClientProps {
-  clients: Client[];
+  clients: ClientWithCount[];
 }
 
 export function ClientsPageClient({ clients }: ClientsPageClientProps) {

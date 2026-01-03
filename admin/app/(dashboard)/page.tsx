@@ -1,5 +1,5 @@
 import { getDashboardStats, getRecentArticles, getStatusBreakdown } from "./actions/dashboard-actions";
-import { StatsCard } from "./components/stats-card";
+import { AnalticCard } from "@/components/shared/analtic-card";
 import { RecentArticles } from "./components/recent-articles";
 import { StatusBreakdown } from "./components/status-breakdown";
 import { FileText, Building2, Users, Mail } from "lucide-react";
@@ -19,25 +19,25 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatsCard
+        <AnalticCard
           title="Total Articles"
           value={stats.articles}
           icon={FileText}
           description="All articles in the system"
         />
-        <StatsCard
+        <AnalticCard
           title="Clients"
           value={stats.clients}
           icon={Building2}
           description="Active clients"
         />
-        <StatsCard
+        <AnalticCard
           title="Users"
           value={stats.users}
           icon={Users}
           description="Registered users"
         />
-        <StatsCard
+        <AnalticCard
           title="Subscribers"
           value={stats.subscribers}
           icon={Mail}

@@ -50,7 +50,6 @@ export default async function ArticlesPage({
     if (filters.status === "DRAFT") return "Viewing draft articles";
     if (filters.status === "PUBLISHED") return "Viewing published articles";
     if (filters.status === "ARCHIVED") return "Viewing archived articles";
-    if (filters.status === "SCHEDULED") return "Viewing scheduled articles";
     return "Manage all articles in the system";
   };
 

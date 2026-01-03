@@ -1,12 +1,17 @@
 import { redirect } from "next/navigation";
-import { getCategoryById, getCategories, updateCategory } from "../actions/categories-actions";
+import { getCategoryById, getCategoryArticles } from "../actions/categories-actions";
 import { PageHeader } from "@/components/shared/page-header";
-import { CategoryForm } from "../components/category-form";
+import { CategoryView } from "./components/category-view";
+import { CategoryArticles } from "./components/category-articles";
 import { DeleteCategoryButton } from "./components/delete-category-button";
 
-export default async function EditCategoryPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function CategoryViewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [category, categories] = await Promise.all([getCategoryById(id), getCategories()]);
+  
+  const [category, articles] = await Promise.all([
+    getCategoryById(id),
+    getCategoryArticles(id),
+  ]);
 
   if (!category) {
     redirect("/categories");
@@ -14,18 +19,17 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
 
   return (
     <div className="container mx-auto max-w-[1128px]">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-semibold leading-tight">Edit Category</h1>
-          <p className="text-muted-foreground mt-1">Update category information</p>
-        </div>
+      <PageHeader
+        title="Category Details"
+        description="View category information and articles"
+      />
+      <div className="mb-6">
         <DeleteCategoryButton categoryId={id} />
       </div>
-      <CategoryForm
-        initialData={category}
-        categories={categories}
-        onSubmit={(data) => updateCategory(id, data)}
-      />
+      <div className="space-y-6">
+        <CategoryView category={category} />
+        <CategoryArticles articles={articles} categoryId={id} />
+      </div>
     </div>
   );
 }

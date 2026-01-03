@@ -29,8 +29,9 @@ export async function updateSubscriberStatus(id: string, subscribed: boolean) {
     });
     revalidatePath("/subscribers");
     return { success: true, subscriber };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to update subscriber" };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to update subscriber";
+    return { success: false, error: message };
   }
 }
 
@@ -39,8 +40,9 @@ export async function deleteSubscriber(id: string) {
     await db.subscriber.delete({ where: { id } });
     revalidatePath("/subscribers");
     return { success: true };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to delete subscriber" };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to delete subscriber";
+    return { success: false, error: message };
   }
 }
 

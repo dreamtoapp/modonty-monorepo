@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Trash2 } from "lucide-react";
 import { deleteClient } from "../../actions/clients-actions";
+import { useToast } from "@/hooks/use-toast";
 
 interface DeleteClientButtonProps {
   clientId: string;
@@ -21,6 +22,7 @@ interface DeleteClientButtonProps {
 
 export function DeleteClientButton({ clientId }: DeleteClientButtonProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -33,7 +35,11 @@ export function DeleteClientButton({ clientId }: DeleteClientButtonProps) {
     } else {
       setLoading(false);
       setOpen(false);
-      alert(result.error || "Failed to delete client");
+      toast({
+        title: "Error",
+        description: result.error || "Failed to delete client",
+        variant: "destructive",
+      });
     }
   };
 

@@ -25,7 +25,7 @@ export async function GET(
             featuredImage: {
               select: {
                 url: true,
-                alt: true,
+                altText: true,
               },
             },
             client: {
@@ -69,8 +69,8 @@ export async function GET(
         description: category.description,
         seoTitle: category.seoTitle,
         seoDescription: category.seoDescription,
-        articleCount: category._count.articles,
-        articles: category.articles,
+        articleCount: (category as any)._count?.articles ?? 0,
+        articles: (category as any).articles ?? [],
       },
     });
   } catch (error) {

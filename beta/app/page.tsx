@@ -76,7 +76,7 @@ export default async function HomePage() {
     id: article.id,
     title: article.title,
     content: article.excerpt || "",
-    excerpt: article.excerpt,
+    excerpt: article.excerpt ?? undefined,
     image: article.featuredImage?.url,
     slug: article.slug,
     publishedAt: article.datePublished || article.createdAt,

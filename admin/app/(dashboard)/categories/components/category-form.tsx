@@ -6,14 +6,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FormInput, FormTextarea, FormNativeSelect } from "@/components/admin/form-field";
 import { slugify } from "@/lib/utils";
+import { SEODoctor } from "@/components/shared/seo-doctor";
+import { categorySEOConfig } from "@/components/shared/seo-doctor/seo-configs";
+import { CharacterCounter } from "@/components/shared/character-counter";
+import { createCategory, updateCategory } from "../actions/categories-actions";
+import { CategoryFormData, CategoryWithRelations, FormSubmitResult } from "@/lib/types";
 
 interface CategoryFormProps {
-  initialData?: any;
+  initialData?: Partial<CategoryWithRelations>;
   categories: Array<{ id: string; name: string }>;
-  onSubmit: (data: any) => Promise<{ success: boolean; error?: string }>;
+  categoryId?: string;
 }
 
-export function CategoryForm({ initialData, categories, onSubmit }: CategoryFormProps) {
+export function CategoryForm({ initialData, categories, categoryId }: CategoryFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,10 +42,15 @@ export function CategoryForm({ initialData, categories, onSubmit }: CategoryForm
     setLoading(true);
     setError(null);
 
-    const result = await onSubmit({
-      ...formData,
-      parentId: formData.parentId || undefined,
-    });
+    const result = categoryId
+      ? await updateCategory(categoryId, {
+          ...formData,
+          parentId: formData.parentId || undefined,
+        })
+      : await createCategory({
+          ...formData,
+          parentId: formData.parentId || undefined,
+        });
 
     if (result.success) {
       router.push("/categories");
@@ -55,7 +65,8 @@ export function CategoryForm({ initialData, categories, onSubmit }: CategoryForm
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
         {error && (
           <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
             {error}
@@ -76,13 +87,23 @@ export function CategoryForm({ initialData, categories, onSubmit }: CategoryForm
               required
             />
             <input type="hidden" name="slug" value={formData.slug} />
-            <FormTextarea
-              label="Description"
-              name="description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              rows={3}
-            />
+            <div>
+              <FormTextarea
+                label="Description"
+                name="description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                rows={3}
+                hint="Category description used for context and SEO (minimum 50 characters recommended)"
+              />
+              <div className="mt-1">
+                <CharacterCounter
+                  current={formData.description.length}
+                  min={50}
+                  className="ml-1"
+                />
+              </div>
+            </div>
             <FormNativeSelect
               label="Parent Category"
               name="parentId"
@@ -109,14 +130,25 @@ export function CategoryForm({ initialData, categories, onSubmit }: CategoryForm
               name="seoTitle"
               value={formData.seoTitle}
               onChange={(e) => setFormData({ ...formData, seoTitle: e.target.value })}
+              hint="Meta title for search engines (50-60 chars optimal) - improves search visibility"
             />
-            <FormTextarea
-              label="SEO Description"
-              name="seoDescription"
-              value={formData.seoDescription}
-              onChange={(e) => setFormData({ ...formData, seoDescription: e.target.value })}
-              rows={3}
-            />
+            <div>
+              <FormTextarea
+                label="SEO Description"
+                name="seoDescription"
+                value={formData.seoDescription}
+                onChange={(e) => setFormData({ ...formData, seoDescription: e.target.value })}
+                rows={3}
+                hint="Meta description shown in search results (150-160 chars) - influences click-through rate"
+              />
+              <div className="mt-1">
+                <CharacterCounter
+                  current={formData.seoDescription.length}
+                  max={160}
+                  className="ml-1"
+                />
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -127,6 +159,14 @@ export function CategoryForm({ initialData, categories, onSubmit }: CategoryForm
           <Button type="submit" disabled={loading}>
             {loading ? "Saving..." : initialData ? "Update Category" : "Create Category"}
           </Button>
+        </div>
+        </div>
+
+        {/* Right Column - SEO Doctor (Always Visible) */}
+        <div className="lg:col-span-1">
+          <div className="sticky top-6">
+            <SEODoctor data={formData} config={categorySEOConfig} />
+          </div>
         </div>
       </div>
     </form>

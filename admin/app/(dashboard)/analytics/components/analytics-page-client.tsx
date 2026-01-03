@@ -1,18 +1,42 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { MetricsCards } from "./metrics-cards";
+import { AnalticCard } from "@/components/shared/analtic-card";
 import { AnalyticsCharts } from "./analytics-charts";
 import { ViewsChart } from "./views-chart";
 import { TrafficSourcesChart } from "./traffic-sources-chart";
 import { TopArticlesChart } from "./top-articles-chart";
 import { DateRangeFilter } from "./date-range-filter";
 import { ExportButton } from "./export-button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getAnalyticsData, getViewsTrendData } from "../actions/analytics-actions";
 
+type TopArticle = {
+  articleId: string;
+  title: string;
+  client: string;
+  views: number;
+};
+
+type AnalyticsData = {
+  totalViews: number;
+  uniqueSessions: number;
+  avgTimeOnPage: number;
+  bounceRate: number;
+  avgScrollDepth: number;
+  topArticles: TopArticle[];
+  trafficSources: Record<string, number>;
+};
+
+type ViewsTrendData = {
+  date: string;
+  views: number;
+  sessions: number;
+}[];
+
 interface AnalyticsPageClientProps {
-  initialAnalytics: any;
-  initialViewsTrend: any[];
+  initialAnalytics: AnalyticsData;
+  initialViewsTrend: ViewsTrendData;
 }
 
 export function AnalyticsPageClient({
@@ -45,7 +69,7 @@ export function AnalyticsPageClient({
     });
   };
 
-  const exportData = analytics.topArticles.map((article: any) => ({
+  const exportData = analytics.topArticles.map((article) => ({
     Title: article.title,
     Client: article.client,
     Views: article.views,
@@ -58,29 +82,58 @@ export function AnalyticsPageClient({
         <ExportButton data={exportData} filename="analytics-top-articles" />
       </div>
 
-      <MetricsCards
-        totalViews={analytics.totalViews}
-        uniqueSessions={analytics.uniqueSessions}
-        avgTimeOnPage={analytics.avgTimeOnPage}
-        bounceRate={analytics.bounceRate}
-        avgScrollDepth={analytics.avgScrollDepth}
-      />
+      {isPending ? (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-24" />
+            ))}
+          </div>
+          <Skeleton className="h-80 w-full" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Skeleton className="h-80 w-full" />
+            <Skeleton className="h-80 w-full" />
+          </div>
+          <Skeleton className="h-96 w-full" />
+        </>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <AnalticCard
+              title="Total Views"
+              value={analytics.totalViews}
+            />
+            <AnalticCard
+              title="Unique Sessions"
+              value={analytics.uniqueSessions}
+            />
+            <AnalticCard
+              title="Avg Time on Page"
+              value={`${analytics.avgTimeOnPage}s`}
+            />
+            <AnalticCard
+              title="Bounce Rate"
+              value={`${analytics.bounceRate.toFixed(1)}%`}
+            />
+            <AnalticCard
+              title="Avg Scroll Depth"
+              value={`${analytics.avgScrollDepth.toFixed(0)}%`}
+            />
+          </div>
 
-      {isPending && (
-        <div className="text-center py-4 text-muted-foreground">Loading...</div>
+          <ViewsChart data={viewsTrend} />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TrafficSourcesChart data={analytics.trafficSources} />
+            <TopArticlesChart data={analytics.topArticles} />
+          </div>
+
+          <AnalyticsCharts
+            topArticles={analytics.topArticles}
+            trafficSources={analytics.trafficSources}
+          />
+        </>
       )}
-
-      <ViewsChart data={viewsTrend} />
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <TrafficSourcesChart data={analytics.trafficSources} />
-        <TopArticlesChart data={analytics.topArticles} />
-      </div>
-
-      <AnalyticsCharts
-        topArticles={analytics.topArticles as any}
-        trafficSources={analytics.trafficSources}
-      />
     </>
   );
 }

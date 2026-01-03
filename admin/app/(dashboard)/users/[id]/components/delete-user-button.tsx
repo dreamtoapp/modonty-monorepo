@@ -14,9 +14,11 @@ import {
 } from "@/components/ui/dialog";
 import { Trash2 } from "lucide-react";
 import { deleteUser } from "../../actions/users-actions";
+import { useToast } from "@/hooks/use-toast";
 
 export function DeleteUserButton({ userId }: { userId: string }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -29,7 +31,11 @@ export function DeleteUserButton({ userId }: { userId: string }) {
     } else {
       setLoading(false);
       setOpen(false);
-      alert(result.error || "Failed to delete user");
+      toast({
+        title: "Error",
+        description: result.error || "Failed to delete user",
+        variant: "destructive",
+      });
     }
   };
 

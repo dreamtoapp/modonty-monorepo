@@ -156,7 +156,9 @@ model Client {
 
   // Branding
   logo         String?
+  logoAlt      String? // Alt text for logo (accessibility + SEO)
   ogImage      String? // Default OG image for all articles
+  ogImageAlt   String? // Alt text for OG image (accessibility + SEO)
 
   // Schema.org Organization - Social profiles
   sameAs String[] // LinkedIn, Twitter, Facebook URLs
@@ -191,6 +193,7 @@ model Client {
   twitterTitle       String?
   twitterDescription String?
   twitterImage       String?
+  twitterImageAlt    String? // Alt text for Twitter image (accessibility + SEO)
   twitterSite        String? // @username
 
   // Canonical URL
@@ -234,6 +237,7 @@ model Author {
   worksFor String? @db.ObjectId // Organization/Client reference
   bio      String?
   image    String? // Profile image
+  imageAlt String? // Alt text for profile image (accessibility + SEO)
   url      String? // Author page URL
 
   // Social profiles for verification (sameAs)
@@ -299,7 +303,24 @@ model Tag {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   slug      String   @unique
+  description String?
+
+  // SEO
+  seoTitle       String?
+  seoDescription String?
+  ogImage        String?
+  ogImageAlt     String?
+  ogImageWidth   Int?
+  ogImageHeight  Int?
+  twitterCard    String?
+  twitterTitle   String?
+  twitterDescription String?
+  twitterImage   String?
+  twitterImageAlt String?
+  canonicalUrl   String?
+
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relationships
   articles ArticleTag[]
@@ -311,6 +332,22 @@ model Industry {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   slug      String   @unique
+  description String?
+
+  // SEO
+  seoTitle       String?
+  seoDescription String?
+  ogImage        String?
+  ogImageAlt     String?
+  ogImageWidth   Int?
+  ogImageHeight  Int?
+  twitterCard    String?
+  twitterTitle   String?
+  twitterDescription String?
+  twitterImage   String?
+  twitterImageAlt String?
+  canonicalUrl   String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -367,6 +404,9 @@ model Article {
   ogTitle                String?
   ogDescription          String?
   ogImage                String?
+  ogImageAlt             String? // Alt text for OG image (accessibility + SEO)
+  ogImageWidth           Int?    // OG image width in pixels (recommended: 1200)
+  ogImageHeight          Int?    // OG image height in pixels (recommended: 630)
   ogType                 String?   @default("article")
   ogUrl                  String?
   ogSiteName             String?
@@ -383,6 +423,7 @@ model Article {
   twitterTitle       String?
   twitterDescription String?
   twitterImage       String?
+  twitterImageAlt    String? // Alt text for Twitter image (accessibility + SEO)
   twitterSite        String?
   twitterCreator     String? // Author handle
   twitterLabel1      String?

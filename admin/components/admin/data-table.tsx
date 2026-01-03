@@ -4,12 +4,12 @@ import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Search, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, ArrowUpDown, ArrowUp, ArrowDown, Stethoscope } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Column<T> {
   key: keyof T | string;
-  header: string;
+  header: string | React.ReactNode;
   render?: (item: T) => React.ReactNode;
   sortable?: boolean;
   sortFn?: (a: T, b: T) => number;
@@ -39,8 +39,13 @@ export function DataTable<T extends { id: string }>({
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
-  const getNestedValue = (obj: any, path: string): any => {
-    return path.split(".").reduce((current, prop) => current?.[prop], obj);
+  const getNestedValue = (obj: Record<string, unknown>, path: string): unknown => {
+    return path.split(".").reduce((current, prop) => {
+      if (current && typeof current === "object" && prop in current) {
+        return (current as Record<string, unknown>)[prop];
+      }
+      return undefined;
+    }, obj as unknown);
   };
 
   const filteredData = useMemo(() => {
@@ -141,13 +146,14 @@ export function DataTable<T extends { id: string }>({
                   key={String(column.key)}
                   className={cn(
                     column.sortable !== false && "cursor-pointer hover:bg-muted/50",
-                    sortKey === String(column.key) && "bg-muted/50"
+                    sortKey === String(column.key) && "bg-muted/50",
+                    column.key === "seo" && "w-[70px]"
                   )}
                   onClick={() => column.sortable !== false && handleSort(String(column.key))}
                 >
                   <div className="flex items-center">
                     {column.header}
-                    {column.sortable !== false && getSortIcon(String(column.key))}
+                    {column.sortable !== false && typeof column.header === "string" && getSortIcon(String(column.key))}
                   </div>
                 </TableHead>
               ))}

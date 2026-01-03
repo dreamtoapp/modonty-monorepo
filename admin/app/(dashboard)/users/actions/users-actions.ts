@@ -26,14 +26,17 @@ export async function getUserById(id: string) {
 }
 
 export async function createUser(data: {
-  name: string;
-  email: string;
-  password: string;
-  role: UserRole;
+  name?: string;
+  email?: string;
+  password?: string;
+  role?: UserRole;
   clientAccess?: string[];
   image?: string;
 }) {
   try {
+    if (!data.name || !data.email || !data.password || !data.role) {
+      return { success: false, error: "Name, email, password, and role are required" };
+    }
     const hashedPassword = await bcrypt.hash(data.password, 10);
     const user = await db.user.create({
       data: {
@@ -47,8 +50,9 @@ export async function createUser(data: {
     });
     revalidatePath("/users");
     return { success: true, user };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to create user" };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to create user";
+    return { success: false, error: message };
   }
 }
 
@@ -64,7 +68,14 @@ export async function updateUser(
   }
 ) {
   try {
-    const updateData: any = {
+    const updateData: {
+      name?: string;
+      email?: string;
+      role?: UserRole;
+      clientAccess?: string[];
+      image?: string;
+      password?: string;
+    } = {
       name: data.name,
       email: data.email,
       role: data.role,
@@ -82,8 +93,9 @@ export async function updateUser(
     });
     revalidatePath("/users");
     return { success: true, user };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to update user" };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to update user";
+    return { success: false, error: message };
   }
 }
 
@@ -92,8 +104,9 @@ export async function deleteUser(id: string) {
     await db.user.delete({ where: { id } });
     revalidatePath("/users");
     return { success: true };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to delete user" };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to delete user";
+    return { success: false, error: message };
   }
 }
 

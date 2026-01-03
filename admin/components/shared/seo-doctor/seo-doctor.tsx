@@ -35,7 +35,7 @@ export interface SEOHealthCheck {
 }
 
 export interface SEOFieldValidator {
-  (value: any, data: Record<string, any>): {
+  (value: unknown, data: Record<string, unknown>): {
     status: "good" | "warning" | "error" | "info";
     message: string;
     score: number;
@@ -52,11 +52,11 @@ export interface SEODoctorConfig {
   entityType: string;
   fields: SEOFieldConfig[];
   maxScore: number;
-  generateStructuredData: (data: Record<string, any>) => any;
+  generateStructuredData: (data: Record<string, unknown>) => Record<string, unknown>;
 }
 
 export interface SEODoctorProps {
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   config: SEODoctorConfig;
   title?: string;
 }
