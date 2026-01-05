@@ -33,6 +33,7 @@ import {
   AlignJustify,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CloudinaryImageUpload } from "./cloudinary-image-upload";
 
 interface RichTextEditorProps {
   content: string;
@@ -285,19 +286,20 @@ export function RichTextEditor({
         >
           <LinkIcon className="h-4 w-4" />
         </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            const url = window.prompt("أدخل رابط الصورة:");
-            if (url) {
-              editor.chain().focus().setImage({ src: url }).run();
-            }
+        <CloudinaryImageUpload
+          onUploadComplete={(url) => {
+            editor.chain().focus().setImage({ src: url }).run();
           }}
-        >
-          <ImageIcon className="h-4 w-4" />
-        </Button>
+          trigger={
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+            >
+              <ImageIcon className="h-4 w-4" />
+            </Button>
+          }
+        />
       </div>
 
       <EditorContent editor={editor} className="min-h-[300px]" />

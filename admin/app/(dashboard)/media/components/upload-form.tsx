@@ -1,16 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FormInput, FormTextarea } from "@/components/admin/form-field";
-import { createMedia } from "../actions/media-actions";
+import { createMedia, getClients } from "../actions/media-actions";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 export function UploadForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [clients, setClients] = useState<Array<{ id: string; name: string }>>([]);
+  const [clientId, setClientId] = useState<string>("");
+
+  useEffect(() => {
+    const loadClients = async () => {
+      const clientsList = await getClients();
+      setClients(clientsList);
+      if (clientsList.length > 0) {
+        setClientId(clientsList[0].id);
+      }
+    };
+    loadClients();
+  }, []);
 
   const [formData, setFormData] = useState({
     url: "",
@@ -29,8 +50,15 @@ export function UploadForm() {
     setLoading(true);
     setError(null);
 
+    if (!clientId) {
+      setError("Please select a client");
+      setLoading(false);
+      return;
+    }
+
     const result = await createMedia({
       ...formData,
+      clientId,
       keywords: formData.keywords
         ? formData.keywords.split(",").map((k) => k.trim()).filter(Boolean)
         : [],
@@ -59,6 +87,21 @@ export function UploadForm() {
             <CardTitle>Media Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="clientId">Client</Label>
+              <Select value={clientId} onValueChange={setClientId} required>
+                <SelectTrigger id="clientId">
+                  <SelectValue placeholder="Select a client" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clients.map((client) => (
+                    <SelectItem key={client.id} value={client.id}>
+                      {client.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <FormInput
               label="URL"
               name="url"
