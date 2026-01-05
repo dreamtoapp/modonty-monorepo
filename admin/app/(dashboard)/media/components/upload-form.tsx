@@ -42,7 +42,6 @@ export function UploadForm() {
     credit: "",
     title: "",
     description: "",
-    keywords: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,9 +58,6 @@ export function UploadForm() {
     const result = await createMedia({
       ...formData,
       clientId,
-      keywords: formData.keywords
-        ? formData.keywords.split(",").map((k) => k.trim()).filter(Boolean)
-        : [],
     });
 
     if (result.success) {
@@ -155,12 +151,6 @@ export function UploadForm() {
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={3}
-            />
-            <FormInput
-              label="Keywords (comma-separated)"
-              name="keywords"
-              value={formData.keywords}
-              onChange={(e) => setFormData({ ...formData, keywords: e.target.value })}
             />
           </CardContent>
         </Card>

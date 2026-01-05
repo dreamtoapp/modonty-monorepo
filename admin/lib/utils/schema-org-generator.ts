@@ -44,10 +44,8 @@ export function generateImageObjectSchema(media: Media): object {
     schema.caption = media.caption;
   }
 
-  // Keywords
-  if (media.keywords && media.keywords.length > 0) {
-    schema.keywords = media.keywords.join(", ");
-  }
+  // Keywords removed - Schema.org ImageObject doesn't have a standard keywords property
+  // Keywords should be naturally incorporated into description, name, and alternateName
 
   // License and copyright
   if (media.license) {

@@ -683,7 +683,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
       );
 
       // Save only essential SEO fields on upload page
-      // Advanced fields (Caption, Credit, License, Creator, Location, Keywords, etc.) can be edited later via edit page
+      // Advanced fields (Caption, Credit, License, Creator, Location, etc.) can be edited later via edit page
       const mediaResult = await createMedia({
         filename: uploadFile.file.name,
         url: optimizedUrl,
@@ -701,7 +701,6 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
         // Advanced fields - not saved on upload, can be edited later
         caption: undefined,
         credit: undefined,
-        keywords: undefined,
         license: undefined,
         creator: undefined,
         dateCreated: undefined,
@@ -962,7 +961,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
                         {uploadFile.status !== "saved" && (
                           <div className="rounded-lg bg-muted/50 border p-4">
                             <p className="text-sm text-muted-foreground">
-                              <strong>Note:</strong> Additional fields (Caption, Credit, Keywords, License, Creator, Location, etc.) can be edited later from the media library.
+                              <strong>Note:</strong> Additional fields (Caption, Credit, License, Creator, Location, etc.) can be edited later from the media library.
                             </p>
                           </div>
                         )}

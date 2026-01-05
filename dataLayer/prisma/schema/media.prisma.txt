@@ -24,6 +24,21 @@ model Media {
   title       String?
   description String?
   keywords    String[]
+  license     String? // License type (CC0, CC-BY, CC-BY-SA, CC-BY-NC, Commercial, All Rights Reserved, Public Domain)
+  creator     String? // Creator/Author name
+  dateCreated DateTime? // Date when the image was created (from EXIF or manual)
+
+  // Schema.org Enhancement
+  geoLatitude     Float?  // Geographic latitude
+  geoLongitude    Float?  // Geographic longitude
+  geoLocationName String? // Human-readable location name
+  contentLocation String? // Content location (where the image was taken/shows)
+  exifData        Json?   // Full EXIF metadata stored as JSON
+
+  // Cloudinary Integration
+  cloudinaryPublicId  String? // Cloudinary public ID
+  cloudinaryVersion   String? // Cloudinary version
+  cloudinarySignature String? // Cloudinary signature
 
   // Relationships
   articleId String?  @db.ObjectId

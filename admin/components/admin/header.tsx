@@ -2,7 +2,9 @@
 
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,14 +13,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut, Settings } from "lucide-react";
+import { User, LogOut, Settings, BookOpen } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function Header() {
   const { data: session } = useSession();
+  const pathname = usePathname();
 
   if (!session?.user) {
     return null;
   }
+
+  const isGuidelinesActive = pathname?.startsWith("/guidelines");
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card shadow-sm">
@@ -28,6 +34,19 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-4">
+          <Link href="/guidelines">
+            <Button
+              variant={isGuidelinesActive ? "default" : "ghost"}
+              size="sm"
+              className={cn(
+                "flex items-center gap-2",
+                isGuidelinesActive && "bg-primary text-primary-foreground"
+              )}
+            >
+              <BookOpen className="h-4 w-4" />
+              Guidelines
+            </Button>
+          </Link>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">

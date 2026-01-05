@@ -218,6 +218,7 @@ model Client {
   // Relationships
   articles    Article[]
   subscribers Subscriber[]
+  media       Media[] @relation("ClientMedia")
 
   @@index([industryId])
   @@map("clients")
@@ -455,7 +456,6 @@ model Article {
   relatedFrom RelatedArticle[] @relation("ArticleRelatedFrom")
   relatedTo   RelatedArticle[] @relation("ArticleRelatedTo")
   faqs        FAQ[]
-  media       Media[]          @relation("ArticleMedia")
 
   @@unique([clientId, slug]) // Slug unique per client
   @@index([clientId, status, datePublished])
@@ -527,18 +527,36 @@ model Media {
   credit      String?
   title       String?
   description String?
-  keywords    String[]
+  license     String? // License type (CC0, CC-BY, CC-BY-SA, CC-BY-NC, Commercial, All Rights Reserved, Public Domain)
+  creator     String? // Creator/Author name
+  dateCreated DateTime? // Date when the image was created (from EXIF or manual)
+
+  // Schema.org Enhancement
+  geoLatitude     Float?  // Geographic latitude
+  geoLongitude    Float?  // Geographic longitude
+  geoLocationName String? // Human-readable location name
+  contentLocation String? // Content location (where the image was taken/shows)
+  exifData        Json?   // Full EXIF metadata stored as JSON
+
+  // Cloudinary Integration
+  cloudinaryPublicId  String? // Cloudinary public ID
+  cloudinaryVersion   String? // Cloudinary version
+  cloudinarySignature String? // Cloudinary signature
+
+  // Client association (REQUIRED after migration)
+  // Temporarily optional to allow querying existing media without clientId
+  clientId String?  @db.ObjectId
+  client   Client?  @relation("ClientMedia", fields: [clientId], references: [id], onDelete: Cascade)
 
   // Relationships
-  articleId String?  @db.ObjectId
-  article   Article? @relation("ArticleMedia", fields: [articleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
   featuredArticles Article[] @relation("ArticleFeaturedImage")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([articleId])
+  @@index([clientId])
+  @@index([clientId, createdAt])
+  @@index([filename])
   @@map("media")
 }
 

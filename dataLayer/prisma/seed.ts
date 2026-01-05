@@ -671,7 +671,6 @@ async function seedMedia(articles: Awaited<ReturnType<typeof seedArticles>>) {
         altText: article.title,
         caption: article.excerpt || undefined,
         title: article.title,
-        articleId: article.id,
       },
     });
 

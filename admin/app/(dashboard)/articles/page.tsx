@@ -7,7 +7,7 @@ import { ExportButton } from "./components/export-button";
 import { ArticleStatus } from "@prisma/client";
 import { ArticlesPageClient } from "./components/articles-page-client";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, BookOpen } from "lucide-react";
 import Link from "next/link";
 
 export default async function ArticlesPage({
@@ -62,6 +62,12 @@ export default async function ArticlesPage({
         </div>
         <div className="flex items-center gap-2">
           <ExportButton filters={filters} />
+          <Link href="/guidelines/articles">
+            <Button variant="outline" size="sm">
+              <BookOpen className="h-4 w-4 mr-2" />
+              Guidelines
+            </Button>
+          </Link>
           <Link href="/articles/new">
             <Button>
               <Plus className="h-4 w-4 mr-2" />

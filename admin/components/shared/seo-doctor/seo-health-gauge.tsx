@@ -9,6 +9,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { CheckCircle2, AlertCircle, XCircle, Info } from "lucide-react";
 
 export interface SEOHealthGaugeProps {
   data: Record<string, any>;
@@ -33,6 +34,30 @@ export function SEOHealthGauge({
   className,
 }: SEOHealthGaugeProps) {
   const scoreResult = useMemo(() => calculateSEOScore(data, config), [data, config]);
+
+  const fieldDetails = useMemo(() => {
+    const details: Array<{ field: string; status: "good" | "warning" | "error" | "info"; message: string; score: number; maxScore: number }> = [];
+    for (const fieldConfig of config.fields) {
+      const value = data[fieldConfig.name];
+      const result = fieldConfig.validator(value, data);
+
+      let maxFieldScore = 10;
+      if (fieldConfig.name === "altText") {
+        maxFieldScore = 25;
+      } else if (fieldConfig.name === "title" || fieldConfig.name === "description") {
+        maxFieldScore = 15;
+      }
+
+      details.push({
+        field: fieldConfig.label,
+        status: result.status,
+        message: result.message,
+        score: result.score,
+        maxScore: maxFieldScore,
+      });
+    }
+    return details;
+  }, [data, config]);
 
   const { percentage, score, maxScore } = scoreResult;
   const sizeConfig = SIZE_CONFIG[size];
@@ -145,16 +170,42 @@ export function SEOHealthGauge({
               {getStatusDescription(percentage)}
             </p>
           </div>
-          {percentage < 80 && (
-            <div className="pt-2 border-t text-xs text-muted-foreground">
-              <p className="font-medium mb-1">Quick Tips:</p>
-              <ul className="list-disc list-inside space-y-0.5">
-                {percentage < 60 && <li>Complete required SEO fields (title, description)</li>}
-                {percentage < 80 && <li>Add Open Graph tags for social sharing</li>}
-                {percentage < 80 && <li>Include contact information and social profiles</li>}
-              </ul>
+          <div className="pt-2 border-t space-y-2">
+            <p className="text-xs font-medium mb-2">Field Breakdown:</p>
+            <div className="space-y-1.5 max-h-48 overflow-y-auto">
+              {fieldDetails.map((field, index) => {
+                const getStatusIcon = () => {
+                  switch (field.status) {
+                    case "good":
+                      return <CheckCircle2 className="h-3 w-3 text-green-600 flex-shrink-0" />;
+                    case "warning":
+                      return <AlertCircle className="h-3 w-3 text-yellow-600 flex-shrink-0" />;
+                    case "error":
+                      return <XCircle className="h-3 w-3 text-red-600 flex-shrink-0" />;
+                    default:
+                      return <Info className="h-3 w-3 text-muted-foreground flex-shrink-0" />;
+                  }
+                };
+                return (
+                  <div key={index} className="flex items-start gap-2 text-xs">
+                    {getStatusIcon()}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-medium truncate">{field.field}</span>
+                        <span className={cn(
+                          "font-semibold flex-shrink-0",
+                          field.score === field.maxScore ? "text-green-600" : field.score > 0 ? "text-yellow-600" : "text-red-600"
+                        )}>
+                          {field.score}/{field.maxScore}
+                        </span>
+                      </div>
+                      <p className="text-muted-foreground mt-0.5">{field.message}</p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          )}
+          </div>
         </div>
       </HoverCardContent>
     </HoverCard>

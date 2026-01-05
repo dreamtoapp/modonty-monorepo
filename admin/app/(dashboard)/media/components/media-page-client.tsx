@@ -26,7 +26,11 @@ interface Media {
   width: number | null;
   height: number | null;
   altText: string | null;
+  title: string | null;
+  description: string | null;
   createdAt: Date;
+  cloudinaryPublicId?: string | null;
+  cloudinaryVersion?: string | null;
   client?: {
     id: string;
     name: string;

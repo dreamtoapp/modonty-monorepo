@@ -17,6 +17,8 @@ import { useRouter } from "next/navigation";
 import { Edit, Trash2, Copy, Eye } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { SEOHealthGauge } from "@/components/shared/seo-doctor/seo-health-gauge";
+import { mediaSEOConfig } from "../helpers/media-seo-config";
 
 interface Media {
   id: string;
@@ -27,6 +29,8 @@ interface Media {
   width: number | null;
   height: number | null;
   altText: string | null;
+  title: string | null;
+  description: string | null;
   createdAt: Date;
   cloudinaryPublicId?: string | null;
   cloudinaryVersion?: string | null;
@@ -161,8 +165,9 @@ export function MediaGrid({
               </div>
               <div className="col-span-2">Preview</div>
               <div className="col-span-2">Filename</div>
+              <div className="col-span-1">SEO</div>
               <div className="col-span-2">Client</div>
-              <div className="col-span-2">Type</div>
+              <div className="col-span-1">Type</div>
               <div className="col-span-1">Size</div>
               <div className="col-span-1">Date</div>
               <div className="col-span-1">Actions</div>
@@ -210,12 +215,31 @@ export function MediaGrid({
                     {item.filename}
                   </Link>
                 </div>
+                <div className="col-span-1 flex items-center justify-center">
+                  {isImage(item.mimeType) && (
+                    <SEOHealthGauge
+                      data={{
+                        altText: item.altText,
+                        title: item.title,
+                        description: item.description,
+                        // Keywords removed from SEO scoring - they should be naturally in alt text, title, description
+                        width: item.width,
+                        height: item.height,
+                        filename: item.filename,
+                        cloudinaryPublicId: item.cloudinaryPublicId,
+                      }}
+                      config={mediaSEOConfig}
+                      size="xs"
+                      showScore={false}
+                    />
+                  )}
+                </div>
                 <div className="col-span-2">
                   <span className="text-sm text-muted-foreground">
                     {item.client?.name || "Unknown"}
                   </span>
                 </div>
-                <div className="col-span-2">
+                <div className="col-span-1">
                   <Badge variant="secondary" className="text-xs">
                     {item.mimeType.split("/")[0]}
                   </Badge>
@@ -382,13 +406,32 @@ export function MediaGrid({
                 >
                   {item.filename}
                 </Link>
-                {onSelectionChange && (
-                  <Checkbox
-                    checked={selectedIds.has(item.id)}
-                    onCheckedChange={(checked) => handleSelect(item.id, checked as boolean)}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                )}
+                <div className="flex items-center gap-2">
+                  {isImage(item.mimeType) && (
+                    <SEOHealthGauge
+                      data={{
+                        altText: item.altText,
+                        title: item.title,
+                        description: item.description,
+                        // Keywords removed from SEO scoring - they should be naturally in alt text, title, description
+                        width: item.width,
+                        height: item.height,
+                        filename: item.filename,
+                        cloudinaryPublicId: item.cloudinaryPublicId,
+                      }}
+                      config={mediaSEOConfig}
+                      size="xs"
+                      showScore={false}
+                    />
+                  )}
+                  {onSelectionChange && (
+                    <Checkbox
+                      checked={selectedIds.has(item.id)}
+                      onCheckedChange={(checked) => handleSelect(item.id, checked as boolean)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  )}
+                </div>
               </div>
               <div className="flex items-center gap-2 mb-2">
                 <Badge variant="secondary" className="text-xs">

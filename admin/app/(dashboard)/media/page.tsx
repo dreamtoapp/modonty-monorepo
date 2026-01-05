@@ -1,9 +1,11 @@
 import { getMedia, getClients, type MediaFilters } from "./actions/media-actions";
-import { PageHeader } from "@/components/shared/page-header";
 import { MediaGrid } from "./components/media-grid";
 import { MediaFilters as MediaFiltersComponent } from "./components/media-filters";
 import { MediaToolbar } from "./components/media-toolbar";
 import { MediaPageClient } from "./components/media-page-client";
+import { Button } from "@/components/ui/button";
+import { BookOpen } from "lucide-react";
+import Link from "next/link";
 
 export default async function MediaPage({
   searchParams,
@@ -39,10 +41,18 @@ export default async function MediaPage({
 
   return (
     <div className="container mx-auto max-w-[1128px] space-y-6">
-      <PageHeader
-        title="Media Library"
-        description="Manage all media files in the system"
-      />
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-semibold leading-tight">Media Library</h1>
+          <p className="text-muted-foreground mt-1">Manage all media files in the system</p>
+        </div>
+        <Link href="/guidelines/media">
+          <Button variant="outline" size="sm">
+            <BookOpen className="h-4 w-4 mr-2" />
+            Guidelines
+          </Button>
+        </Link>
+      </div>
       <MediaFiltersComponent clients={clients} defaultClientId={params.clientId} />
       <MediaPageClient media={transformedMedia} sortBy={params.sort || "newest"} />
     </div>

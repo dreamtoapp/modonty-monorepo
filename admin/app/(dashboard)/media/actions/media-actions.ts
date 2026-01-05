@@ -37,13 +37,12 @@ export async function getMedia(filters?: MediaFilters) {
       }
     }
 
-    // Search filter (filename, altText, keywords)
+    // Search filter (filename, altText)
     if (filters?.search) {
       whereConditions.push({
         OR: [
           { filename: { contains: filters.search, mode: "insensitive" } },
           { altText: { contains: filters.search, mode: "insensitive" } },
-          { keywords: { has: filters.search } },
         ],
       });
     }
@@ -165,7 +164,6 @@ export async function createMedia(data: {
   credit?: string;
   title?: string;
   description?: string;
-  keywords?: string[];
   license?: string;
   creator?: string;
   dateCreated?: Date;
@@ -247,7 +245,6 @@ export async function createMedia(data: {
         credit: data.credit,
         title: data.title,
         description: data.description,
-        keywords: data.keywords || [],
         license: data.license,
         creator: data.creator,
         dateCreated: data.dateCreated,
@@ -419,7 +416,6 @@ export async function updateMedia(
     credit?: string;
     title?: string;
     description?: string;
-    keywords?: string[];
     license?: string;
     creator?: string;
     dateCreated?: Date;
@@ -442,7 +438,6 @@ export async function updateMedia(
         credit: data.credit,
         title: data.title,
         description: data.description,
-        keywords: data.keywords || [],
         license: data.license,
         creator: data.creator,
         dateCreated: data.dateCreated,

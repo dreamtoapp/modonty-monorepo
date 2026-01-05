@@ -4,7 +4,7 @@ import { CategoriesFilters } from "./components/categories-filters";
 import { CategoriesPageClient } from "./components/categories-page-client";
 import { ExportButton } from "./components/export-button";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, BookOpen } from "lucide-react";
 import Link from "next/link";
 
 export default async function CategoriesPage({
@@ -52,6 +52,12 @@ export default async function CategoriesPage({
         </div>
         <div className="flex items-center gap-2">
           <ExportButton filters={filters} />
+          <Link href="/guidelines/categories">
+            <Button variant="outline" size="sm">
+              <BookOpen className="h-4 w-4 mr-2" />
+              Guidelines
+            </Button>
+          </Link>
           <Link href="/categories/new">
             <Button>
               <Plus className="h-4 w-4 mr-2" />
