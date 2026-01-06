@@ -44,12 +44,13 @@ interface UploadFile {
 
 interface UploadZoneProps {
   onUploadComplete?: () => void;
+  initialClientId?: string | null;
 }
 
-export function UploadZone({ onUploadComplete }: UploadZoneProps) {
+export function UploadZone({ onUploadComplete, initialClientId }: UploadZoneProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const [clientId, setClientId] = useState<string>("");
+  const [clientId, setClientId] = useState<string>(initialClientId || "");
   const [clients, setClients] = useState<Array<{ id: string; name: string }>>([]);
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -67,6 +68,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
     altText: "",
     title: "",
     description: "",
+    dateCreated: "",
   });
 
   // EXIF data state (stored separately for submission)
@@ -88,13 +90,16 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
     const loadClients = async () => {
       const clientsList = await getClients();
       setClients(clientsList);
-      if (clientsList.length > 0) {
+      // Use initialClientId if provided, otherwise default to first client
+      if (initialClientId && clientsList.some((c) => c.id === initialClientId)) {
+        setClientId(initialClientId);
+      } else if (clientsList.length > 0) {
         setClientId(clientsList[0].id);
       }
       setIsLoadingClients(false);
     };
     loadClients();
-  }, []);
+  }, [initialClientId]);
 
   const validateFile = (file: File): string | null => {
     // Check if file type is detected
@@ -487,6 +492,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
       altText: "",
       title: "",
       description: "",
+      dateCreated: "",
     });
     setExifData(null);
   };
@@ -497,6 +503,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
       altText: "",
       title: "",
       description: "",
+      dateCreated: "",
     });
     setExifData(null);
   };
@@ -660,6 +667,15 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
     const fileHeight = uploadFile.uploadResult!.height || 0;
     const fileFormat = uploadFile.uploadResult!.format || "";
 
+    // Normalize dateCreated from SEO form (derived from EXIF when available)
+    let normalizedDateCreated: Date | undefined;
+    if (seoForm.dateCreated) {
+      const parsed = new Date(seoForm.dateCreated);
+      if (!Number.isNaN(parsed.getTime())) {
+        normalizedDateCreated = parsed;
+      }
+    }
+
     try {
       // Update progress to 50% (status already set to "uploading" in handleSaveMedia)
       setFiles((prev) =>
@@ -692,6 +708,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
         fileSize: uploadFile.file.size,
         width: fileWidth,
         height: fileHeight,
+        encodingFormat: uploadFile.file.type || undefined,
         cloudinaryPublicId,
         cloudinaryVersion,
         cloudinarySignature,
@@ -703,12 +720,12 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
         credit: undefined,
         license: undefined,
         creator: undefined,
-        dateCreated: undefined,
+        dateCreated: normalizedDateCreated,
         geoLatitude: undefined,
         geoLongitude: undefined,
         geoLocationName: undefined,
         contentLocation: undefined,
-        exifData: undefined,
+        exifData: exifData || undefined,
       });
 
       // Update progress to 75% before database save
@@ -1031,9 +1048,15 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
                     <Button onClick={handleAddNew} variant="outline" className="flex-1">
                       Add New Media
                     </Button>
-                    <Button onClick={() => router.push("/media")} className="flex-1">
-                      Go to Media Library
-                    </Button>
+                    {initialClientId ? (
+                      <Button onClick={() => router.push(`/clients/${initialClientId}/edit`)} className="flex-1">
+                        Back to Client
+                      </Button>
+                    ) : (
+                      <Button onClick={() => router.push("/media")} className="flex-1">
+                        Go to Media Library
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}

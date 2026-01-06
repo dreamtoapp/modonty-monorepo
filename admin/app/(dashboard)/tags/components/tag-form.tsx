@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { FormInput, FormTextarea } from "@/components/admin/form-field";
 import { slugify } from "@/lib/utils";
 import { SEODoctor } from "@/components/shared/seo-doctor";
-import { tagSEOConfig } from "@/components/shared/seo-doctor/seo-configs";
+import { tagSEOConfig } from "../helpers/tag-seo-config";
 import { CharacterCounter } from "@/components/shared/character-counter";
 import { TagFormData, FormSubmitResult } from "@/lib/types";
 import { Tag } from "@prisma/client";

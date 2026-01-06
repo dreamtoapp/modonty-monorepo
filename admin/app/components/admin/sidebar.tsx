@@ -14,6 +14,7 @@ import {
   Users,
   Mail,
   BarChart3,
+  Settings,
 } from "lucide-react";
 
 const menuItems = [
@@ -27,6 +28,7 @@ const menuItems = [
   { icon: Users, label: "Users", href: "/users" },
   { icon: Mail, label: "Subscribers", href: "/subscribers" },
   { icon: BarChart3, label: "Analytics", href: "/analytics" },
+  { icon: Settings, label: "Settings", href: "/settings" },
 ];
 
 export function Sidebar() {

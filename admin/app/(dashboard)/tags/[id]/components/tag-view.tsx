@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { SEOHealthGauge } from "@/components/shared/seo-doctor/seo-health-gauge";
-import { tagSEOConfig } from "@/components/shared/seo-doctor/seo-configs";
+import { tagSEOConfig } from "../../helpers/tag-seo-config";
 import { ArticleStatus } from "@prisma/client";
 
 interface Tag {

@@ -16,6 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { MediaType } from "@prisma/client";
 
 interface Media {
   id: string;
@@ -28,6 +29,7 @@ interface Media {
   altText: string | null;
   title: string | null;
   description: string | null;
+  type: MediaType;
   createdAt: Date;
   cloudinaryPublicId?: string | null;
   cloudinaryVersion?: string | null;

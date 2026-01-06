@@ -27,6 +27,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { generateSEOFileName, generateCloudinaryPublicId } from "@/lib/utils/image-seo";
 import { SEOHealthGauge } from "@/components/shared/seo-doctor/seo-health-gauge";
 import { mediaSEOConfig } from "../../helpers/media-seo-config";
+import { MediaType } from "@prisma/client";
 
 interface Media {
   id: string;
@@ -49,6 +50,7 @@ interface Media {
   contentLocation: string | null;
   exifData: Record<string, unknown> | null;
   cloudinaryPublicId: string | null;
+  type: MediaType;
   client?: {
     id: string;
     name: string;
@@ -66,6 +68,7 @@ export function EditMediaForm({ media }: EditMediaFormProps) {
   const [isSaving, setIsSaving] = useState(false);
 
   const [formData, setFormData] = useState({
+    type: media.type || ("GENERAL" as MediaType),
     altText: media.altText || "",
     title: media.title || "",
     description: media.description || "",
@@ -203,6 +206,7 @@ export function EditMediaForm({ media }: EditMediaFormProps) {
       }
 
       const result = await updateMedia(media.id, {
+        type: formData.type,
         altText: formData.altText.trim(),
         title: formData.title.trim() || undefined,
         description: formData.description.trim() || undefined,
@@ -423,6 +427,29 @@ export function EditMediaForm({ media }: EditMediaFormProps) {
               <div className="space-y-4">
                 <div>
                   <h4 className="text-sm font-semibold mb-4">Essential Information</h4>
+                </div>
+                
+                {/* Media Type */}
+                <div className="space-y-2">
+                  <Label htmlFor="type">Media Type</Label>
+                  <Select
+                    value={formData.type}
+                    onValueChange={(value) => setFormData({ ...formData, type: value as MediaType })}
+                  >
+                    <SelectTrigger id="type">
+                      <SelectValue placeholder="Select media type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="GENERAL">General</SelectItem>
+                      <SelectItem value="LOGO">Logo</SelectItem>
+                      <SelectItem value="POST">Post (Article Featured Image)</SelectItem>
+                      <SelectItem value="OGIMAGE">OG Image (Open Graph)</SelectItem>
+                      <SelectItem value="TWITTER_IMAGE">Twitter Image</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Categorize this media for better organization and filtering
+                  </p>
                 </div>
                 
                 {/* Alt Text - Required */}

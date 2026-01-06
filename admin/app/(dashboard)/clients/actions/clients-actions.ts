@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { ArticleStatus, Prisma, SubscriptionTier, SubscriptionStatus, PaymentStatus } from "@prisma/client";
 import { ClientFormData } from "@/lib/types";
 import { calculateSEOScore } from "@/helpers/utils/seo-score-calculator";
-import { organizationSEOConfig } from "@/components/shared/seo-doctor/seo-configs";
+import { organizationSEOConfig } from "../helpers/client-seo-config";
 
 /**
  * Validates and normalizes social profile URLs on server side
@@ -100,6 +100,30 @@ export async function getClients(filters?: ClientFilters) {
     const clients = await db.client.findMany({
       where,
       include: {
+        logoMedia: {
+          select: {
+            url: true,
+            altText: true,
+            width: true,
+            height: true,
+          },
+        },
+        ogImageMedia: {
+          select: {
+            url: true,
+            altText: true,
+            width: true,
+            height: true,
+          },
+        },
+        twitterImageMedia: {
+          select: {
+            url: true,
+            altText: true,
+            width: true,
+            height: true,
+          },
+        },
         _count: {
           select: {
             articles: {
@@ -140,6 +164,33 @@ export async function getClientById(id: string) {
     const client = await db.client.findUnique({
       where: { id },
       include: {
+        logoMedia: {
+          select: {
+            id: true,
+            url: true,
+            altText: true,
+            width: true,
+            height: true,
+          },
+        },
+        ogImageMedia: {
+          select: {
+            id: true,
+            url: true,
+            altText: true,
+            width: true,
+            height: true,
+          },
+        },
+        twitterImageMedia: {
+          select: {
+            id: true,
+            url: true,
+            altText: true,
+            width: true,
+            height: true,
+          },
+        },
         industry: {
           select: {
             id: true,
@@ -170,10 +221,9 @@ export async function createClient(data: ClientFormData) {
         slug: data.slug,
         legalName: data.legalName,
         url: data.url,
-        logo: data.logo,
-        logoAlt: data.logoAlt || null,
-        ogImage: data.ogImage,
-        ogImageAlt: data.ogImageAlt || null,
+        logoMediaId: data.logoMediaId || null,
+        ogImageMediaId: data.ogImageMediaId || null,
+        twitterImageMediaId: data.twitterImageMediaId || null,
         sameAs: validatedSameAs,
         email: data.email,
         phone: data.phone,
@@ -193,8 +243,6 @@ export async function createClient(data: ClientFormData) {
         twitterCard: data.twitterCard || null,
         twitterTitle: data.twitterTitle || null,
         twitterDescription: data.twitterDescription || null,
-        twitterImage: data.twitterImage || null,
-        twitterImageAlt: data.twitterImageAlt || null,
         twitterSite: data.twitterSite || null,
         canonicalUrl: data.canonicalUrl || null,
         gtmId: data.gtmId,
@@ -207,6 +255,7 @@ export async function createClient(data: ClientFormData) {
       },
     });
     revalidatePath("/clients");
+    revalidatePath("/media");
     return { success: true, client };
   } catch (error) {
     console.error("Error creating client:", error);
@@ -226,10 +275,9 @@ export async function updateClient(id: string, data: ClientFormData) {
         slug: data.slug,
         legalName: data.legalName,
         url: data.url,
-        logo: data.logo,
-        logoAlt: data.logoAlt || null,
-        ogImage: data.ogImage,
-        ogImageAlt: data.ogImageAlt || null,
+        logoMediaId: data.logoMediaId || null,
+        ogImageMediaId: data.ogImageMediaId || null,
+        twitterImageMediaId: data.twitterImageMediaId || null,
         sameAs: validatedSameAs,
         email: data.email,
         phone: data.phone,
@@ -249,8 +297,6 @@ export async function updateClient(id: string, data: ClientFormData) {
         twitterCard: data.twitterCard || null,
         twitterTitle: data.twitterTitle || null,
         twitterDescription: data.twitterDescription || null,
-        twitterImage: data.twitterImage || null,
-        twitterImageAlt: data.twitterImageAlt || null,
         twitterSite: data.twitterSite || null,
         canonicalUrl: data.canonicalUrl || null,
         gtmId: data.gtmId,
@@ -264,6 +310,7 @@ export async function updateClient(id: string, data: ClientFormData) {
     });
     revalidatePath("/clients");
     revalidatePath(`/clients/${id}`);
+    revalidatePath("/media");
     return { success: true, client };
   } catch (error) {
     console.error("Error updating client:", error);
@@ -349,10 +396,30 @@ export async function getClientsStats() {
             description: true,
             seoTitle: true,
             seoDescription: true,
-            logo: true,
-            logoAlt: true,
-            ogImage: true,
-            ogImageAlt: true,
+            logoMedia: {
+              select: {
+                url: true,
+                altText: true,
+                width: true,
+                height: true,
+              },
+            },
+            ogImageMedia: {
+              select: {
+                url: true,
+                altText: true,
+                width: true,
+                height: true,
+              },
+            },
+            twitterImageMedia: {
+              select: {
+                url: true,
+                altText: true,
+                width: true,
+                height: true,
+              },
+            },
             sameAs: true,
             businessBrief: true,
             gtmId: true,
@@ -365,8 +432,6 @@ export async function getClientsStats() {
             twitterCard: true,
             twitterTitle: true,
             twitterDescription: true,
-            twitterImage: true,
-            twitterImageAlt: true,
             twitterSite: true,
             canonicalUrl: true,
           },

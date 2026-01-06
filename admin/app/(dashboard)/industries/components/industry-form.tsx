@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { FormInput, FormTextarea } from "@/components/admin/form-field";
 import { slugify } from "@/lib/utils";
 import { SEODoctor } from "@/components/shared/seo-doctor";
-import { industrySEOConfig } from "@/components/shared/seo-doctor/seo-configs";
+import { industrySEOConfig } from "../helpers/industry-seo-config";
 import { CharacterCounter } from "@/components/shared/character-counter";
 import { IndustryFormData, FormSubmitResult } from "@/lib/types";
 import { Industry } from "@prisma/client";

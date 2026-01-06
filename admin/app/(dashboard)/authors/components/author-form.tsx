@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { FormInput, FormTextarea, FormNativeSelect } from "@/components/admin/form-field";
 import { slugify } from "@/lib/utils";
 import { SEODoctor } from "@/components/shared/seo-doctor";
-import { authorSEOConfig } from "@/components/shared/seo-doctor/seo-configs";
+import { authorSEOConfig } from "../helpers/author-seo-config";
 import { CharacterCounter } from "@/components/shared/character-counter";
 import { AuthorFormData, AuthorWithRelations, FormSubmitResult } from "@/lib/types";
 import { EducationBuilder, EducationItem } from "./education-builder";

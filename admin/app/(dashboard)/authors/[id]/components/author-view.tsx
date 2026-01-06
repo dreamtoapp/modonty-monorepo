@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { SEOHealthGauge } from "@/components/shared/seo-doctor/seo-health-gauge";
-import { authorSEOConfig } from "@/components/shared/seo-doctor/seo-configs";
+import { authorSEOConfig } from "../../helpers/author-seo-config";
 
 interface Author {
   id: string;

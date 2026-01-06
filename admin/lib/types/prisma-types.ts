@@ -2,11 +2,28 @@ import { Prisma } from "@prisma/client";
 
 export type ArticleWithRelations = Prisma.ArticleGetPayload<{
   include: {
-    client: true;
+    client: {
+      include: {
+        logoMedia: {
+          select: {
+            id: true;
+            url: true;
+          };
+        };
+      };
+    };
     category: true;
     author: true;
     tags: { include: { tag: true } };
-    featuredImage: true;
+    featuredImage: {
+      select: {
+        id: true;
+        url: true;
+        altText: true;
+        width: true;
+        height: true;
+      };
+    };
     faqs: true;
   };
 }>;
@@ -27,6 +44,33 @@ export type ClientWithRelations = Prisma.ClientGetPayload<{
       select: {
         id: true;
         name: true;
+      };
+    };
+    logoMedia: {
+      select: {
+        id: true;
+        url: true;
+        altText: true;
+        width: true;
+        height: true;
+      };
+    };
+    ogImageMedia: {
+      select: {
+        id: true;
+        url: true;
+        altText: true;
+        width: true;
+        height: true;
+      };
+    };
+    twitterImageMedia: {
+      select: {
+        id: true;
+        url: true;
+        altText: true;
+        width: true;
+        height: true;
       };
     };
     _count: {

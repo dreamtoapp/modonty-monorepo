@@ -13,6 +13,7 @@ export default async function MediaPage({
   searchParams: Promise<{
     clientId?: string;
     mimeType?: string;
+    type?: string;
     search?: string;
     used?: string;
     sort?: string;
@@ -24,6 +25,7 @@ export default async function MediaPage({
   const filters: MediaFilters = {
     clientId: params.clientId && params.clientId !== "all" ? params.clientId : undefined,
     mimeType: params.mimeType && params.mimeType !== "all" ? params.mimeType : undefined,
+    type: params.type && params.type !== "all" ? (params.type as any) : undefined,
     search: params.search || undefined,
     used: params.used === "used" ? true : params.used === "unused" ? false : undefined,
   };

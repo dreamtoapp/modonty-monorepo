@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { Prisma, ArticleStatus } from "@prisma/client";
 import { calculateSEOScore } from "@/helpers/utils/seo-score-calculator";
-import { categorySEOConfig } from "@/components/shared/seo-doctor/seo-configs";
+import { categorySEOConfig } from "../helpers/category-seo-config";
 
 export interface CategoryFilters {
   createdFrom?: Date;

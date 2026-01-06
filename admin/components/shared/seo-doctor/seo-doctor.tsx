@@ -26,6 +26,7 @@ import {
   Code,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { calculateSEOScore } from "@/helpers/utils/seo-score-calculator";
 
 export interface SEOHealthCheck {
   field: string;
@@ -68,11 +69,19 @@ export function SEODoctor({ data, config, title = "SEO Doctor" }: SEODoctorProps
     return config.generateStructuredData(data);
   }, [data, config]);
 
+  const scoreResult = useMemo(() => calculateSEOScore(data, config), [data, config]);
+
   const healthChecks = useMemo(() => {
     const checks: SEOHealthCheck[] = [];
-    let totalScore = 0;
+    const seenFields = new Set<string>(); // Track duplicates like calculateSEOScore
 
     for (const fieldConfig of config.fields) {
+      // Skip duplicates to match calculateSEOScore behavior
+      if (seenFields.has(fieldConfig.name)) {
+        continue;
+      }
+      seenFields.add(fieldConfig.name);
+      
       const value = data[fieldConfig.name];
       const result = fieldConfig.validator(value, data);
       
@@ -82,16 +91,12 @@ export function SEODoctor({ data, config, title = "SEO Doctor" }: SEODoctorProps
         message: result.message,
         score: result.score,
       });
-      
-      totalScore += result.score;
     }
 
-    return { checks, totalScore, maxScore: config.maxScore };
-  }, [data, config]);
+    return { checks, totalScore: scoreResult.score, maxScore: scoreResult.maxScore };
+  }, [data, config, scoreResult]);
 
-  const scorePercentage = Math.round(
-    (healthChecks.totalScore / healthChecks.maxScore) * 100
-  );
+  const scorePercentage = scoreResult.percentage;
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-green-600";

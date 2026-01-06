@@ -2,11 +2,12 @@
 
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { Prisma } from "@prisma/client";
+import { Prisma, MediaType } from "@prisma/client";
 
 export interface MediaFilters {
   clientId?: string;
   mimeType?: string;
+  type?: MediaType;
   search?: string;
   dateFrom?: Date;
   dateTo?: Date;
@@ -35,6 +36,11 @@ export async function getMedia(filters?: MediaFilters) {
       } else {
         whereConditions.push({ mimeType: filters.mimeType });
       }
+    }
+
+    // Media type filter
+    if (filters?.type) {
+      whereConditions.push({ type: filters.type });
     }
 
     // Search filter (filename, altText)
@@ -156,9 +162,11 @@ export async function createMedia(data: {
   url: string;
   mimeType: string;
   clientId: string; // REQUIRED
+  type?: MediaType;
   fileSize?: number;
   width?: number;
   height?: number;
+  encodingFormat?: string;
   altText: string; // REQUIRED for SEO and accessibility
   caption?: string;
   credit?: string;
@@ -237,9 +245,11 @@ export async function createMedia(data: {
         url: data.url,
         mimeType: data.mimeType,
         clientId: data.clientId,
+        type: data.type || "GENERAL",
         fileSize: data.fileSize,
         width: data.width,
         height: data.height,
+        encodingFormat: data.encodingFormat,
         altText: data.altText,
         caption: data.caption,
         credit: data.credit,
@@ -411,6 +421,7 @@ export async function renameCloudinaryAsset(
 export async function updateMedia(
   id: string,
   data: {
+    type?: MediaType;
     altText?: string;
     caption?: string;
     credit?: string;
@@ -433,6 +444,7 @@ export async function updateMedia(
     const media = await db.media.update({
       where: { id },
       data: {
+        type: data.type,
         altText: data.altText,
         caption: data.caption,
         credit: data.credit,

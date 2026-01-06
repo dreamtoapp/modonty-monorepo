@@ -8,7 +8,10 @@ export default async function NewClientPage() {
 
   return (
     <div className="container mx-auto max-w-[1128px]">
-      <PageHeader title="Create Client" description="Add a new client to the system" />
+      <PageHeader
+        title="Create Client"
+        description="Start with the essentials, then optionally expand advanced sections as needed."
+      />
       <ClientForm industries={industries} onSubmit={createClient} />
     </div>
   );

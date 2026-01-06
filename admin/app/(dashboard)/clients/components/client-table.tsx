@@ -11,7 +11,7 @@ import { ChevronLeft, ChevronRight, Search, ArrowUpDown, ArrowUp, ArrowDown, Ste
 import { cn } from "@/lib/utils";
 import { ClientRowActions } from "./client-row-actions";
 import { SEOHealthGauge } from "@/components/shared/seo-doctor/seo-health-gauge";
-import { organizationSEOConfig } from "@/components/shared/seo-doctor/seo-configs";
+import { organizationSEOConfig } from "../helpers/client-seo-config";
 import { SortableValue } from "@/lib/types";
 
 interface Client {
@@ -21,6 +21,24 @@ interface Client {
   email: string | null;
   phone: string | null;
   createdAt: Date;
+  logoMedia?: {
+    url: string;
+    altText: string | null;
+    width: number | null;
+    height: number | null;
+  } | null;
+  ogImageMedia?: {
+    url: string;
+    altText: string | null;
+    width: number | null;
+    height: number | null;
+  } | null;
+  twitterImageMedia?: {
+    url: string;
+    altText: string | null;
+    width: number | null;
+    height: number | null;
+  } | null;
   _count: {
     articles: number;
   };
@@ -266,7 +284,16 @@ export function ClientTable({ clients, onSelectionChange }: ClientTableProps) {
                     />
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
-                    <SEOHealthGauge data={client} config={organizationSEOConfig} size="xs" />
+                    <SEOHealthGauge 
+                      data={{
+                        ...client,
+                        logoMedia: client.logoMedia,
+                        ogImageMedia: client.ogImageMedia,
+                        twitterImageMedia: client.twitterImageMedia,
+                      }} 
+                      config={organizationSEOConfig} 
+                      size="xs" 
+                    />
                   </TableCell>
                   <TableCell>
                     <Link

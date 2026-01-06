@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { MediaType } from "@prisma/client";
 
 export function UploadForm() {
   const router = useRouter();
@@ -37,6 +38,7 @@ export function UploadForm() {
     url: "",
     filename: "",
     mimeType: "",
+    type: "GENERAL" as MediaType,
     altText: "",
     caption: "",
     credit: "",
@@ -58,6 +60,7 @@ export function UploadForm() {
     const result = await createMedia({
       ...formData,
       clientId,
+      type: formData.type,
     });
 
     if (result.success) {
@@ -121,6 +124,27 @@ export function UploadForm() {
               placeholder="image/jpeg, image/png, etc."
               required
             />
+            <div className="space-y-2">
+              <Label htmlFor="type">Media Type</Label>
+              <Select
+                value={formData.type}
+                onValueChange={(value) => setFormData({ ...formData, type: value as MediaType })}
+              >
+                <SelectTrigger id="type">
+                  <SelectValue placeholder="Select media type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="GENERAL">General</SelectItem>
+                  <SelectItem value="LOGO">Logo</SelectItem>
+                  <SelectItem value="POST">Post (Article Featured Image)</SelectItem>
+                  <SelectItem value="OGIMAGE">OG Image (Open Graph)</SelectItem>
+                  <SelectItem value="TWITTER_IMAGE">Twitter Image</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Categorize this media for better organization and filtering
+              </p>
+            </div>
             <FormInput
               label="Alt Text"
               name="altText"

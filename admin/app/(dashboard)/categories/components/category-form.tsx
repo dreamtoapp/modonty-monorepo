@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { FormInput, FormTextarea, FormNativeSelect } from "@/components/admin/form-field";
 import { slugify } from "@/lib/utils";
 import { SEODoctor } from "@/components/shared/seo-doctor";
-import { categorySEOConfig } from "@/components/shared/seo-doctor/seo-configs";
+import { categorySEOConfig } from "../helpers/category-seo-config";
 import { CharacterCounter } from "@/components/shared/character-counter";
 import { createCategory, updateCategory } from "../actions/categories-actions";
 import { CategoryFormData, CategoryWithRelations, FormSubmitResult } from "@/lib/types";

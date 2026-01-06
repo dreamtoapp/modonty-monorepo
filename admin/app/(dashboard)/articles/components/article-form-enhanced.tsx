@@ -22,7 +22,7 @@ import { SEOPreviewCard } from "./seo-preview-card";
 import { TagInput } from "./tag-input";
 import { FAQBuilder, FAQItem } from "./faq-builder";
 import { SEODoctor } from "@/components/shared/seo-doctor";
-import { articleSEOConfig } from "@/components/shared/seo-doctor/seo-configs";
+import { articleSEOConfig } from "../helpers/article-seo-config";
 import { ArticleFormData, ArticleWithRelations, FormSubmitResult } from "@/lib/types";
 import {
   calculateWordCount,
@@ -68,16 +68,11 @@ export function ArticleForm({
     scheduledAt: initialData?.scheduledAt || null,
     featured: initialData?.featured || false,
     featuredImageId: initialData?.featuredImageId || null,
-    featuredImageAlt: initialData?.featuredImageAlt || "",
     seoTitle: initialData?.seoTitle || "",
     seoDescription: initialData?.seoDescription || "",
     metaRobots: initialData?.metaRobots || "index, follow",
     ogTitle: initialData?.ogTitle || "",
     ogDescription: initialData?.ogDescription || "",
-    ogImage: initialData?.ogImage || "",
-    ogImageAlt: initialData?.ogImageAlt || "",
-    ogImageWidth: initialData?.ogImageWidth?.toString() || "",
-    ogImageHeight: initialData?.ogImageHeight?.toString() || "",
     ogUrl: initialData?.ogUrl || "",
     ogSiteName: initialData?.ogSiteName || "مودونتي",
     ogLocale: initialData?.ogLocale || "ar_SA",
@@ -87,8 +82,6 @@ export function ArticleForm({
     twitterCard: initialData?.twitterCard || "summary_large_image",
     twitterTitle: initialData?.twitterTitle || "",
     twitterDescription: initialData?.twitterDescription || "",
-    twitterImage: initialData?.twitterImage || "",
-    twitterImageAlt: initialData?.twitterImageAlt || "",
     twitterSite: initialData?.twitterSite || "",
     twitterCreator: initialData?.twitterCreator || "",
     twitterLabel1: initialData?.twitterLabel1 || "",
@@ -198,8 +191,6 @@ export function ArticleForm({
       wordCount,
       readingTimeMinutes: readingTime,
       contentDepth,
-      ogImageWidth: formData.ogImageWidth ? parseInt(formData.ogImageWidth) : undefined,
-      ogImageHeight: formData.ogImageHeight ? parseInt(formData.ogImageHeight) : undefined,
       ogArticlePublishedTime:
         formData.status === "PUBLISHED" ? new Date() : undefined,
       ogArticleModifiedTime: new Date(),
@@ -409,7 +400,7 @@ export function ArticleForm({
                     title={formData.seoTitle || formData.title}
                     description={formData.seoDescription || formData.excerpt}
                     url={formData.canonicalUrl || `/articles/${formData.slug}`}
-                    image={formData.ogImage}
+                    image={(initialData as any)?.featuredImage?.url || ""}
                   />
                 </CardContent>
               </Card>
@@ -439,43 +430,6 @@ export function ArticleForm({
                       placeholder="سيتم نسخه من وصف SEO"
                       rows={3}
                     />
-                  </div>
-                  <div>
-                    <Label>OG Image URL</Label>
-                    <Input
-                      value={formData.ogImage}
-                      onChange={(e) => setFormData({ ...formData, ogImage: e.target.value })}
-                      placeholder="https://example.com/image.jpg"
-                      type="url"
-                    />
-                  </div>
-                  <div>
-                    <Label>OG Image Alt Text</Label>
-                    <Input
-                      value={formData.ogImageAlt}
-                      onChange={(e) => setFormData({ ...formData, ogImageAlt: e.target.value })}
-                      placeholder="Alt text for OG image (required for accessibility and SEO)"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>OG Image Width</Label>
-                      <Input
-                        value={formData.ogImageWidth}
-                        onChange={(e) => setFormData({ ...formData, ogImageWidth: e.target.value })}
-                        placeholder="1200"
-                        type="number"
-                      />
-                    </div>
-                    <div>
-                      <Label>OG Image Height</Label>
-                      <Input
-                        value={formData.ogImageHeight}
-                        onChange={(e) => setFormData({ ...formData, ogImageHeight: e.target.value })}
-                        placeholder="630"
-                        type="number"
-                      />
-                    </div>
                   </div>
                   <div>
                     <Label>OG URL</Label>
@@ -549,27 +503,6 @@ export function ArticleForm({
                       }
                       placeholder="سيتم نسخه من OG Description"
                       rows={3}
-                    />
-                  </div>
-                  <div>
-                    <Label>Twitter Image URL</Label>
-                    <Input
-                      value={formData.twitterImage}
-                      onChange={(e) =>
-                        setFormData({ ...formData, twitterImage: e.target.value })
-                      }
-                      placeholder="https://example.com/image.jpg"
-                      type="url"
-                    />
-                  </div>
-                  <div>
-                    <Label>Twitter Image Alt Text</Label>
-                    <Input
-                      value={formData.twitterImageAlt}
-                      onChange={(e) =>
-                        setFormData({ ...formData, twitterImageAlt: e.target.value })
-                      }
-                      placeholder="Alt text for Twitter image (required for accessibility and SEO)"
                     />
                   </div>
                   <div>
@@ -767,7 +700,13 @@ export function ArticleForm({
         {/* Right Column - SEO Doctor (Always Visible) */}
         <div className="lg:col-span-1">
           <div className="sticky top-6">
-            <SEODoctor data={formData} config={articleSEOConfig} />
+            <SEODoctor 
+              data={{
+                ...formData,
+                featuredImage: (initialData as any)?.featuredImage,
+              }} 
+              config={articleSEOConfig} 
+            />
           </div>
         </div>
       </div>

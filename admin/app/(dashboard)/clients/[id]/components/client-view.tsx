@@ -29,7 +29,7 @@ import {
   type Platform,
 } from "../../helpers/url-validation";
 import { SEOHealthGauge } from "@/components/shared/seo-doctor/seo-health-gauge";
-import { organizationSEOConfig } from "@/components/shared/seo-doctor/seo-configs";
+import { organizationSEOConfig } from "../../helpers/client-seo-config";
 
 interface Client {
   id: string;
@@ -37,10 +37,24 @@ interface Client {
   slug: string;
   legalName: string | null;
   url: string | null;
-  logo: string | null;
-  logoAlt: string | null;
-  ogImage: string | null;
-  ogImageAlt: string | null;
+  logoMedia: {
+    url: string;
+    altText: string | null;
+    width: number | null;
+    height: number | null;
+  } | null;
+  ogImageMedia: {
+    url: string;
+    altText: string | null;
+    width: number | null;
+    height: number | null;
+  } | null;
+  twitterImageMedia: {
+    url: string;
+    altText: string | null;
+    width: number | null;
+    height: number | null;
+  } | null;
   email: string | null;
   phone: string | null;
   sameAs: string[];
@@ -70,8 +84,6 @@ interface Client {
   twitterCard: string | null;
   twitterTitle: string | null;
   twitterDescription: string | null;
-  twitterImage: string | null;
-  twitterImageAlt: string | null;
   twitterSite: string | null;
   gtmId: string | null;
   foundingDate: Date | null;
@@ -129,10 +141,10 @@ export function ClientView({ client }: ClientViewProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          {client.logo && (
+          {client.logoMedia?.url && (
             <img
-              src={client.logo}
-              alt={client.name}
+              src={client.logoMedia.url}
+              alt={client.logoMedia.altText || client.name}
               className="h-16 w-16 rounded-lg object-contain"
             />
           )}
@@ -194,18 +206,20 @@ export function ClientView({ client }: ClientViewProps) {
                   </a>
                 </div>
               )}
-              {client.logo && (
+              {client.logoMedia?.url && (
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">Logo URL</p>
                   <div className="flex items-center gap-4">
                     <img
-                      src={client.logo}
-                      alt={client.logoAlt || `${client.name} logo`}
+                      src={client.logoMedia.url}
+                      alt={client.logoMedia.altText || `${client.name} logo`}
                       className="h-24 w-24 rounded object-contain"
                     />
                   </div>
-                  {client.logoAlt && (
-                    <p className="text-xs text-muted-foreground mt-1">Alt: {client.logoAlt}</p>
+                  {client.logoMedia.altText && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Alt: {client.logoMedia.altText}
+                    </p>
                   )}
                 </div>
               )}
@@ -455,25 +469,25 @@ export function ClientView({ client }: ClientViewProps) {
                   </div>
                 </div>
               )}
-              {client.ogImage && (
+              {client.ogImageMedia?.url && (
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">OG Image URL</p>
                   <div className="space-y-2">
                     <img
-                      src={client.ogImage}
-                      alt={client.ogImageAlt || `${client.name} OG image`}
+                      src={client.ogImageMedia.url}
+                      alt={client.ogImageMedia.altText || `${client.name} OG image`}
                       className="h-32 w-32 rounded object-cover"
                     />
                     <a
-                      href={client.ogImage}
+                      href={client.ogImageMedia.url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm text-primary hover:underline block"
                     >
-                      {client.ogImage}
+                      {client.ogImageMedia.url}
                     </a>
-                    {client.ogImageAlt && (
-                      <p className="text-xs text-muted-foreground">Alt: {client.ogImageAlt}</p>
+                    {client.ogImageMedia.altText && (
+                      <p className="text-xs text-muted-foreground">Alt: {client.ogImageMedia.altText}</p>
                     )}
                   </div>
                 </div>
@@ -531,8 +545,8 @@ export function ClientView({ client }: ClientViewProps) {
               {(client.twitterCard ||
                 client.twitterTitle ||
                 client.twitterDescription ||
-                client.twitterImage ||
-                client.twitterImageAlt ||
+                client.twitterImageMedia?.url ||
+                client.twitterImageMedia?.altText ||
                 client.twitterSite) && (
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Twitter Cards</p>
@@ -554,19 +568,19 @@ export function ClientView({ client }: ClientViewProps) {
                         <p className="text-sm">{client.twitterDescription}</p>
                       </div>
                     )}
-                    {client.twitterImage && (
+                    {client.twitterImageMedia?.url && (
                       <div>
                         <p className="text-sm text-muted-foreground mb-1">Twitter Image</p>
                         <a
-                          href={client.twitterImage}
+                          href={client.twitterImageMedia.url}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-sm text-primary hover:underline"
                         >
-                          {client.twitterImage}
+                          {client.twitterImageMedia.url}
                         </a>
-                        {client.twitterImageAlt && (
-                          <p className="text-xs text-muted-foreground mt-1">Alt: {client.twitterImageAlt}</p>
+                        {client.twitterImageMedia.altText && (
+                          <p className="text-xs text-muted-foreground mt-1">Alt: {client.twitterImageMedia.altText}</p>
                         )}
                       </div>
                     )}

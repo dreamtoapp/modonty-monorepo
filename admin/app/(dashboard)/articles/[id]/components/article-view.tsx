@@ -8,7 +8,7 @@ import { format } from "date-fns";
 import { ArticleStatus } from "@prisma/client";
 import { getStatusLabel, getStatusVariant } from "../../helpers/status-utils";
 import { SEOHealthGauge } from "@/components/shared/seo-doctor/seo-health-gauge";
-import { articleSEOConfig } from "@/components/shared/seo-doctor/seo-configs";
+import { articleSEOConfig } from "../../helpers/article-seo-config";
 
 interface Article {
   id: string;

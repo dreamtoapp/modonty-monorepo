@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Search, ArrowUpDown, ArrowUp, ArrowDown, Stethoscope } from "lucide-react";
 import { IndustryRowActions } from "./industry-row-actions";
 import { SEOHealthGauge } from "@/components/shared/seo-doctor/seo-health-gauge";
-import { industrySEOConfig } from "@/components/shared/seo-doctor/seo-configs";
+import { industrySEOConfig } from "../helpers/industry-seo-config";
 import { SortableValue } from "@/lib/types";
 
 interface Industry {

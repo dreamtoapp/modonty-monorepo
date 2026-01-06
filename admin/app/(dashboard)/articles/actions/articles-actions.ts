@@ -14,7 +14,7 @@ import {
 } from "../helpers/seo-helpers";
 import { ArticleFormData, FAQItem } from "@/lib/types";
 import { calculateSEOScore } from "@/helpers/utils/seo-score-calculator";
-import { articleSEOConfig } from "@/components/shared/seo-doctor/seo-configs";
+import { articleSEOConfig } from "../helpers/article-seo-config";
 
 export interface ArticleFilters {
   status?: ArticleStatus;
@@ -168,7 +168,16 @@ export async function getArticleById(id: string) {
     const article = await db.article.findUnique({
       where: { id },
       include: {
-        client: true,
+        client: {
+          include: {
+            logoMedia: {
+              select: {
+                id: true,
+                url: true,
+              },
+            },
+          },
+        },
         category: true,
         author: true,
         tags: {
@@ -176,7 +185,15 @@ export async function getArticleById(id: string) {
             tag: true,
           },
         },
-        featuredImage: true,
+        featuredImage: {
+          select: {
+            id: true,
+            url: true,
+            altText: true,
+            width: true,
+            height: true,
+          },
+        },
         faqs: {
           orderBy: {
             position: "asc",
@@ -205,7 +222,7 @@ export async function createArticle(data: ArticleFormData) {
   try {
     const client = await db.client.findUnique({
       where: { id: data.clientId },
-      select: { name: true, slug: true, ogImage: true },
+      select: { name: true, slug: true },
     });
 
     const category = data.categoryId
@@ -269,7 +286,6 @@ export async function createArticle(data: ArticleFormData) {
         scheduledAt: data.scheduledAt || null,
         featured: data.featured || false,
         featuredImageId: data.featuredImageId || null,
-        featuredImageAlt: data.featuredImageAlt || null,
         datePublished,
         wordCount,
         readingTimeMinutes,
@@ -285,12 +301,6 @@ export async function createArticle(data: ArticleFormData) {
         metaRobots,
         ogTitle: data.ogTitle || seoTitle || data.title,
         ogDescription: data.ogDescription || seoDescription || data.excerpt || null,
-        ogImage: data.ogImage || data.featuredImageId
-          ? null
-          : client?.ogImage || null,
-        ogImageAlt: data.ogImageAlt || null,
-        ogImageWidth: data.ogImageWidth || null,
-        ogImageHeight: data.ogImageHeight || null,
         ogUrl: data.ogUrl || canonicalUrl,
         ogSiteName: data.ogSiteName || "مودونتي",
         ogLocale: data.ogLocale || "ar_SA",
@@ -309,8 +319,6 @@ export async function createArticle(data: ArticleFormData) {
           seoDescription ||
           data.excerpt ||
           null,
-        twitterImage: data.twitterImage || data.ogImage || null,
-        twitterImageAlt: data.twitterImageAlt || null,
         twitterSite: data.twitterSite || null,
         twitterCreator: data.twitterCreator || null,
         twitterLabel1: data.twitterLabel1 || null,
@@ -379,14 +387,17 @@ export async function updateArticle(id: string, data: ArticleFormData) {
   try {
     const existingArticle = await db.article.findUnique({
       where: { id },
-      include: { client: { select: { name: true, slug: true, ogImage: true } } },
     });
 
     if (!existingArticle) {
       return { success: false, error: "المقال غير موجود" };
     }
 
-    const client = existingArticle.client;
+    const client = await db.client.findUnique({
+      where: { id: data.clientId },
+      select: { name: true, slug: true },
+    });
+
     const category = data.categoryId
       ? await db.category.findUnique({
           where: { id: data.categoryId },
@@ -449,7 +460,6 @@ export async function updateArticle(id: string, data: ArticleFormData) {
         scheduledAt: data.scheduledAt || null,
         featured: data.featured || false,
         featuredImageId: data.featuredImageId || null,
-        featuredImageAlt: data.featuredImageAlt || null,
         datePublished,
         wordCount,
         readingTimeMinutes,
@@ -463,10 +473,6 @@ export async function updateArticle(id: string, data: ArticleFormData) {
         metaRobots,
         ogTitle: data.ogTitle || seoTitle || data.title,
         ogDescription: data.ogDescription || seoDescription || data.excerpt || null,
-        ogImage: data.ogImage || null,
-        ogImageAlt: data.ogImageAlt || null,
-        ogImageWidth: data.ogImageWidth || null,
-        ogImageHeight: data.ogImageHeight || null,
         ogUrl: data.ogUrl || canonicalUrl,
         ogSiteName: data.ogSiteName || "مودونتي",
         ogLocale: data.ogLocale || "ar_SA",
@@ -485,8 +491,6 @@ export async function updateArticle(id: string, data: ArticleFormData) {
           seoDescription ||
           data.excerpt ||
           null,
-        twitterImage: data.twitterImage || data.ogImage || null,
-        twitterImageAlt: data.twitterImageAlt || null,
         twitterSite: data.twitterSite || null,
         twitterCreator: data.twitterCreator || null,
         twitterLabel1: data.twitterLabel1 || null,
@@ -625,13 +629,10 @@ export async function duplicateArticle(id: string) {
         metaRobots: original.metaRobots,
         ogTitle: original.ogTitle,
         ogDescription: original.ogDescription,
-        ogImage: original.ogImage,
         twitterCard: original.twitterCard,
         twitterTitle: original.twitterTitle,
         twitterDescription: original.twitterDescription,
-        twitterImage: original.twitterImage,
         canonicalUrl: original.canonicalUrl,
-        featuredImageAlt: original.featuredImageAlt,
       },
     });
 
@@ -716,17 +717,19 @@ export async function getArticlesStats() {
             seoDescription: true,
             ogTitle: true,
             ogDescription: true,
-            ogImage: true,
-            ogImageAlt: true,
-            ogImageWidth: true,
-            ogImageHeight: true,
+            featuredImage: {
+              select: {
+                id: true,
+                url: true,
+                altText: true,
+                width: true,
+                height: true,
+              },
+            },
             twitterCard: true,
             twitterTitle: true,
             twitterDescription: true,
-            twitterImage: true,
-            twitterImageAlt: true,
             canonicalUrl: true,
-            featuredImageAlt: true,
           },
         }),
       ]);

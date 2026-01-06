@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { X, ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useState } from "react";
+import { MediaType } from "@prisma/client";
 
 interface MediaFiltersProps {
   clients: Array<{ id: string; name: string }>;
@@ -24,6 +25,7 @@ export function MediaFilters({ clients, defaultClientId }: MediaFiltersProps) {
   const searchParams = useSearchParams();
   const [clientId, setClientId] = useState(searchParams.get("clientId") || defaultClientId || "all");
   const [mimeType, setMimeType] = useState(searchParams.get("mimeType") || "all");
+  const [mediaType, setMediaType] = useState(searchParams.get("type") || "all");
   const [used, setUsed] = useState(searchParams.get("used") || "all");
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -49,6 +51,11 @@ export function MediaFilters({ clients, defaultClientId }: MediaFiltersProps) {
     updateURL({ mimeType: value, page: "1" });
   };
 
+  const handleMediaTypeChange = (value: string) => {
+    setMediaType(value);
+    updateURL({ type: value, page: "1" });
+  };
+
   const handleUsedChange = (value: string) => {
     setUsed(value);
     updateURL({ used: value, page: "1" });
@@ -57,11 +64,12 @@ export function MediaFilters({ clients, defaultClientId }: MediaFiltersProps) {
   const clearFilters = () => {
     setClientId("all");
     setMimeType("all");
+    setMediaType("all");
     setUsed("all");
     router.push("/media");
   };
 
-  const hasActiveFilters = clientId !== "all" || mimeType !== "all" || used !== "all";
+  const hasActiveFilters = clientId !== "all" || mimeType !== "all" || mediaType !== "all" || used !== "all";
 
   return (
     <Card>
@@ -109,15 +117,33 @@ export function MediaFilters({ clients, defaultClientId }: MediaFiltersProps) {
 
             {/* MIME Type Filter */}
             <div className="space-y-2">
-              <Label htmlFor="mime-type-filter">Type</Label>
+              <Label htmlFor="mime-type-filter">File Type</Label>
               <Select value={mimeType} onValueChange={handleMimeTypeChange}>
                 <SelectTrigger id="mime-type-filter">
-                  <SelectValue placeholder="All Types" />
+                  <SelectValue placeholder="All File Types" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="all">All File Types</SelectItem>
                   <SelectItem value="image">Images</SelectItem>
                   <SelectItem value="video">Videos</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Media Type Filter */}
+            <div className="space-y-2">
+              <Label htmlFor="media-type-filter">Media Type</Label>
+              <Select value={mediaType} onValueChange={handleMediaTypeChange}>
+                <SelectTrigger id="media-type-filter">
+                  <SelectValue placeholder="All Media Types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Media Types</SelectItem>
+                  <SelectItem value="GENERAL">General</SelectItem>
+                  <SelectItem value="LOGO">Logo</SelectItem>
+                  <SelectItem value="POST">Post</SelectItem>
+                  <SelectItem value="OGIMAGE">OG Image</SelectItem>
+                  <SelectItem value="TWITTER_IMAGE">Twitter Image</SelectItem>
                 </SelectContent>
               </Select>
             </div>

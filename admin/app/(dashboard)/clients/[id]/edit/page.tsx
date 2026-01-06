@@ -15,7 +15,10 @@ export default async function EditClientPage({ params }: { params: Promise<{ id:
 
   return (
     <div className="container mx-auto max-w-[1128px]">
-      <PageHeader title="Edit Client" description="Update client information" />
+      <PageHeader
+        title="Edit Client"
+        description="Review core details first, then expand advanced sections only when you need to adjust them."
+      />
       <div className="mb-6">
         <DeleteClientButton clientId={id} />
       </div>

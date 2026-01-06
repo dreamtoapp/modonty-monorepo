@@ -17,8 +17,15 @@ export function calculateSEOScore(
   config: SEODoctorConfig
 ): SEOScoreResult {
   let totalScore = 0;
+  const seenFields = new Set<string>(); // Track processed fields to avoid duplicates
 
   for (const fieldConfig of config.fields) {
+    // Skip duplicate field validations (use first occurrence only)
+    if (seenFields.has(fieldConfig.name)) {
+      continue;
+    }
+    seenFields.add(fieldConfig.name);
+    
     const value = data[fieldConfig.name];
     const result = fieldConfig.validator(value, data);
     totalScore += result.score;

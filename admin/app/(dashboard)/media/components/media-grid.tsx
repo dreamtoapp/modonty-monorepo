@@ -19,6 +19,8 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { SEOHealthGauge } from "@/components/shared/seo-doctor/seo-health-gauge";
 import { mediaSEOConfig } from "../helpers/media-seo-config";
+import { MediaType } from "@prisma/client";
+import { getMediaTypeLabel, getMediaTypeBadgeVariant } from "../helpers/media-utils";
 
 interface Media {
   id: string;
@@ -31,6 +33,7 @@ interface Media {
   altText: string | null;
   title: string | null;
   description: string | null;
+  type: MediaType;
   createdAt: Date;
   cloudinaryPublicId?: string | null;
   cloudinaryVersion?: string | null;
@@ -240,9 +243,14 @@ export function MediaGrid({
                   </span>
                 </div>
                 <div className="col-span-1">
-                  <Badge variant="secondary" className="text-xs">
-                    {item.mimeType.split("/")[0]}
-                  </Badge>
+                  <div className="flex flex-col gap-1">
+                    <Badge variant={getMediaTypeBadgeVariant(item.type)} className="text-xs">
+                      {getMediaTypeLabel(item.type)}
+                    </Badge>
+                    <Badge variant="secondary" className="text-xs">
+                      {item.mimeType.split("/")[0]}
+                    </Badge>
+                  </div>
                 </div>
                 <div className="col-span-1">
                   <span className="text-xs text-muted-foreground">
@@ -433,7 +441,10 @@ export function MediaGrid({
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                <Badge variant={getMediaTypeBadgeVariant(item.type)} className="text-xs">
+                  {getMediaTypeLabel(item.type)}
+                </Badge>
                 <Badge variant="secondary" className="text-xs">
                   {item.mimeType.split("/")[0]}
                 </Badge>

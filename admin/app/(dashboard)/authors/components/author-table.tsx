@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Search, ArrowUpDown, ArrowUp, ArrowDown, Stethoscope } from "lucide-react";
 import { AuthorRowActions } from "./author-row-actions";
 import { SEOHealthGauge } from "@/components/shared/seo-doctor/seo-health-gauge";
-import { authorSEOConfig } from "@/components/shared/seo-doctor/seo-configs";
+import { authorSEOConfig } from "../helpers/author-seo-config";
 import { SortableValue } from "@/lib/types";
 
 interface Author {

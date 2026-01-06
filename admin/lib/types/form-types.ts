@@ -19,16 +19,11 @@ export interface ArticleFormData {
   scheduledAt?: Date | null;
   featured?: boolean;
   featuredImageId?: string | null;
-  featuredImageAlt?: string | null;
   seoTitle?: string;
   seoDescription?: string;
   metaRobots?: string;
   ogTitle?: string;
   ogDescription?: string;
-  ogImage?: string;
-  ogImageAlt?: string;
-  ogImageWidth?: number;
-  ogImageHeight?: number;
   ogUrl?: string;
   ogSiteName?: string;
   ogLocale?: string;
@@ -41,8 +36,6 @@ export interface ArticleFormData {
   twitterCard?: string;
   twitterTitle?: string;
   twitterDescription?: string;
-  twitterImage?: string;
-  twitterImageAlt?: string;
   twitterSite?: string;
   twitterCreator?: string;
   twitterLabel1?: string;
@@ -67,10 +60,10 @@ export interface ClientFormData {
   slug: string;
   legalName?: string;
   url?: string;
-  logo?: string;
-  logoAlt?: string;
-  ogImage?: string;
-  ogImageAlt?: string;
+  // Centralized media references
+  logoMediaId?: string | null;
+  ogImageMediaId?: string | null;
+  twitterImageMediaId?: string | null;
   sameAs?: string[];
   email?: string;
   phone?: string;
@@ -90,8 +83,6 @@ export interface ClientFormData {
   twitterCard?: string | null;
   twitterTitle?: string | null;
   twitterDescription?: string | null;
-  twitterImage?: string | null;
-  twitterImageAlt?: string | null;
   twitterSite?: string | null;
   canonicalUrl?: string | null;
   gtmId?: string;

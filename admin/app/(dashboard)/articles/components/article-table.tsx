@@ -15,7 +15,7 @@ import { ChevronLeft, ChevronRight, Search, ArrowUpDown, ArrowUp, ArrowDown, Ste
 import { cn } from "@/lib/utils";
 import { ArticleRowActions } from "./article-row-actions";
 import { SEOHealthGauge } from "@/components/shared/seo-doctor/seo-health-gauge";
-import { articleSEOConfig } from "@/components/shared/seo-doctor/seo-configs";
+import { articleSEOConfig } from "../helpers/article-seo-config";
 
 interface Article {
   id: string;
@@ -30,13 +30,6 @@ interface Article {
   author: { name: string } | null;
   seoTitle?: string | null;
   seoDescription?: string | null;
-  ogImage?: string | null;
-  ogImageAlt?: string | null;
-  ogImageWidth?: number | null;
-  ogImageHeight?: number | null;
-  twitterImage?: string | null;
-  twitterImageAlt?: string | null;
-  featuredImageAlt?: string | null;
   canonicalUrl?: string | null;
   [key: string]: unknown;
 }

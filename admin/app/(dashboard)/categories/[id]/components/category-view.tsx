@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { SEOHealthGauge } from "@/components/shared/seo-doctor/seo-health-gauge";
-import { categorySEOConfig } from "@/components/shared/seo-doctor/seo-configs";
+import { categorySEOConfig } from "../../helpers/category-seo-config";
 
 interface Category {
   id: string;

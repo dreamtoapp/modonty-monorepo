@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { Prisma, ArticleStatus } from "@prisma/client";
 import { calculateSEOScore } from "@/helpers/utils/seo-score-calculator";
-import { tagSEOConfig } from "@/components/shared/seo-doctor/seo-configs";
+import { tagSEOConfig } from "../helpers/tag-seo-config";
 
 export interface TagFilters {
   createdFrom?: Date;

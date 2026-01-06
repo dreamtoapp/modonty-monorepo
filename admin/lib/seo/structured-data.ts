@@ -2,7 +2,9 @@ import { Article, Client, Author, Category, FAQ } from "@prisma/client";
 import { ArticleStructuredData } from "@/lib/types";
 
 interface ArticleWithRelations extends Article {
-  client: Client;
+  client: Client & {
+    logoMedia?: { url: string } | null;
+  };
   author: Author;
   category?: Category | null;
   faqs?: FAQ[];
@@ -18,7 +20,7 @@ export function generateArticleStructuredData(article: ArticleWithRelations): Ar
     "@type": "Article",
     headline: article.title,
     description: article.seoDescription || article.excerpt || "",
-    image: article.featuredImage?.url || article.ogImage || undefined,
+    image: article.featuredImage?.url || undefined,
     datePublished: article.datePublished?.toISOString(),
     dateModified: article.dateModified.toISOString(),
     author: {
@@ -30,7 +32,7 @@ export function generateArticleStructuredData(article: ArticleWithRelations): Ar
     publisher: {
       "@type": "Organization",
       name: article.client.name,
-      ...(article.client.logo && { logo: { "@type": "ImageObject", url: article.client.logo } }),
+      ...(article.client.logoMedia?.url && { logo: { "@type": "ImageObject", url: article.client.logoMedia.url } }),
       ...(article.client.url && { url: article.client.url }),
     },
     mainEntityOfPage: {
@@ -115,14 +117,16 @@ export function generateAuthorStructuredData(author: Author): PersonStructuredDa
 
 import { OrganizationStructuredData } from "@/lib/types";
 
-export function generateOrganizationStructuredData(client: Client): OrganizationStructuredData {
+export function generateOrganizationStructuredData(client: Client & {
+  logoMedia?: { url: string } | null;
+}): OrganizationStructuredData {
   const structuredData: OrganizationStructuredData = {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: client.name,
     ...(client.legalName && { legalName: client.legalName }),
     ...(client.url && { url: client.url }),
-    ...(client.logo && { logo: { "@type": "ImageObject", url: client.logo } }),
+    ...(client.logoMedia?.url && { logo: { "@type": "ImageObject", url: client.logoMedia.url } }),
     ...(client.description && { description: client.description }),
     ...(!client.description && client.seoDescription && { description: client.seoDescription }),
     ...(client.foundingDate && { foundingDate: client.foundingDate.toISOString().split("T")[0] }),

@@ -11,7 +11,7 @@ import { ChevronLeft, ChevronRight, Search, ArrowUpDown, ArrowUp, ArrowDown, Ste
 import { cn } from "@/lib/utils";
 import { CategoryRowActions } from "./category-row-actions";
 import { SEOHealthGauge } from "@/components/shared/seo-doctor/seo-health-gauge";
-import { categorySEOConfig } from "@/components/shared/seo-doctor/seo-configs";
+import { categorySEOConfig } from "../helpers/category-seo-config";
 import { SortableValue } from "@/lib/types";
 
 interface Category {
