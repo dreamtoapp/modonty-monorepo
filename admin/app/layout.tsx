@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { SessionProvider } from "./components/providers/session-provider";
 import { Toaster } from "@/components/ui/toaster";
+import { GTMContainer } from "@/components/gtm/GTMContainer";
 
 export const metadata: Metadata = {
   title: "Modonty Admin - Dashboard",
@@ -16,6 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full overflow-hidden">
       <body className="bg-background h-full overflow-hidden">
+        <GTMContainer />
         <SessionProvider>
           {children}
           <Toaster />

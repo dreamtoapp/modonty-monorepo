@@ -13,6 +13,7 @@ import {
   BarChart3,
   BookOpen,
   ArrowRight,
+  Code2,
 } from "lucide-react";
 
 const guidelineSections = [
@@ -105,6 +106,16 @@ const guidelineSections = [
     color: "text-amber-600",
     bgColor: "bg-amber-50 dark:bg-amber-950/10",
     borderColor: "border-amber-200",
+  },
+  {
+    id: "gtm",
+    title: "GTM Guidelines",
+    description: "Google Tag Manager setup, client tracking configuration, GA4 integration, and multi-client analytics",
+    icon: Code2,
+    href: "/guidelines/gtm",
+    color: "text-red-600",
+    bgColor: "bg-red-50 dark:bg-red-950/10",
+    borderColor: "border-red-200",
   },
 ];
 

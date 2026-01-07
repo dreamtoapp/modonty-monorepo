@@ -2,7 +2,6 @@ import { getClients, getClientsStats, ClientFilters } from "./actions/clients-ac
 import { ClientsStats } from "./components/clients-stats";
 import { ClientsFilters } from "./components/clients-filters";
 import { ClientsPageClient } from "./components/clients-page-client";
-import { ExportButton } from "./components/export-button";
 import { Button } from "@/components/ui/button";
 import { Plus, BookOpen } from "lucide-react";
 import Link from "next/link";
@@ -51,7 +50,6 @@ export default async function ClientsPage({
           <p className="text-muted-foreground mt-1">{getDescription()}</p>
         </div>
         <div className="flex items-center gap-2">
-          <ExportButton filters={filters} />
           <Link href="/guidelines/clients">
             <Button variant="outline" size="sm">
               <BookOpen className="h-4 w-4 mr-2" />

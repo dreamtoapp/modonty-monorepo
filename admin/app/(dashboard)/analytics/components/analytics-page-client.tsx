@@ -7,7 +7,6 @@ import { ViewsChart } from "./views-chart";
 import { TrafficSourcesChart } from "./traffic-sources-chart";
 import { TopArticlesChart } from "./top-articles-chart";
 import { DateRangeFilter } from "./date-range-filter";
-import { ExportButton } from "./export-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getAnalyticsData, getViewsTrendData } from "../actions/analytics-actions";
 
@@ -69,17 +68,10 @@ export function AnalyticsPageClient({
     });
   };
 
-  const exportData = analytics.topArticles.map((article) => ({
-    Title: article.title,
-    Client: article.client,
-    Views: article.views,
-  }));
-
   return (
     <>
       <div className="flex items-center justify-between">
         <DateRangeFilter onDateRangeChange={handleDateRangeChange} />
-        <ExportButton data={exportData} filename="analytics-top-articles" />
       </div>
 
       {isPending ? (

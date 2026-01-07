@@ -14,7 +14,7 @@ import { SocialProfilesInput } from "./social-profiles-input";
 import { SEODoctor } from "@/components/shared/seo-doctor";
 import { createOrganizationSEOConfig } from "../helpers/client-seo-config";
 import { getSEOSettings, type SEOSettings } from "@/app/(dashboard)/settings/actions/settings-actions";
-import { ChevronDown, ChevronUp, User, Building2, CreditCard, Mail, Image, Twitter, Search } from "lucide-react";
+import { ChevronDown, ChevronUp, User, Building2, CreditCard, Mail, Image, Twitter, Search, Info } from "lucide-react";
 import { MediaPicker } from "@/components/shared/media-picker";
 
 import { updateClient } from "../actions/clients-actions";
@@ -939,19 +939,40 @@ export function ClientForm({ initialData, industries = [], onSubmit, clientId }:
                         hint="Canonical URL prevents duplicate content issues - auto-generated if not provided"
                       />
                       {/* Twitter section moved to its own card above */}
-                      <FormInput
-                        label="Google Tag Manager ID"
-                        name="gtmId"
-                        value={formData.gtmId}
-                        onChange={(e) => setFormData({ ...formData, gtmId: e.target.value })}
-                        placeholder="GTM-XXXXXXX"
-                        hint="GTM ID allows clients to see article performance in their own Google Analytics"
-                        error={
-                          formData.gtmId && !/^GTM-[A-Z0-9]+$/.test(formData.gtmId)
-                            ? "GTM ID must be in format GTM-XXXXXXX"
-                            : undefined
-                        }
-                      />
+                      <div className="space-y-3">
+                        <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded-lg p-4">
+                          <div className="flex items-start gap-3">
+                            <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                            <div className="space-y-2 text-sm">
+                              <p className="font-medium text-blue-900 dark:text-blue-100">
+                                Automatic Tracking Enabled
+                              </p>
+                              <p className="text-blue-800 dark:text-blue-200">
+                                This client's articles are automatically tracked via the main GTM container (configured in Settings). 
+                                All analytics include this client's unique identifier (<code className="bg-blue-100 dark:bg-blue-900 px-1 rounded text-xs font-mono">{initialData?.id || "client_id"}</code>) 
+                                for proper segmentation.
+                              </p>
+                              <p className="text-blue-800 dark:text-blue-200 font-medium">
+                                This field is optional and only needed if the client wants their own separate GTM container 
+                                (for their own Google Analytics property). Most clients don't need this.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <FormInput
+                          label="Google Tag Manager ID (Optional)"
+                          name="gtmId"
+                          value={formData.gtmId}
+                          onChange={(e) => setFormData({ ...formData, gtmId: e.target.value })}
+                          placeholder="GTM-XXXXXXX"
+                          hint="Only needed if client wants their own separate GTM container. Leave empty for automatic tracking via main container."
+                          error={
+                            formData.gtmId && !/^GTM-[A-Z0-9]+$/.test(formData.gtmId)
+                              ? "GTM ID must be in format GTM-XXXXXXX"
+                              : undefined
+                          }
+                        />
+                      </div>
                     </CardContent>
                   </CollapsibleContent>
                 </Card>

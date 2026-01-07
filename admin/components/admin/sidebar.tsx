@@ -16,6 +16,7 @@ import {
   Mail,
   BarChart3,
   Settings,
+  Download,
 } from "lucide-react";
 
 const menuItems = [
@@ -27,6 +28,7 @@ const menuItems = [
   { icon: Tag, label: "Tags", href: "/tags" },
   { icon: User, label: "Authors", href: "/authors" },
   { icon: Image, label: "Media", href: "/media" },
+  { icon: Download, label: "Export Data", href: "/export-data" },
   { icon: Users, label: "Users", href: "/users" },
   { icon: Mail, label: "Subscribers", href: "/subscribers" },
   { icon: BarChart3, label: "Analytics", href: "/analytics" },
