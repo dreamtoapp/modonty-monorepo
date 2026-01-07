@@ -58,6 +58,16 @@ export function AuthorForm({ initialData, clients, users = [], onSubmit }: Autho
     userId: initialData?.userId || "",
     seoTitle: initialData?.seoTitle || "",
     seoDescription: initialData?.seoDescription || "",
+    ogImage: initialData?.ogImage || "",
+    ogImageAlt: initialData?.ogImageAlt || "",
+    ogImageWidth: initialData?.ogImageWidth?.toString() || "",
+    ogImageHeight: initialData?.ogImageHeight?.toString() || "",
+    twitterCard: initialData?.twitterCard || "",
+    twitterTitle: initialData?.twitterTitle || "",
+    twitterDescription: initialData?.twitterDescription || "",
+    twitterImage: initialData?.twitterImage || "",
+    twitterImageAlt: initialData?.twitterImageAlt || "",
+    canonicalUrl: initialData?.canonicalUrl || "",
   });
 
   useEffect(() => {
@@ -72,6 +82,8 @@ export function AuthorForm({ initialData, clients, users = [], onSubmit }: Autho
 
     const result = await onSubmit({
       ...formData,
+      ogImageWidth: formData.ogImageWidth ? parseInt(formData.ogImageWidth) : undefined,
+      ogImageHeight: formData.ogImageHeight ? parseInt(formData.ogImageHeight) : undefined,
       worksFor: formData.worksFor || undefined,
       experienceYears: formData.experienceYears ? parseInt(formData.experienceYears) : undefined,
       credentials: formData.credentials
@@ -324,6 +336,92 @@ export function AuthorForm({ initialData, clients, users = [], onSubmit }: Autho
                 />
               </div>
             </div>
+            <FormInput
+              label="Canonical URL"
+              name="canonicalUrl"
+              value={formData.canonicalUrl}
+              onChange={(e) => setFormData({ ...formData, canonicalUrl: e.target.value })}
+              placeholder="https://example.com/authors/author-slug"
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Open Graph</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <FormInput
+              label="OG Image URL"
+              name="ogImage"
+              value={formData.ogImage}
+              onChange={(e) => setFormData({ ...formData, ogImage: e.target.value })}
+              placeholder="https://example.com/image.jpg"
+            />
+            <FormInput
+              label="OG Image Alt Text"
+              name="ogImageAlt"
+              value={formData.ogImageAlt}
+              onChange={(e) => setFormData({ ...formData, ogImageAlt: e.target.value })}
+            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormInput
+                label="OG Image Width"
+                name="ogImageWidth"
+                type="number"
+                value={formData.ogImageWidth}
+                onChange={(e) => setFormData({ ...formData, ogImageWidth: e.target.value })}
+                placeholder="1200"
+              />
+              <FormInput
+                label="OG Image Height"
+                name="ogImageHeight"
+                type="number"
+                value={formData.ogImageHeight}
+                onChange={(e) => setFormData({ ...formData, ogImageHeight: e.target.value })}
+                placeholder="630"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Twitter Cards</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <FormInput
+              label="Twitter Card Type"
+              name="twitterCard"
+              value={formData.twitterCard}
+              onChange={(e) => setFormData({ ...formData, twitterCard: e.target.value })}
+              placeholder="summary_large_image or summary"
+            />
+            <FormInput
+              label="Twitter Title"
+              name="twitterTitle"
+              value={formData.twitterTitle}
+              onChange={(e) => setFormData({ ...formData, twitterTitle: e.target.value })}
+            />
+            <FormTextarea
+              label="Twitter Description"
+              name="twitterDescription"
+              value={formData.twitterDescription}
+              onChange={(e) => setFormData({ ...formData, twitterDescription: e.target.value })}
+              rows={2}
+            />
+            <FormInput
+              label="Twitter Image URL"
+              name="twitterImage"
+              value={formData.twitterImage}
+              onChange={(e) => setFormData({ ...formData, twitterImage: e.target.value })}
+            />
+            <FormInput
+              label="Twitter Image Alt Text"
+              name="twitterImageAlt"
+              value={formData.twitterImageAlt}
+              onChange={(e) => setFormData({ ...formData, twitterImageAlt: e.target.value })}
+            />
           </CardContent>
         </Card>
 

@@ -130,6 +130,16 @@ export async function createAuthor(data: {
   userId?: string;
   seoTitle?: string;
   seoDescription?: string;
+  ogImage?: string;
+  ogImageAlt?: string;
+  ogImageWidth?: number;
+  ogImageHeight?: number;
+  twitterCard?: string;
+  twitterTitle?: string;
+  twitterDescription?: string;
+  twitterImage?: string;
+  twitterImageAlt?: string;
+  canonicalUrl?: string;
 }) {
   try {
     const author = await db.author.create({
@@ -155,6 +165,16 @@ export async function createAuthor(data: {
         userId: data.userId || null,
         seoTitle: data.seoTitle,
         seoDescription: data.seoDescription,
+        ogImage: data.ogImage,
+        ogImageAlt: data.ogImageAlt,
+        ogImageWidth: data.ogImageWidth,
+        ogImageHeight: data.ogImageHeight,
+        twitterCard: data.twitterCard,
+        twitterTitle: data.twitterTitle,
+        twitterDescription: data.twitterDescription,
+        twitterImage: data.twitterImage,
+        twitterImageAlt: data.twitterImageAlt,
+        canonicalUrl: data.canonicalUrl,
       },
     });
     revalidatePath("/authors");
@@ -189,6 +209,16 @@ export async function updateAuthor(
     userId?: string;
     seoTitle?: string;
     seoDescription?: string;
+    ogImage?: string;
+    ogImageAlt?: string;
+    ogImageWidth?: number;
+    ogImageHeight?: number;
+    twitterCard?: string;
+    twitterTitle?: string;
+    twitterDescription?: string;
+    twitterImage?: string;
+    twitterImageAlt?: string;
+    canonicalUrl?: string;
   }
 ) {
   try {
@@ -216,6 +246,16 @@ export async function updateAuthor(
         userId: data.userId || null,
         seoTitle: data.seoTitle,
         seoDescription: data.seoDescription,
+        ogImage: data.ogImage,
+        ogImageAlt: data.ogImageAlt,
+        ogImageWidth: data.ogImageWidth,
+        ogImageHeight: data.ogImageHeight,
+        twitterCard: data.twitterCard,
+        twitterTitle: data.twitterTitle,
+        twitterDescription: data.twitterDescription,
+        twitterImage: data.twitterImage,
+        twitterImageAlt: data.twitterImageAlt,
+        canonicalUrl: data.canonicalUrl,
       },
     });
     revalidatePath("/authors");

@@ -7,6 +7,14 @@ import { GTMContainer } from "@/components/gtm/GTMContainer";
 export const metadata: Metadata = {
   title: "Modonty Admin - Dashboard",
   description: "Admin dashboard for Modonty blog platform",
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
 };
 
 export default function RootLayout({

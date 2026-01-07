@@ -3,7 +3,7 @@ import { CategoriesStats } from "./components/categories-stats";
 import { CategoriesFilters } from "./components/categories-filters";
 import { CategoriesPageClient } from "./components/categories-page-client";
 import { Button } from "@/components/ui/button";
-import { Plus, BookOpen } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 
 export default async function CategoriesPage({
@@ -50,10 +50,9 @@ export default async function CategoriesPage({
           <p className="text-muted-foreground mt-1">{getDescription()}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Link href="/guidelines/categories">
+          <Link href="/categories/tree">
             <Button variant="outline" size="sm">
-              <BookOpen className="h-4 w-4 mr-2" />
-              Guidelines
+              Tree View
             </Button>
           </Link>
           <Link href="/categories/new">

@@ -5,9 +5,6 @@ import { TrafficSourcesChart } from "./components/traffic-sources-chart";
 import { TopArticlesChart } from "./components/top-articles-chart";
 import { DateRangeFilter } from "./components/date-range-filter";
 import { AnalyticsPageClient } from "./components/analytics-page-client";
-import { Button } from "@/components/ui/button";
-import { BookOpen } from "lucide-react";
-import Link from "next/link";
 
 export default async function AnalyticsPage() {
   const analytics = await getAnalyticsData();
@@ -20,12 +17,6 @@ export default async function AnalyticsPage() {
           <h1 className="text-2xl font-semibold leading-tight">Analytics</h1>
           <p className="text-muted-foreground mt-1">View analytics and metrics for your content</p>
         </div>
-        <Link href="/guidelines/analytics">
-          <Button variant="outline" size="sm">
-            <BookOpen className="h-4 w-4 mr-2" />
-            Guidelines
-          </Button>
-        </Link>
       </div>
       
       <AnalyticsPageClient

@@ -3,7 +3,7 @@ import { AuthorsStats } from "./components/authors-stats";
 import { AuthorsFilters } from "./components/authors-filters";
 import { AuthorsPageClient } from "./components/authors-page-client";
 import { Button } from "@/components/ui/button";
-import { Plus, BookOpen } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 
 export default async function AuthorsPage({
@@ -50,12 +50,6 @@ export default async function AuthorsPage({
           <p className="text-muted-foreground mt-1">{getDescription()}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Link href="/guidelines/authors">
-            <Button variant="outline" size="sm">
-              <BookOpen className="h-4 w-4 mr-2" />
-              Guidelines
-            </Button>
-          </Link>
           <Link href="/authors/new">
             <Button>
               <Plus className="h-4 w-4 mr-2" />

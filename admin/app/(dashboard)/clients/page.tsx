@@ -3,7 +3,7 @@ import { ClientsStats } from "./components/clients-stats";
 import { ClientsFilters } from "./components/clients-filters";
 import { ClientsPageClient } from "./components/clients-page-client";
 import { Button } from "@/components/ui/button";
-import { Plus, BookOpen } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 
 export default async function ClientsPage({
@@ -50,12 +50,6 @@ export default async function ClientsPage({
           <p className="text-muted-foreground mt-1">{getDescription()}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Link href="/guidelines/clients">
-            <Button variant="outline" size="sm">
-              <BookOpen className="h-4 w-4 mr-2" />
-              Guidelines
-            </Button>
-          </Link>
           <Link href="/clients/new">
             <Button>
               <Plus className="h-4 w-4 mr-2" />

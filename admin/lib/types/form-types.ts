@@ -115,6 +115,16 @@ export interface AuthorFormData {
   education?: Array<Record<string, string | number | boolean>>;
   seoTitle?: string;
   seoDescription?: string;
+  ogImage?: string;
+  ogImageAlt?: string;
+  ogImageWidth?: number;
+  ogImageHeight?: number;
+  twitterCard?: string;
+  twitterTitle?: string;
+  twitterDescription?: string;
+  twitterImage?: string;
+  twitterImageAlt?: string;
+  canonicalUrl?: string;
   userId?: string;
 }
 
@@ -123,14 +133,6 @@ export interface CategoryFormData {
   slug: string;
   description?: string;
   parentId?: string;
-  seoTitle?: string;
-  seoDescription?: string;
-}
-
-export interface TagFormData {
-  name: string;
-  slug: string;
-  description?: string;
   seoTitle?: string;
   seoDescription?: string;
   ogImage?: string;
@@ -145,7 +147,7 @@ export interface TagFormData {
   canonicalUrl?: string;
 }
 
-export interface IndustryFormData {
+export interface TagFormData {
   name: string;
   slug: string;
   description?: string;
@@ -174,6 +176,16 @@ export interface IndustryFormData {
   description?: string;
   seoTitle?: string;
   seoDescription?: string;
+  ogImage?: string;
+  ogImageAlt?: string;
+  ogImageWidth?: number;
+  ogImageHeight?: number;
+  twitterCard?: string;
+  twitterTitle?: string;
+  twitterDescription?: string;
+  twitterImage?: string;
+  twitterImageAlt?: string;
+  canonicalUrl?: string;
 }
 
 export interface UserFormData {

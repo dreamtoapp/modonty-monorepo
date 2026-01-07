@@ -8,7 +8,6 @@ import {
   validateOGImage,
   validateOGImageAlt,
   validateOGImageDimensions,
-  validateOGTags,
   validateTwitterCards,
   validateTwitterImageAlt,
   validateCanonicalUrl,
@@ -62,7 +61,7 @@ const createValidateTagSEOTitleAndOG = (settings?: SEOSettings): SEOFieldValidat
     // Then check OG tags completeness
     const hasOGTitle = data.seoTitle && typeof data.seoTitle === "string" && data.seoTitle.trim().length > 0;
     const hasOGDescription = data.seoDescription && typeof data.seoDescription === "string" && data.seoDescription.trim().length > 0;
-    const hasOGUrl = data.url && typeof data.url === "string" && data.url.trim().length > 0;
+    const hasOGUrl = data.canonicalUrl && typeof data.canonicalUrl === "string" && data.canonicalUrl.trim().length > 0;
     const hasOGImage = data.ogImage && typeof data.ogImage === "string" && data.ogImage.trim().length > 0;
     const hasOGImageAlt = data.ogImageAlt && typeof data.ogImageAlt === "string" && data.ogImageAlt.trim().length > 0;
     const hasOGImageWidth = data.ogImageWidth && typeof data.ogImageWidth === "number";
@@ -125,10 +124,15 @@ const createValidateTagSEOTitleAndOG = (settings?: SEOSettings): SEOFieldValidat
 function generateTagStructuredData(data: Record<string, unknown>): Record<string, unknown> {
   return {
     "@context": "https://schema.org",
-    "@type": "Tag",
+    "@type": "CollectionPage",
     name: (data.name as string) || "",
     description: (data.description as string) || undefined,
     url: data.canonicalUrl ? (data.canonicalUrl as string) : undefined,
+    about: {
+      "@type": "DefinedTerm",
+      name: (data.name as string) || "",
+      description: (data.description as string) || undefined,
+    },
   };
 }
 

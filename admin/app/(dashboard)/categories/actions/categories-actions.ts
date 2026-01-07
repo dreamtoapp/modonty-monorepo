@@ -124,6 +124,16 @@ export async function createCategory(data: {
   parentId?: string;
   seoTitle?: string;
   seoDescription?: string;
+  ogImage?: string;
+  ogImageAlt?: string;
+  ogImageWidth?: number;
+  ogImageHeight?: number;
+  twitterCard?: string;
+  twitterTitle?: string;
+  twitterDescription?: string;
+  twitterImage?: string;
+  twitterImageAlt?: string;
+  canonicalUrl?: string;
 }) {
   try {
     const category = await db.category.create({
@@ -134,6 +144,16 @@ export async function createCategory(data: {
         parentId: data.parentId || null,
         seoTitle: data.seoTitle,
         seoDescription: data.seoDescription,
+        ogImage: data.ogImage,
+        ogImageAlt: data.ogImageAlt,
+        ogImageWidth: data.ogImageWidth,
+        ogImageHeight: data.ogImageHeight,
+        twitterCard: data.twitterCard,
+        twitterTitle: data.twitterTitle,
+        twitterDescription: data.twitterDescription,
+        twitterImage: data.twitterImage,
+        twitterImageAlt: data.twitterImageAlt,
+        canonicalUrl: data.canonicalUrl,
       },
     });
     revalidatePath("/categories");
@@ -153,6 +173,16 @@ export async function updateCategory(
     parentId?: string;
     seoTitle?: string;
     seoDescription?: string;
+    ogImage?: string;
+    ogImageAlt?: string;
+    ogImageWidth?: number;
+    ogImageHeight?: number;
+    twitterCard?: string;
+    twitterTitle?: string;
+    twitterDescription?: string;
+    twitterImage?: string;
+    twitterImageAlt?: string;
+    canonicalUrl?: string;
   }
 ) {
   try {
@@ -165,6 +195,16 @@ export async function updateCategory(
         parentId: data.parentId || null,
         seoTitle: data.seoTitle,
         seoDescription: data.seoDescription,
+        ogImage: data.ogImage,
+        ogImageAlt: data.ogImageAlt,
+        ogImageWidth: data.ogImageWidth,
+        ogImageHeight: data.ogImageHeight,
+        twitterCard: data.twitterCard,
+        twitterTitle: data.twitterTitle,
+        twitterDescription: data.twitterDescription,
+        twitterImage: data.twitterImage,
+        twitterImageAlt: data.twitterImageAlt,
+        canonicalUrl: data.canonicalUrl,
       },
     });
     revalidatePath("/categories");

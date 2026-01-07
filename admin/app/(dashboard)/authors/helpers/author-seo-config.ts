@@ -4,8 +4,15 @@ import {
   createValidateSEOTitle,
   createValidateSEODescription,
   validateOGImage,
+  validateOGImageAlt,
+  validateOGImageDimensions,
   validateImageAlt,
   validateUrl,
+  createValidateTwitterTitle,
+  createValidateTwitterDescription,
+  validateTwitterCards,
+  validateTwitterImageAlt,
+  validateCanonicalUrl,
 } from "@/components/shared/seo-doctor/validators";
 import type { SEOSettings } from "@/app/(dashboard)/settings/actions/settings-actions";
 
@@ -139,7 +146,8 @@ function generatePersonStructuredData(data: Record<string, unknown>): Record<str
   };
 
   if (data.bio) structuredData.description = data.bio as string;
-  if (data.url) structuredData.url = data.url as string;
+  if (data.canonicalUrl) structuredData.url = data.canonicalUrl as string;
+  else if (data.url) structuredData.url = data.url as string;
   if (data.image) structuredData.image = data.image as string;
   if (data.jobTitle) structuredData.jobTitle = data.jobTitle as string;
   if (data.worksFor) {
@@ -177,6 +185,14 @@ export const createAuthorSEOConfig = (settings?: SEOSettings): SEODoctorConfig =
     { name: "bio", label: "Author Bio", validator: validateAuthorBio },
     { name: "image", label: "Profile Image", validator: validateOGImage },
     { name: "imageAlt", label: "Profile Image Alt Text", validator: validateImageAlt },
+    { name: "ogImage", label: "OG Image", validator: validateOGImage },
+    { name: "ogImageAlt", label: "OG Image Alt Text", validator: validateOGImageAlt },
+    { name: "ogImageWidth", label: "OG Image Dimensions", validator: validateOGImageDimensions },
+    { name: "twitterCard", label: "Twitter Cards", validator: validateTwitterCards },
+    { name: "twitterTitle", label: "Twitter Title", validator: createValidateTwitterTitle(settings) },
+    { name: "twitterDescription", label: "Twitter Description", validator: createValidateTwitterDescription(settings) },
+    { name: "twitterImageAlt", label: "Twitter Image Alt Text", validator: validateTwitterImageAlt },
+    { name: "canonicalUrl", label: "Canonical URL", validator: validateCanonicalUrl },
     { name: "jobTitle", label: "E-E-A-T Signals", validator: validateAuthorEETAT },
     { name: "linkedIn", label: "Social Profiles", validator: validateAuthorSocial },
     { name: "seoTitle", label: "SEO Title", validator: createValidateSEOTitle(settings) },

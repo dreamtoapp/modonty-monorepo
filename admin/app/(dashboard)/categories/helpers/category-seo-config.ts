@@ -5,8 +5,11 @@ import {
   createValidateSEODescription,
   createValidateTwitterTitle,
   createValidateTwitterDescription,
-  validateOGTags,
+  validateOGImage,
+  validateOGImageAlt,
+  validateOGImageDimensions,
   validateTwitterCards,
+  validateTwitterImageAlt,
   validateCanonicalUrl,
 } from "@/components/shared/seo-doctor/validators";
 import type { SEOSettings } from "@/app/(dashboard)/settings/actions/settings-actions";
@@ -58,7 +61,7 @@ const createValidateCategorySEOTitleAndOG = (settings?: SEOSettings): SEOFieldVa
     // Then check OG tags completeness
     const hasOGTitle = data.seoTitle && typeof data.seoTitle === "string" && data.seoTitle.trim().length > 0;
     const hasOGDescription = data.seoDescription && typeof data.seoDescription === "string" && data.seoDescription.trim().length > 0;
-    const hasOGUrl = data.url && typeof data.url === "string" && data.url.trim().length > 0;
+    const hasOGUrl = data.canonicalUrl && typeof data.canonicalUrl === "string" && data.canonicalUrl.trim().length > 0;
     const hasOGImage = data.ogImage && typeof data.ogImage === "string" && data.ogImage.trim().length > 0;
     const hasOGImageAlt = data.ogImageAlt && typeof data.ogImageAlt === "string" && data.ogImageAlt.trim().length > 0;
     const hasOGImageWidth = data.ogImageWidth && typeof data.ogImageWidth === "number";
@@ -121,10 +124,15 @@ const createValidateCategorySEOTitleAndOG = (settings?: SEOSettings): SEOFieldVa
 function generateCategoryStructuredData(data: Record<string, unknown>): Record<string, unknown> {
   return {
     "@context": "https://schema.org",
-    "@type": "Category",
+    "@type": "CollectionPage",
     name: (data.name as string) || "",
     description: (data.description as string) || undefined,
     url: data.canonicalUrl ? (data.canonicalUrl as string) : undefined,
+    about: {
+      "@type": "DefinedTerm",
+      name: (data.name as string) || "",
+      description: (data.description as string) || undefined,
+    },
   };
 }
 
@@ -139,9 +147,13 @@ export const createCategorySEOConfig = (settings?: SEOSettings): SEODoctorConfig
     { name: "description", label: "Category Description", validator: validateCategoryDescription },
     { name: "seoTitle", label: "SEO Title & Open Graph", validator: createValidateCategorySEOTitleAndOG(settings) },
     { name: "seoDescription", label: "SEO Description", validator: createValidateSEODescription(settings) },
+    { name: "ogImage", label: "OG Image", validator: validateOGImage },
+    { name: "ogImageAlt", label: "OG Image Alt Text", validator: validateOGImageAlt },
+    { name: "ogImageWidth", label: "OG Image Dimensions", validator: validateOGImageDimensions },
     { name: "twitterCard", label: "Twitter Cards", validator: validateTwitterCards },
     { name: "twitterTitle", label: "Twitter Title", validator: createValidateTwitterTitle(settings) },
     { name: "twitterDescription", label: "Twitter Description", validator: createValidateTwitterDescription(settings) },
+    { name: "twitterImageAlt", label: "Twitter Image Alt Text", validator: validateTwitterImageAlt },
     { name: "canonicalUrl", label: "Canonical URL", validator: validateCanonicalUrl },
   ],
 });
