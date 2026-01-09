@@ -82,18 +82,47 @@ export function generateSEOFileName(
  * Generate Cloudinary public_id with folder structure
  * 
  * @param seoFileName - SEO-friendly filename (from generateSEOFileName)
- * @param folder - Optional folder path (e.g., "media", "images")
+ * @param folder - Optional folder path (e.g., "media", "og-images/tag/slug")
  * @returns Full public_id path for Cloudinary
  * 
  * @example
  * generateCloudinaryPublicId("sunset-beach", "media")
  * // Returns: "media/sunset-beach"
+ * generateCloudinaryPublicId("filename", "og-images/tag/slug")
+ * // Returns: "og-images/tag/slug/filename"
  */
+/**
+ * Check if a string is a MongoDB ObjectId (24 hex characters)
+ */
+function isObjectId(str: string): boolean {
+  return /^[0-9a-fA-F]{24}$/.test(str);
+}
+
 export function generateCloudinaryPublicId(
   seoFileName: string,
   folder?: string
 ): string {
   if (folder) {
+    // If folder contains slashes, it's already a path structure - preserve it
+    // Only slugify individual path segments, not the entire path
+    // Skip slugifying ObjectIds (they're already URL-safe)
+    if (folder.includes("/")) {
+      const pathSegments = folder.split("/");
+      const processedSegments = pathSegments.map(segment => {
+        // Don't slugify ObjectIds - they're already URL-safe
+        if (isObjectId(segment)) {
+          return segment;
+        }
+        return slugify(segment);
+      });
+      const folderPath = processedSegments.join("/");
+      return `${folderPath}/${seoFileName}`;
+    }
+    // Single folder name - check if it's an ObjectId
+    if (isObjectId(folder)) {
+      return `${folder}/${seoFileName}`;
+    }
+    // Single folder name - slugify it
     const folderSlug = slugify(folder);
     return `${folderSlug}/${seoFileName}`;
   }

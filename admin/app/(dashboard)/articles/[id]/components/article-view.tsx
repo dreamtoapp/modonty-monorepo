@@ -92,7 +92,7 @@ export function ArticleView({ article }: ArticleViewProps) {
           </div>
           <div>
             <p className="text-sm text-muted-foreground mb-1">Author</p>
-            <p>{article.author?.name || "-"}</p>
+            <p>Modonty</p>
           </div>
         </CardContent>
       </Card>

@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { deleteOldImage } from "../../actions/delete-image";
 import { Prisma, ArticleStatus } from "@prisma/client";
 import { calculateSEOScore } from "@/helpers/utils/seo-score-calculator";
 import { industrySEOConfig } from "../helpers/industry-seo-config";
@@ -127,16 +128,10 @@ export async function createIndustry(data: {
   description?: string;
   seoTitle?: string;
   seoDescription?: string;
-  ogImage?: string;
-  ogImageAlt?: string;
-  ogImageWidth?: number;
-  ogImageHeight?: number;
-  twitterCard?: string;
-  twitterTitle?: string;
-  twitterDescription?: string;
-  twitterImage?: string;
-  twitterImageAlt?: string;
   canonicalUrl?: string;
+  socialImage?: string;
+  socialImageAlt?: string;
+  cloudinaryPublicId?: string;
 }) {
   try {
     const industry = await db.industry.create({ data });
@@ -156,20 +151,44 @@ export async function updateIndustry(
     description?: string;
     seoTitle?: string;
     seoDescription?: string;
-    ogImage?: string;
-    ogImageAlt?: string;
-    ogImageWidth?: number;
-    ogImageHeight?: number;
-    twitterCard?: string;
-    twitterTitle?: string;
-    twitterDescription?: string;
-    twitterImage?: string;
-    twitterImageAlt?: string;
     canonicalUrl?: string;
+    socialImage?: string | null;
+    socialImageAlt?: string | null;
+    cloudinaryPublicId?: string | null;
   }
 ) {
   try {
-    const industry = await db.industry.update({ where: { id }, data });
+    const updateData: {
+      name: string;
+      slug: string;
+      description?: string | null;
+      seoTitle?: string | null;
+      seoDescription?: string | null;
+      canonicalUrl?: string | null;
+      socialImage?: string | null;
+      socialImageAlt?: string | null;
+      cloudinaryPublicId?: string | null;
+    } = {
+      name: data.name,
+      slug: data.slug,
+      description: data.description || null,
+      seoTitle: data.seoTitle || null,
+      seoDescription: data.seoDescription || null,
+      canonicalUrl: data.canonicalUrl || null,
+    };
+
+    // Only update socialImage fields if they are explicitly provided (including null for removal)
+    if (data.socialImage !== undefined) {
+      updateData.socialImage = data.socialImage;
+    }
+    if (data.socialImageAlt !== undefined) {
+      updateData.socialImageAlt = data.socialImageAlt;
+    }
+    if (data.cloudinaryPublicId !== undefined) {
+      updateData.cloudinaryPublicId = data.cloudinaryPublicId;
+    }
+
+    const industry = await db.industry.update({ where: { id }, data: updateData });
     revalidatePath("/industries");
     return { success: true, industry };
   } catch (error) {
@@ -191,6 +210,9 @@ export async function deleteIndustry(id: string) {
         error: `Cannot delete industry. It is used by ${industry._count.clients} client(s).`,
       };
     }
+
+    // Delete Cloudinary image before database deletion (non-blocking)
+    await deleteOldImage("industries", id);
 
     await db.industry.delete({ where: { id } });
     revalidatePath("/industries");
@@ -229,6 +251,11 @@ export async function bulkDeleteIndustries(industryIds: string[]) {
         success: false,
         error: `Cannot delete ${industriesWithClients.length} industr${industriesWithClients.length === 1 ? "y" : "ies"} with clients: ${industryNames}. Total clients: ${totalClients}. Please delete or reassign the clients first.`,
       };
+    }
+
+    // Delete Cloudinary images for all industries (non-blocking)
+    for (const industryId of industryIds) {
+      await deleteOldImage("industries", industryId);
     }
 
     await db.industry.deleteMany({

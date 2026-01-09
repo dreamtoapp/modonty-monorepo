@@ -24,6 +24,8 @@ interface Industry {
   description: string | null;
   seoTitle: string | null;
   seoDescription: string | null;
+  socialImage: string | null;
+  socialImageAlt: string | null;
   createdAt: Date;
   updatedAt: Date;
   _count: {
@@ -132,6 +134,26 @@ export function IndustryView({ industry }: IndustryViewProps) {
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">SEO Description</p>
                   <p className="text-sm">{industry.seoDescription}</p>
+                </div>
+              )}
+              {industry.socialImage && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">Social Image</p>
+                  <div className="space-y-2">
+                    <div className="relative border rounded-lg overflow-hidden max-w-md">
+                      <img
+                        src={industry.socialImage}
+                        alt={industry.socialImageAlt || "Social image"}
+                        className="w-full h-auto max-h-64 object-contain"
+                      />
+                    </div>
+                    {industry.socialImageAlt && (
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Alt Text</p>
+                        <p className="text-sm">{industry.socialImageAlt}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </CardContent>

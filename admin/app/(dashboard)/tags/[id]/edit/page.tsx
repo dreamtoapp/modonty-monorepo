@@ -3,7 +3,6 @@ import { getTagById } from "../../actions/tags-actions";
 import { PageHeader } from "@/components/shared/page-header";
 import { TagForm } from "../../components/tag-form";
 import { DeleteTagButton } from "../components/delete-tag-button";
-import { updateTag } from "../../actions/tags-actions";
 
 export default async function EditTagPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -19,7 +18,7 @@ export default async function EditTagPage({ params }: { params: Promise<{ id: st
       <div className="mb-6">
         <DeleteTagButton tagId={id} />
       </div>
-      <TagForm initialData={tag} onSubmit={(data) => updateTag(id, data)} />
+      <TagForm initialData={tag} tagId={id} />
     </div>
   );
 }

@@ -119,7 +119,7 @@ export async function exportArticlesToCSV(filters?: ArticleFilters): Promise<str
         escapeCsvValue(article.status),
         escapeCsvValue(article.client?.name),
         escapeCsvValue(article.category?.name),
-        escapeCsvValue(article.author?.name),
+        escapeCsvValue("Modonty"),
         views.toString(),
         formatDate(article.createdAt),
         formatDate(article.datePublished),

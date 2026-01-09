@@ -97,12 +97,15 @@ export interface ClientFormData {
 export interface AuthorFormData {
   name: string;
   slug: string;
+  firstName?: string;
+  lastName?: string;
   jobTitle?: string;
   worksFor?: string;
   bio?: string;
   image?: string;
   imageAlt?: string;
   url?: string;
+  email?: string;
   linkedIn?: string;
   twitter?: string;
   facebook?: string;
@@ -112,20 +115,14 @@ export interface AuthorFormData {
   expertiseAreas?: string[];
   experienceYears?: number;
   verificationStatus?: boolean;
+  memberOf?: string[];
   education?: Array<Record<string, string | number | boolean>>;
   seoTitle?: string;
   seoDescription?: string;
-  ogImage?: string;
-  ogImageAlt?: string;
-  ogImageWidth?: number;
-  ogImageHeight?: number;
-  twitterCard?: string;
-  twitterTitle?: string;
-  twitterDescription?: string;
-  twitterImage?: string;
-  twitterImageAlt?: string;
+  socialImage?: string | null;
+  socialImageAlt?: string | null;
+  cloudinaryPublicId?: string | null;
   canonicalUrl?: string;
-  userId?: string;
 }
 
 export interface CategoryFormData {
@@ -135,16 +132,10 @@ export interface CategoryFormData {
   parentId?: string;
   seoTitle?: string;
   seoDescription?: string;
-  ogImage?: string;
-  ogImageAlt?: string;
-  ogImageWidth?: number;
-  ogImageHeight?: number;
-  twitterCard?: string;
-  twitterTitle?: string;
-  twitterDescription?: string;
-  twitterImage?: string;
-  twitterImageAlt?: string;
   canonicalUrl?: string;
+  socialImage?: string | null;
+  socialImageAlt?: string | null;
+  cloudinaryPublicId?: string | null;
 }
 
 export interface TagFormData {
@@ -153,16 +144,10 @@ export interface TagFormData {
   description?: string;
   seoTitle?: string;
   seoDescription?: string;
-  ogImage?: string;
-  ogImageAlt?: string;
-  ogImageWidth?: number;
-  ogImageHeight?: number;
-  twitterCard?: string;
-  twitterTitle?: string;
-  twitterDescription?: string;
-  twitterImage?: string;
-  twitterImageAlt?: string;
   canonicalUrl?: string;
+  socialImage?: string | null;
+  socialImageAlt?: string | null;
+  cloudinaryPublicId?: string | null;
 }
 
 export interface TagFormDataOld {
@@ -176,16 +161,10 @@ export interface IndustryFormData {
   description?: string;
   seoTitle?: string;
   seoDescription?: string;
-  ogImage?: string;
-  ogImageAlt?: string;
-  ogImageWidth?: number;
-  ogImageHeight?: number;
-  twitterCard?: string;
-  twitterTitle?: string;
-  twitterDescription?: string;
-  twitterImage?: string;
-  twitterImageAlt?: string;
   canonicalUrl?: string;
+  socialImage?: string | null;
+  socialImageAlt?: string | null;
+  cloudinaryPublicId?: string | null;
 }
 
 export interface UserFormData {

@@ -139,13 +139,11 @@ export function EditMediaForm({ media }: EditMediaFormProps) {
 
       // If alt text or title changed, and we have a Cloudinary public_id, rename the asset
       if ((altTextChanged || titleChanged) && media.cloudinaryPublicId) {
-        // Get client slug for folder organization
-        const clientSlug = media.client?.name
-          ? media.client.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")
-          : "default";
+        // Use client ID for folder organization (immutable, stable)
+        const clientId = media.client?.id || "default";
 
         // Extract unique suffix from old public_id if it exists
-        // Format: media/client-name/filename-uniquesuffix
+        // Format: clients/clientId/filename-uniquesuffix
         const oldPublicIdParts = media.cloudinaryPublicId.split('/');
         const oldFileName = oldPublicIdParts[oldPublicIdParts.length - 1];
         const oldSuffixMatch = oldFileName.match(/-([a-z0-9]{8,})$/);
@@ -157,7 +155,7 @@ export function EditMediaForm({ media }: EditMediaFormProps) {
           formData.altText.trim() || "",
           formData.title.trim() || "",
           media.filename,
-          clientSlug,
+          undefined, // No client slug in filename (folder structure handles organization)
           false // Don't add new unique suffix
         );
 
@@ -170,12 +168,14 @@ export function EditMediaForm({ media }: EditMediaFormProps) {
             formData.altText.trim() || "",
             formData.title.trim() || "",
             media.filename,
-            clientSlug,
+            undefined, // No client slug in filename
             true // Add new unique suffix
           );
         }
 
-        const newPublicId = generateCloudinaryPublicId(seoFileName, "media");
+        // Use client ID for folder structure (consistent with upload logic)
+        const folderPath = `clients/${clientId}`;
+        const newPublicId = generateCloudinaryPublicId(seoFileName, folderPath);
 
         // Only rename if the new public_id is different
         if (newPublicId !== media.cloudinaryPublicId) {

@@ -184,31 +184,33 @@ export function SEODoctor({ data, config, title = "SEO Doctor" }: SEODoctorProps
             structured data.
           </p>
         </div>
-        <Collapsible open={showSchema} onOpenChange={setShowSchema}>
-          <CollapsibleTrigger className="w-full mt-3">
-            <div className="flex items-center justify-between p-2 rounded-md border bg-muted/30 hover:bg-muted/50 transition-colors">
-              <div className="flex items-center gap-2">
-                <Code className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-xs font-medium">Schema.org Preview</span>
+        <div suppressHydrationWarning>
+          <Collapsible open={showSchema} onOpenChange={setShowSchema}>
+            <CollapsibleTrigger className="w-full mt-3">
+              <div className="flex items-center justify-between p-2 rounded-md border bg-muted/30 hover:bg-muted/50 transition-colors">
+                <div className="flex items-center gap-2">
+                  <Code className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-xs font-medium">Schema.org Preview</span>
+                </div>
+                {showSchema ? (
+                  <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                )}
               </div>
-              {showSchema ? (
-                <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-              )}
-            </div>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <div className="mt-2 p-3 rounded-md border bg-background">
-              <p className="text-[10px] text-muted-foreground mb-2">
-                This is how your Schema.org structured data will appear:
-              </p>
-              <pre className="text-[10px] overflow-x-auto p-2 rounded bg-muted/30 border font-mono">
-                {JSON.stringify(structuredDataPreview, null, 2)}
-              </pre>
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="mt-2 p-3 rounded-md border bg-background">
+                <p className="text-[10px] text-muted-foreground mb-2">
+                  This is how your Schema.org structured data will appear:
+                </p>
+                <pre className="text-[10px] overflow-x-auto p-2 rounded bg-muted/30 border font-mono">
+                  {JSON.stringify(structuredDataPreview, null, 2)}
+                </pre>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
       </CardContent>
     </Card>
   );

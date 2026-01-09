@@ -103,10 +103,10 @@ export function MediaPickerDialog({
 
   const filteredMedia = search
     ? media.filter(
-        (item) =>
-          item.filename.toLowerCase().includes(search.toLowerCase()) ||
-          item.altText?.toLowerCase().includes(search.toLowerCase())
-      )
+      (item) =>
+        item.filename.toLowerCase().includes(search.toLowerCase()) ||
+        item.altText?.toLowerCase().includes(search.toLowerCase())
+    )
     : media;
 
   const getImageUrl = (item: Media): string => {
@@ -212,8 +212,8 @@ export function MediaPickerDialog({
                 {search
                   ? "No media found matching your search."
                   : typeFilter !== "all"
-                  ? `No ${getMediaTypeLabel(typeFilter).toLowerCase()} media available for this client.`
-                  : "No media available for this client."}
+                    ? `No ${getMediaTypeLabel(typeFilter).toLowerCase()} media available for this client.`
+                    : "No media available for this client."}
               </p>
               <Link href={`/media/upload?clientId=${clientId}`}>
                 <Button variant="outline" size="sm" className="mt-2">

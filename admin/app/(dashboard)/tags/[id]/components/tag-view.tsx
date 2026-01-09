@@ -25,6 +25,8 @@ interface Tag {
   description: string | null;
   seoTitle: string | null;
   seoDescription: string | null;
+  socialImage: string | null;
+  socialImageAlt: string | null;
   createdAt: Date;
   updatedAt: Date;
   articles: Array<{
@@ -139,6 +141,26 @@ export function TagView({ tag }: TagViewProps) {
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">SEO Description</p>
                   <p className="text-sm">{tag.seoDescription}</p>
+                </div>
+              )}
+              {tag.socialImage && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">Social Image</p>
+                  <div className="space-y-2">
+                    <div className="relative border rounded-lg overflow-hidden max-w-md">
+                      <img
+                        src={tag.socialImage}
+                        alt={tag.socialImageAlt || "Social image"}
+                        className="w-full h-auto max-h-64 object-contain"
+                      />
+                    </div>
+                    {tag.socialImageAlt && (
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Alt Text</p>
+                        <p className="text-sm">{tag.socialImageAlt}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </CardContent>

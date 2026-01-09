@@ -40,14 +40,14 @@ export function AnalticCard({
   const trendValue = trend !== undefined ? trend : (typeof value === "object" && "trend" in value ? value.trend : undefined);
 
   return (
-    <Card className={cn("hover:shadow-md transition-shadow", className)}>
+    <Card className={cn("hover:shadow-md transition-shadow flex flex-col", className)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className={cn("text-sm font-medium", Icon ? "text-muted-foreground" : "")}>
           {title}
         </CardTitle>
         {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 flex flex-col">
         <div className="text-2xl font-semibold">{displayValue}</div>
         {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
         {trendValue !== undefined && (

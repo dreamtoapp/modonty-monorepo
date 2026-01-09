@@ -1,8 +1,9 @@
-import { getMedia, getClients, type MediaFilters } from "./actions/media-actions";
+import { getMedia, getClients, getMediaStats, type MediaFilters } from "./actions/media-actions";
 import { MediaGrid } from "./components/media-grid";
 import { MediaFilters as MediaFiltersComponent } from "./components/media-filters";
 import { MediaToolbar } from "./components/media-toolbar";
 import { MediaPageClient } from "./components/media-page-client";
+import { MediaStats } from "./components/media-stats";
 
 export default async function MediaPage({
   searchParams,
@@ -18,7 +19,7 @@ export default async function MediaPage({
   }>;
 }) {
   const params = await searchParams;
-  
+
   const filters: MediaFilters = {
     clientId: params.clientId && params.clientId !== "all" ? params.clientId : undefined,
     mimeType: params.mimeType && params.mimeType !== "all" ? params.mimeType : undefined,
@@ -27,9 +28,10 @@ export default async function MediaPage({
     used: params.used === "used" ? true : params.used === "unused" ? false : undefined,
   };
 
-  const [media, clients] = await Promise.all([
+  const [media, clients, stats] = await Promise.all([
     getMedia(filters),
     getClients(),
+    getMediaStats(),
   ]);
 
   // Transform client from null to undefined to match Media type
@@ -46,6 +48,7 @@ export default async function MediaPage({
           <p className="text-muted-foreground mt-1">Manage all media files in the system</p>
         </div>
       </div>
+      <MediaStats stats={stats} />
       <MediaFiltersComponent clients={clients} defaultClientId={params.clientId} />
       <MediaPageClient media={transformedMedia} sortBy={params.sort || "newest"} />
     </div>

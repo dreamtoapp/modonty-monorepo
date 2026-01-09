@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { User, LogOut, Settings, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "./theme-toggle";
 
 export function Header() {
   const { data: session } = useSession();
@@ -47,6 +48,7 @@ export function Header() {
               Guidelines
             </Button>
           </Link>
+          <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">

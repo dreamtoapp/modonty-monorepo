@@ -26,6 +26,8 @@ interface Category {
   parent: { id: string; name: string } | null;
   seoTitle: string | null;
   seoDescription: string | null;
+  socialImage: string | null;
+  socialImageAlt: string | null;
   createdAt: Date;
   updatedAt: Date;
   _count: {
@@ -152,6 +154,26 @@ export function CategoryView({ category }: CategoryViewProps) {
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">SEO Description</p>
                   <p className="text-sm">{category.seoDescription}</p>
+                </div>
+              )}
+              {category.socialImage && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">Social Image</p>
+                  <div className="space-y-2">
+                    <div className="relative border rounded-lg overflow-hidden max-w-md">
+                      <img
+                        src={category.socialImage}
+                        alt={category.socialImageAlt || "Social image"}
+                        className="w-full h-auto max-h-64 object-contain"
+                      />
+                    </div>
+                    {category.socialImageAlt && (
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Alt Text</p>
+                        <p className="text-sm">{category.socialImageAlt}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </CardContent>

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { Prisma, ArticleStatus } from "@prisma/client";
 import { calculateSEOScore } from "@/helpers/utils/seo-score-calculator";
 import { categorySEOConfig } from "../helpers/category-seo-config";
+import { deleteOldImage } from "../../actions/delete-image";
 
 export interface CategoryFilters {
   createdFrom?: Date;
@@ -124,16 +125,10 @@ export async function createCategory(data: {
   parentId?: string;
   seoTitle?: string;
   seoDescription?: string;
-  ogImage?: string;
-  ogImageAlt?: string;
-  ogImageWidth?: number;
-  ogImageHeight?: number;
-  twitterCard?: string;
-  twitterTitle?: string;
-  twitterDescription?: string;
-  twitterImage?: string;
-  twitterImageAlt?: string;
   canonicalUrl?: string;
+  socialImage?: string;
+  socialImageAlt?: string;
+  cloudinaryPublicId?: string;
 }) {
   try {
     const category = await db.category.create({
@@ -144,16 +139,10 @@ export async function createCategory(data: {
         parentId: data.parentId || null,
         seoTitle: data.seoTitle,
         seoDescription: data.seoDescription,
-        ogImage: data.ogImage,
-        ogImageAlt: data.ogImageAlt,
-        ogImageWidth: data.ogImageWidth,
-        ogImageHeight: data.ogImageHeight,
-        twitterCard: data.twitterCard,
-        twitterTitle: data.twitterTitle,
-        twitterDescription: data.twitterDescription,
-        twitterImage: data.twitterImage,
-        twitterImageAlt: data.twitterImageAlt,
         canonicalUrl: data.canonicalUrl,
+        socialImage: data.socialImage,
+        socialImageAlt: data.socialImageAlt,
+        cloudinaryPublicId: data.cloudinaryPublicId,
       },
     });
     revalidatePath("/categories");
@@ -173,39 +162,48 @@ export async function updateCategory(
     parentId?: string;
     seoTitle?: string;
     seoDescription?: string;
-    ogImage?: string;
-    ogImageAlt?: string;
-    ogImageWidth?: number;
-    ogImageHeight?: number;
-    twitterCard?: string;
-    twitterTitle?: string;
-    twitterDescription?: string;
-    twitterImage?: string;
-    twitterImageAlt?: string;
     canonicalUrl?: string;
+    socialImage?: string | null;
+    socialImageAlt?: string | null;
+    cloudinaryPublicId?: string | null;
   }
 ) {
   try {
+    const updateData: {
+      name: string;
+      slug: string;
+      description?: string | null;
+      parentId?: string | null;
+      seoTitle?: string | null;
+      seoDescription?: string | null;
+      canonicalUrl?: string | null;
+      socialImage?: string | null;
+      socialImageAlt?: string | null;
+      cloudinaryPublicId?: string | null;
+    } = {
+      name: data.name,
+      slug: data.slug,
+      description: data.description || null,
+      parentId: data.parentId || null,
+      seoTitle: data.seoTitle || null,
+      seoDescription: data.seoDescription || null,
+      canonicalUrl: data.canonicalUrl || null,
+    };
+
+    // Only update socialImage fields if they are explicitly provided (including null for removal)
+    if (data.socialImage !== undefined) {
+      updateData.socialImage = data.socialImage;
+    }
+    if (data.socialImageAlt !== undefined) {
+      updateData.socialImageAlt = data.socialImageAlt;
+    }
+    if (data.cloudinaryPublicId !== undefined) {
+      updateData.cloudinaryPublicId = data.cloudinaryPublicId;
+    }
+
     const category = await db.category.update({
       where: { id },
-      data: {
-        name: data.name,
-        slug: data.slug,
-        description: data.description,
-        parentId: data.parentId || null,
-        seoTitle: data.seoTitle,
-        seoDescription: data.seoDescription,
-        ogImage: data.ogImage,
-        ogImageAlt: data.ogImageAlt,
-        ogImageWidth: data.ogImageWidth,
-        ogImageHeight: data.ogImageHeight,
-        twitterCard: data.twitterCard,
-        twitterTitle: data.twitterTitle,
-        twitterDescription: data.twitterDescription,
-        twitterImage: data.twitterImage,
-        twitterImageAlt: data.twitterImageAlt,
-        canonicalUrl: data.canonicalUrl,
-      },
+      data: updateData,
     });
     revalidatePath("/categories");
     return { success: true, category };
@@ -246,6 +244,9 @@ export async function deleteCategory(id: string) {
         error: `Cannot delete category. This category has ${errors.join(" and ")}. Please delete or reassign them first.`,
       };
     }
+
+    // Delete Cloudinary image before database deletion (non-blocking)
+    await deleteOldImage("categories", id);
 
     await db.category.delete({ where: { id } });
     revalidatePath("/categories");
@@ -289,6 +290,11 @@ export async function bulkDeleteCategories(categoryIds: string[]) {
         success: false,
         error: `Cannot delete ${categoriesWithDependencies.length} categor${categoriesWithDependencies.length === 1 ? "y" : "ies"} with dependencies: ${categoryNames}. Total articles: ${totalArticles}, Total child categories: ${totalChildren}. Please delete or reassign the dependencies first.`,
       };
+    }
+
+    // Delete Cloudinary images for all categories (non-blocking)
+    for (const categoryId of categoryIds) {
+      await deleteOldImage("categories", categoryId);
     }
 
     await db.category.deleteMany({

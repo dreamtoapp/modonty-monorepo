@@ -3,13 +3,6 @@ import {
   validateSlug,
   createValidateSEOTitle,
   createValidateSEODescription,
-  createValidateTwitterTitle,
-  createValidateTwitterDescription,
-  validateOGImage,
-  validateOGImageAlt,
-  validateOGImageDimensions,
-  validateTwitterCards,
-  validateTwitterImageAlt,
   validateCanonicalUrl,
 } from "@/components/shared/seo-doctor/validators";
 import type { SEOSettings } from "@/app/(dashboard)/settings/actions/settings-actions";
@@ -84,13 +77,6 @@ export const createIndustrySEOConfig = (settings?: SEOSettings): SEODoctorConfig
     { name: "description", label: "Industry Description", validator: validateIndustryDescription },
     { name: "seoTitle", label: "SEO Title", validator: createValidateIndustrySEOTitle(settings) },
     { name: "seoDescription", label: "SEO Description", validator: createValidateSEODescription(settings) },
-    { name: "ogImage", label: "OG Image", validator: validateOGImage },
-    { name: "ogImageAlt", label: "OG Image Alt Text", validator: validateOGImageAlt },
-    { name: "ogImageWidth", label: "OG Image Dimensions", validator: validateOGImageDimensions },
-    { name: "twitterCard", label: "Twitter Cards", validator: validateTwitterCards },
-    { name: "twitterTitle", label: "Twitter Title", validator: createValidateTwitterTitle(settings) },
-    { name: "twitterDescription", label: "Twitter Description", validator: createValidateTwitterDescription(settings) },
-    { name: "twitterImageAlt", label: "Twitter Image Alt Text", validator: validateTwitterImageAlt },
     { name: "canonicalUrl", label: "Canonical URL", validator: validateCanonicalUrl },
   ],
 });

@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { deleteOldImage } from "../../actions/delete-image";
 import { Prisma, ArticleStatus } from "@prisma/client";
 import { calculateSEOScore } from "@/helpers/utils/seo-score-calculator";
 import { tagSEOConfig } from "../helpers/tag-seo-config";
@@ -130,16 +131,10 @@ export async function createTag(data: {
   description?: string;
   seoTitle?: string;
   seoDescription?: string;
-  ogImage?: string;
-  ogImageAlt?: string;
-  ogImageWidth?: number;
-  ogImageHeight?: number;
-  twitterCard?: string;
-  twitterTitle?: string;
-  twitterDescription?: string;
-  twitterImage?: string;
-  twitterImageAlt?: string;
   canonicalUrl?: string;
+  socialImage?: string;
+  socialImageAlt?: string;
+  cloudinaryPublicId?: string;
 }) {
   try {
     const tag = await db.tag.create({ data });
@@ -159,20 +154,44 @@ export async function updateTag(
     description?: string;
     seoTitle?: string;
     seoDescription?: string;
-    ogImage?: string;
-    ogImageAlt?: string;
-    ogImageWidth?: number;
-    ogImageHeight?: number;
-    twitterCard?: string;
-    twitterTitle?: string;
-    twitterDescription?: string;
-    twitterImage?: string;
-    twitterImageAlt?: string;
     canonicalUrl?: string;
+    socialImage?: string | null;
+    socialImageAlt?: string | null;
+    cloudinaryPublicId?: string | null;
   }
 ) {
   try {
-    const tag = await db.tag.update({ where: { id }, data });
+    const updateData: {
+      name: string;
+      slug: string;
+      description?: string | null;
+      seoTitle?: string | null;
+      seoDescription?: string | null;
+      canonicalUrl?: string | null;
+      socialImage?: string | null;
+      socialImageAlt?: string | null;
+      cloudinaryPublicId?: string | null;
+    } = {
+      name: data.name,
+      slug: data.slug,
+      description: data.description || null,
+      seoTitle: data.seoTitle || null,
+      seoDescription: data.seoDescription || null,
+      canonicalUrl: data.canonicalUrl || null,
+    };
+
+    // Only update socialImage fields if they are explicitly provided (including null for removal)
+    if (data.socialImage !== undefined) {
+      updateData.socialImage = data.socialImage;
+    }
+    if (data.socialImageAlt !== undefined) {
+      updateData.socialImageAlt = data.socialImageAlt;
+    }
+    if (data.cloudinaryPublicId !== undefined) {
+      updateData.cloudinaryPublicId = data.cloudinaryPublicId;
+    }
+
+    const tag = await db.tag.update({ where: { id }, data: updateData });
     revalidatePath("/tags");
     return { success: true, tag };
   } catch (error) {
@@ -204,6 +223,9 @@ export async function deleteTag(id: string) {
         error: `Cannot delete tag. This tag has ${tag._count.articles} article(s). Please delete or reassign the articles first.`,
       };
     }
+
+    // Delete Cloudinary image before database deletion (non-blocking)
+    await deleteOldImage("tags", id);
 
     await db.tag.delete({ where: { id } });
     revalidatePath("/tags");
@@ -243,6 +265,11 @@ export async function bulkDeleteTags(tagIds: string[]) {
         success: false,
         error: `Cannot delete ${tagsWithArticles.length} tag${tagsWithArticles.length === 1 ? "" : "s"} with articles: ${tagNames}. Total articles: ${totalArticles}. Please delete or reassign the articles first.`,
       };
+    }
+
+    // Delete Cloudinary images for all tags (non-blocking)
+    for (const tagId of tagIds) {
+      await deleteOldImage("tags", tagId);
     }
 
     await db.tag.deleteMany({
@@ -295,15 +322,6 @@ export async function getTagsStats() {
             description: true,
             seoTitle: true,
             seoDescription: true,
-            ogImage: true,
-            ogImageAlt: true,
-            ogImageWidth: true,
-            ogImageHeight: true,
-            twitterCard: true,
-            twitterTitle: true,
-            twitterDescription: true,
-            twitterImage: true,
-            twitterImageAlt: true,
             canonicalUrl: true,
           },
         }),

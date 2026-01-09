@@ -10,7 +10,7 @@ export function CharacterCounter({ current, min, max, restrict = false, classNam
   const isBelowMin = min !== undefined && current < min;
   const isAboveMax = max !== undefined && current > max;
   const isValid = (!min || current >= min) && (!max || current <= max);
-  
+
   // If restrict is true and above max, show error. Otherwise show warning.
   const showError = restrict && isAboveMax;
   const showWarning = !restrict && isAboveMax;
@@ -18,13 +18,13 @@ export function CharacterCounter({ current, min, max, restrict = false, classNam
   return (
     <div className={`text-xs ${className}`}>
       <span className={
-        showError 
-          ? "text-destructive" 
-          : showWarning 
-          ? "text-yellow-600 dark:text-yellow-500" 
-          : isValid 
-          ? "text-muted-foreground" 
-          : "text-destructive"
+        showError
+          ? "text-destructive"
+          : showWarning
+            ? "text-yellow-600 dark:text-yellow-500"
+            : isValid
+              ? "text-muted-foreground"
+              : "text-destructive"
       }>
         {current}
         {min !== undefined && ` / ${min} minimum`}

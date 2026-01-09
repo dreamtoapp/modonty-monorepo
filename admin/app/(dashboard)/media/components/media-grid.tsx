@@ -14,8 +14,7 @@ import { format } from "date-fns";
 import NextImage from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Edit, Trash2, Copy, Eye } from "lucide-react";
-import { useState } from "react";
+import { Edit, Trash2, Copy, Eye, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SEOHealthGauge } from "@/components/shared/seo-doctor/seo-health-gauge";
 import { mediaSEOConfig } from "../helpers/media-seo-config";
@@ -50,6 +49,7 @@ interface MediaGridProps {
   selectedIds?: Set<string>;
   onSelectionChange?: (ids: Set<string>) => void;
   onDelete?: (id: string) => void;
+  isDeleting?: boolean;
 }
 
 export function MediaGrid({
@@ -58,10 +58,10 @@ export function MediaGrid({
   selectedIds = new Set(),
   onSelectionChange,
   onDelete,
+  isDeleting = false,
 }: MediaGridProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const isImage = (mimeType: string) => mimeType.startsWith("image/");
 
@@ -181,8 +181,6 @@ export function MediaGrid({
               <div
                 key={item.id}
                 className="grid grid-cols-12 gap-4 p-4 hover:bg-muted/50 transition-colors items-center"
-                onMouseEnter={() => setHoveredId(item.id)}
-                onMouseLeave={() => setHoveredId(null)}
               >
                 <div className="col-span-1">
                   {onSelectionChange && (
@@ -284,9 +282,14 @@ export function MediaGrid({
                         e.stopPropagation();
                         onDelete(item.id);
                       }}
+                      disabled={isDeleting}
                       className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      {isDeleting ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
                     </Button>
                   )}
                 </div>
@@ -304,165 +307,208 @@ export function MediaGrid({
       {media.map((item) => (
         <Card
           key={item.id}
-          className="hover:shadow-md transition-shadow h-full relative group"
-          onMouseEnter={() => setHoveredId(item.id)}
-          onMouseLeave={() => setHoveredId(null)}
+          className="hover:shadow-lg transition-all duration-200 h-full relative group overflow-hidden border-border/50"
         >
           <CardContent className="p-0">
-            <Link href={`/media/${item.id}`} className="block">
-              {isImage(item.mimeType) ? (
-                <div className="aspect-square relative overflow-hidden rounded-t-lg">
-                  <NextImage
-                    src={item.url}
-                    alt={item.altText || item.filename}
-                    fill
-                    className="object-cover"
+            {isImage(item.mimeType) ? (
+              <div className="aspect-square relative overflow-hidden bg-muted">
+                <NextImage
+                  src={item.url}
+                  alt={item.altText || item.filename}
+                  fill
+                  className="object-cover"
+                />
+                
+                {/* Badges Overlay - Top Right */}
+                <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">
+                  <Badge 
+                    variant={getMediaTypeBadgeVariant(item.type)} 
+                    className="text-xs shadow-md backdrop-blur-sm bg-background/90 border border-border/50"
+                  >
+                    {getMediaTypeLabel(item.type)}
+                  </Badge>
+                  <Badge 
+                    variant="secondary" 
+                    className="text-xs shadow-md backdrop-blur-sm bg-background/90 border border-border/50"
+                  >
+                    {item.mimeType.split("/")[0]}
+                  </Badge>
+                </div>
+
+              </div>
+            ) : (
+              <div className="aspect-square bg-muted flex items-center justify-center">
+                <span className="text-muted-foreground text-sm">{item.mimeType}</span>
+              </div>
+            )}
+            
+            {/* Card Footer - Clear and Organized */}
+            <div className="p-3 border-t bg-card space-y-3">
+              {/* Filename with Checkbox and SEO Gauge */}
+              <div className="flex items-center gap-2">
+                {onSelectionChange && (
+                  <Checkbox
+                    checked={selectedIds.has(item.id)}
+                    onCheckedChange={(checked) => handleSelect(item.id, checked as boolean)}
+                    onClick={(e) => e.stopPropagation()}
                   />
-                  {hoveredId === item.id && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center gap-2">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                window.open(item.url, "_blank");
-                              }}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>View image in new tab</p>
-                          </TooltipContent>
-                        </Tooltip>
-
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                copyUrl(item);
-                              }}
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Copy image URL to share with client</p>
-                          </TooltipContent>
-                        </Tooltip>
-
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                router.push(`/media/${item.id}/edit`);
-                              }}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Edit media metadata</p>
-                          </TooltipContent>
-                        </Tooltip>
-
-                        {onDelete && (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  onDelete(item.id);
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Delete image</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        )}
-                      </TooltipProvider>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="aspect-square bg-muted flex items-center justify-center rounded-t-lg">
-                  <span className="text-muted-foreground">{item.mimeType}</span>
-                </div>
-              )}
-            </Link>
-            <div className="p-4">
-              <div className="flex items-start justify-between gap-2 mb-2">
+                )}
                 <Link
                   href={`/media/${item.id}`}
-                  className="font-medium text-sm line-clamp-2 flex-1 hover:text-primary transition-colors underline"
+                  className="flex-1"
                 >
-                  {item.filename}
+                  <p className="font-medium text-sm line-clamp-1 hover:text-primary transition-colors">
+                    {item.filename}
+                  </p>
                 </Link>
-                <div className="flex items-center gap-2">
-                  {isImage(item.mimeType) && (
-                    <SEOHealthGauge
-                      data={{
-                        altText: item.altText,
-                        title: item.title,
-                        description: item.description,
-                        // Keywords removed from SEO scoring - they should be naturally in alt text, title, description
-                        width: item.width,
-                        height: item.height,
-                        filename: item.filename,
-                        cloudinaryPublicId: item.cloudinaryPublicId,
-                      }}
-                      config={mediaSEOConfig}
-                      size="xs"
-                      showScore={false}
-                    />
+                {isImage(item.mimeType) && (
+                  <SEOHealthGauge
+                    data={{
+                      altText: item.altText,
+                      title: item.title,
+                      description: item.description,
+                      width: item.width,
+                      height: item.height,
+                      filename: item.filename,
+                      cloudinaryPublicId: item.cloudinaryPublicId,
+                    }}
+                    config={mediaSEOConfig}
+                    size="xs"
+                    showScore={false}
+                  />
+                )}
+              </div>
+              
+              {/* Metadata - Two Rows for Clarity */}
+              <div className="space-y-1.5">
+                {/* Row 1: Technical Info */}
+                <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                  {item.width && item.height && (
+                    <div className="flex items-center gap-1">
+                      <span className="font-medium">Size:</span>
+                      <span>{item.width} × {item.height}px</span>
+                    </div>
                   )}
-                  {onSelectionChange && (
-                    <Checkbox
-                      checked={selectedIds.has(item.id)}
-                      onCheckedChange={(checked) => handleSelect(item.id, checked as boolean)}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  )}
+                  <div className="flex items-center gap-1">
+                    <span className="font-medium">File:</span>
+                    <span>{formatFileSize(item.fileSize)}</span>
+                  </div>
+                </div>
+                
+                {/* Row 2: Client */}
+                {item.client && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0">
+                          <span className="font-medium">Client:</span>
+                          <span className="truncate">{item.client.name}</span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{item.client.name}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+                
+                {/* Row 3: Date */}
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <span className="font-medium">Date:</span>
+                  <span>{format(new Date(item.createdAt), "MMM d, yyyy")}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-2 mb-2 flex-wrap">
-                <Badge variant={getMediaTypeBadgeVariant(item.type)} className="text-xs">
-                  {getMediaTypeLabel(item.type)}
-                </Badge>
-                <Badge variant="secondary" className="text-xs">
-                  {item.mimeType.split("/")[0]}
-                </Badge>
-                {item.width && item.height && (
-                  <span className="text-xs text-muted-foreground">
-                    {item.width} × {item.height}
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">
-                  {format(new Date(item.createdAt), "MMM d, yyyy")}
-                </p>
-                {item.client && (
-                  <Badge variant="outline" className="text-xs">
-                    {item.client.name}
-                  </Badge>
-                )}
+
+              {/* Action Buttons - Always Visible */}
+              <div className="flex items-center gap-1 pt-2 border-t">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          window.open(item.url, "_blank");
+                        }}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>View in new tab</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          copyUrl(item);
+                        }}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Copy URL</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          router.push(`/media/${item.id}/edit`);
+                        }}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Edit</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  {onDelete && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            onDelete(item.id);
+                          }}
+                          disabled={isDeleting}
+                        >
+                          {isDeleting ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Delete</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </TooltipProvider>
               </div>
             </div>
           </CardContent>

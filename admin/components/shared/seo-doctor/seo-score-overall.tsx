@@ -67,7 +67,7 @@ export function SEOScoreOverall({
 
   return (
     <Card
-      className={cn("hover:shadow-md transition-shadow border-l-4", className)}
+      className={cn("hover:shadow-md transition-shadow border-l-4 flex flex-col", className)}
       style={{ borderLeftColor: borderColor }}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -76,8 +76,8 @@ export function SEOScoreOverall({
           <Icon className="h-4 w-4 text-primary" />
         </div>
       </CardHeader>
-      <CardContent>
-        <div className={cn("text-3xl font-bold mb-3", scoreColor)}>
+      <CardContent className="flex-1 flex flex-col">
+        <div className={cn("text-2xl font-semibold mb-2", scoreColor)}>
           {value}%
         </div>
         <div className="relative h-2 w-full overflow-hidden rounded-full bg-muted mb-2">
@@ -86,7 +86,7 @@ export function SEOScoreOverall({
             style={{ width: `${value}%` }}
           />
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 mt-auto">
           <StatusIcon className={cn("h-3.5 w-3.5", scoreColor)} />
           <span className={cn("text-xs font-medium", scoreColor)}>
             {statusHint}

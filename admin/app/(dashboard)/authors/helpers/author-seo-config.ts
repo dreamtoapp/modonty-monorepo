@@ -4,14 +4,8 @@ import {
   createValidateSEOTitle,
   createValidateSEODescription,
   validateOGImage,
-  validateOGImageAlt,
-  validateOGImageDimensions,
   validateImageAlt,
   validateUrl,
-  createValidateTwitterTitle,
-  createValidateTwitterDescription,
-  validateTwitterCards,
-  validateTwitterImageAlt,
   validateCanonicalUrl,
 } from "@/components/shared/seo-doctor/validators";
 import type { SEOSettings } from "@/app/(dashboard)/settings/actions/settings-actions";
@@ -56,7 +50,6 @@ const validateAuthorBio: SEOFieldValidator = (value) => {
 const validateAuthorEETAT: SEOFieldValidator = (value, data) => {
   const hasJobTitle = data.jobTitle && typeof data.jobTitle === "string" && data.jobTitle.trim().length > 0;
   const hasCredentials = Array.isArray(data.credentials) && data.credentials.length > 0;
-  const hasQualifications = Array.isArray(data.qualifications) && data.qualifications.length > 0;
   const hasExpertise = Array.isArray(data.expertiseAreas) && data.expertiseAreas.length > 0;
   const isVerified = data.verificationStatus === true;
   
@@ -70,10 +63,6 @@ const validateAuthorEETAT: SEOFieldValidator = (value, data) => {
   if (hasCredentials) {
     score += 3;
     signals.push("credentials");
-  }
-  if (hasQualifications) {
-    score += 3;
-    signals.push("qualifications");
   }
   if (hasExpertise) {
     score += 2;
@@ -99,7 +88,7 @@ const validateAuthorEETAT: SEOFieldValidator = (value, data) => {
   }
   return {
     status: "warning",
-    message: "E-E-A-T signals recommended - add job title, credentials, qualifications, expertise areas",
+    message: "E-E-A-T signals recommended - add job title, credentials, expertise areas, verification",
     score: 0,
   };
 };
@@ -149,15 +138,16 @@ function generatePersonStructuredData(data: Record<string, unknown>): Record<str
   if (data.canonicalUrl) structuredData.url = data.canonicalUrl as string;
   else if (data.url) structuredData.url = data.url as string;
   if (data.image) structuredData.image = data.image as string;
+  if (data.email) structuredData.email = data.email as string;
   if (data.jobTitle) structuredData.jobTitle = data.jobTitle as string;
-  if (data.worksFor) {
-    structuredData.worksFor = {
-      "@type": "Organization",
-      name: data.worksFor as string,
-    };
-  }
   if (Array.isArray(data.expertiseAreas) && data.expertiseAreas.length > 0) {
     structuredData.knowsAbout = data.expertiseAreas;
+  }
+  if (Array.isArray(data.memberOf) && data.memberOf.length > 0) {
+    structuredData.memberOf = data.memberOf.map((org: string) => ({
+      "@type": "Organization",
+      name: org,
+    }));
   }
   if (Array.isArray(data.sameAs) && data.sameAs.length > 0) {
     structuredData.sameAs = data.sameAs;
@@ -185,13 +175,6 @@ export const createAuthorSEOConfig = (settings?: SEOSettings): SEODoctorConfig =
     { name: "bio", label: "Author Bio", validator: validateAuthorBio },
     { name: "image", label: "Profile Image", validator: validateOGImage },
     { name: "imageAlt", label: "Profile Image Alt Text", validator: validateImageAlt },
-    { name: "ogImage", label: "OG Image", validator: validateOGImage },
-    { name: "ogImageAlt", label: "OG Image Alt Text", validator: validateOGImageAlt },
-    { name: "ogImageWidth", label: "OG Image Dimensions", validator: validateOGImageDimensions },
-    { name: "twitterCard", label: "Twitter Cards", validator: validateTwitterCards },
-    { name: "twitterTitle", label: "Twitter Title", validator: createValidateTwitterTitle(settings) },
-    { name: "twitterDescription", label: "Twitter Description", validator: createValidateTwitterDescription(settings) },
-    { name: "twitterImageAlt", label: "Twitter Image Alt Text", validator: validateTwitterImageAlt },
     { name: "canonicalUrl", label: "Canonical URL", validator: validateCanonicalUrl },
     { name: "jobTitle", label: "E-E-A-T Signals", validator: validateAuthorEETAT },
     { name: "linkedIn", label: "Social Profiles", validator: validateAuthorSocial },

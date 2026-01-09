@@ -56,7 +56,7 @@ export function ArticleTable({ articles, onSelectionChange }: ArticleTableProps)
         article.title.toLowerCase().includes(searchTerm) ||
         article.client?.name.toLowerCase().includes(searchTerm) ||
         article.category?.name.toLowerCase().includes(searchTerm) ||
-        article.author?.name.toLowerCase().includes(searchTerm)
+        "modonty".includes(searchTerm)
       );
     });
 
@@ -78,8 +78,8 @@ export function ArticleTable({ articles, onSelectionChange }: ArticleTableProps)
           aValue = a.category?.name || "";
           bValue = b.category?.name || "";
         } else if (sortKey === "author") {
-          aValue = a.author?.name || "";
-          bValue = b.author?.name || "";
+          aValue = "Modonty";
+          bValue = "Modonty";
         } else if (sortKey === "datePublished") {
           aValue = a.datePublished || a.scheduledAt || null;
           bValue = b.datePublished || b.scheduledAt || null;
@@ -316,7 +316,7 @@ export function ArticleTable({ articles, onSelectionChange }: ArticleTableProps)
                   </TableCell>
                   <TableCell>{article.client?.name || "-"}</TableCell>
                   <TableCell>{article.category?.name || "-"}</TableCell>
-                  <TableCell>{article.author?.name || "-"}</TableCell>
+                  <TableCell>Modonty</TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     {getStatusBadge(article.status)}
                   </TableCell>

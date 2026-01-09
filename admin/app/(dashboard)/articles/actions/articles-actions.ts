@@ -220,6 +220,15 @@ export async function getArticleById(id: string) {
 
 export async function createArticle(data: ArticleFormData) {
   try {
+    const { getModontyAuthor } = await import("@/app/(dashboard)/authors/actions/authors-actions");
+    const modontyAuthor = await getModontyAuthor();
+    if (!modontyAuthor) {
+      return {
+        success: false,
+        error: "Modonty author not found. Please ensure the author is set up.",
+      };
+    }
+
     const client = await db.client.findUnique({
       where: { id: data.clientId },
       select: { name: true, slug: true },
@@ -281,7 +290,7 @@ export async function createArticle(data: ArticleFormData) {
         contentFormat: data.contentFormat || "rich_text",
         clientId: data.clientId,
         categoryId: data.categoryId || null,
-        authorId: data.authorId,
+        authorId: modontyAuthor.id,
         status: data.status,
         scheduledAt: data.scheduledAt || null,
         featured: data.featured || false,
@@ -445,6 +454,15 @@ export async function updateArticle(id: string, data: ArticleFormData) {
 
     const sitemapPriority = data.sitemapPriority || (data.featured ? 0.8 : 0.5);
 
+    const { getModontyAuthor } = await import("@/app/(dashboard)/authors/actions/authors-actions");
+    const modontyAuthor = await getModontyAuthor();
+    if (!modontyAuthor) {
+      return {
+        success: false,
+        error: "Modonty author not found. Please ensure the author is set up.",
+      };
+    }
+
     const article = await db.article.update({
       where: { id },
       data: {
@@ -455,7 +473,7 @@ export async function updateArticle(id: string, data: ArticleFormData) {
         contentFormat: data.contentFormat || existingArticle.contentFormat || "rich_text",
         clientId: data.clientId,
         categoryId: data.categoryId || null,
-        authorId: data.authorId,
+        authorId: modontyAuthor.id,
         status: data.status,
         scheduledAt: data.scheduledAt || null,
         featured: data.featured || false,
@@ -679,9 +697,9 @@ export async function getCategories() {
 
 export async function getAuthors() {
   try {
-    return await db.author.findMany({
-      orderBy: { name: "asc" },
-    });
+    const { getModontyAuthor } = await import("@/app/(dashboard)/authors/actions/authors-actions");
+    const modontyAuthor = await getModontyAuthor();
+    return modontyAuthor ? [{ id: modontyAuthor.id, name: modontyAuthor.name }] : [];
   } catch (error) {
     console.error("Error fetching authors:", error);
     return [];

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -8,9 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Grid3x3, List, Upload, Trash2 } from "lucide-react";
+import { Grid3x3, List, Upload, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 interface MediaToolbarProps {
   viewMode: "grid" | "list";
@@ -19,6 +19,7 @@ interface MediaToolbarProps {
   onSortChange: (sort: string) => void;
   selectedCount: number;
   onBulkDelete?: () => void;
+  isDeleting?: boolean;
 }
 
 export function MediaToolbar({
@@ -28,8 +29,13 @@ export function MediaToolbar({
   onSortChange,
   selectedCount,
   onBulkDelete,
+  isDeleting = false,
 }: MediaToolbarProps) {
-  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -55,19 +61,25 @@ export function MediaToolbar({
         </div>
 
         {/* Sort */}
-        <Select value={sortBy} onValueChange={onSortChange}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="newest">Newest First</SelectItem>
-            <SelectItem value="oldest">Oldest First</SelectItem>
-            <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-            <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-            <SelectItem value="size-asc">Size (Smallest)</SelectItem>
-            <SelectItem value="size-desc">Size (Largest)</SelectItem>
-          </SelectContent>
-        </Select>
+        {mounted ? (
+          <Select value={sortBy} onValueChange={onSortChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Newest First</SelectItem>
+              <SelectItem value="oldest">Oldest First</SelectItem>
+              <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+              <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+              <SelectItem value="size-asc">Size (Smallest)</SelectItem>
+              <SelectItem value="size-desc">Size (Largest)</SelectItem>
+            </SelectContent>
+          </Select>
+        ) : (
+          <div className="w-[180px] h-10 rounded-md border border-input bg-background flex items-center justify-between px-3 py-2 text-sm">
+            <span className="text-muted-foreground">Sort by</span>
+          </div>
+        )}
 
         {/* Selected Count */}
         {selectedCount > 0 && (
@@ -84,10 +96,20 @@ export function MediaToolbar({
             variant="destructive"
             size="sm"
             onClick={onBulkDelete}
+            disabled={isDeleting}
             className="gap-2"
           >
-            <Trash2 className="h-4 w-4" />
-            Delete ({selectedCount})
+            {isDeleting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Checking...
+              </>
+            ) : (
+              <>
+                <Trash2 className="h-4 w-4" />
+                Delete ({selectedCount})
+              </>
+            )}
           </Button>
         )}
 

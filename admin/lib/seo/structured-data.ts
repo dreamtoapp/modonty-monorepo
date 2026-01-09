@@ -25,7 +25,7 @@ export function generateArticleStructuredData(article: ArticleWithRelations): Ar
     dateModified: article.dateModified.toISOString(),
     author: {
       "@type": "Person",
-      name: article.author.name,
+      name: article.author.name || "Modonty",
       ...(article.author.url && { url: article.author.url }),
       ...(article.author.image && { image: article.author.image }),
     },
