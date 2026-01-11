@@ -1,4 +1,4 @@
-import { Article, Client, Author, Category, FAQ } from "@prisma/client";
+import { Article, Client, Author, Category, ArticleFAQ } from "@prisma/client";
 import { ArticleStructuredData } from "@/lib/types";
 
 interface ArticleWithRelations extends Article {
@@ -7,7 +7,7 @@ interface ArticleWithRelations extends Article {
   };
   author: Author;
   category?: Category | null;
-  faqs?: FAQ[];
+  faqs?: ArticleFAQ[];
   featuredImage?: { url: string; altText?: string | null } | null;
 }
 
@@ -179,7 +179,7 @@ export function generateOrganizationStructuredData(client: Client & {
   return structuredData;
 }
 
-export function generateFAQPageStructuredData(faqs: FAQ[]) {
+export function generateFAQPageStructuredData(faqs: ArticleFAQ[]) {
   return {
     "@context": "https://schema.org",
     "@type": "FAQPage",

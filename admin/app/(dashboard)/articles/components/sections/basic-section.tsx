@@ -1,0 +1,151 @@
+'use client';
+
+import { useArticleForm } from '../article-form-context';
+import { Card, CardContent } from '@/components/ui/card';
+import { FormInput, FormTextarea, FormNativeSelect } from '@/components/admin/form-field';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { CharacterCounter } from '@/components/shared/character-counter';
+import { TagMultiSelect } from '../tag-multi-select';
+import { Copy, Check } from 'lucide-react';
+import { useState } from 'react';
+
+export function BasicSection() {
+  const { formData, updateField, errors, clients, categories, tags } = useArticleForm();
+  const [slugCopied, setSlugCopied] = useState(false);
+
+  const handleCopySlug = async () => {
+    if (formData.slug) {
+      try {
+        await navigator.clipboard.writeText(formData.slug);
+        setSlugCopied(true);
+        setTimeout(() => setSlugCopied(false), 2000);
+      } catch (error) {
+        // Ignore clipboard errors
+      }
+    }
+  };
+
+  return (
+    <Card>
+      <CardContent className="space-y-4 pt-6">
+        <div className="flex gap-4">
+          <div className="flex-[0.7]">
+            <FormNativeSelect
+              label="Client"
+              name="clientId"
+              value={formData.clientId}
+              onChange={(e) => updateField('clientId', e.target.value)}
+              required
+            >
+              <option value="">Select a client</option>
+              {clients.map((client) => (
+                <option key={client.id} value={client.id}>
+                  {client.name}
+                </option>
+              ))}
+            </FormNativeSelect>
+          </div>
+
+          <div className="flex-[0.3]">
+            <FormNativeSelect
+              label="Category"
+              name="categoryId"
+              value={formData.categoryId || ''}
+              onChange={(e) => updateField('categoryId', e.target.value)}
+            >
+              <option value="">None</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </FormNativeSelect>
+          </div>
+        </div>
+
+        <div className="border-t pt-6 space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="title">
+              Title
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="title"
+              name="title"
+              value={formData.title}
+              onChange={(e) => updateField('title', e.target.value)}
+              className={errors.title?.[0] ? 'border-destructive' : ''}
+            />
+            <div className="flex justify-between items-center mt-1.5">
+              <p className="text-xs text-muted-foreground">
+                Optimize for 50-60 characters for better search visibility
+              </p>
+              <CharacterCounter current={formData.title?.length || 0} max={60} />
+            </div>
+            {errors.title?.[0] && (
+              <p className="text-sm text-destructive">{errors.title[0]}</p>
+            )}
+          </div>
+
+          {formData.slug && (
+            <div className="flex items-center gap-2">
+              <Label>Slug</Label>
+              <Badge variant="outline" className="font-mono text-sm px-3 py-1.5">
+                {formData.slug}
+              </Badge>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleCopySlug}
+                className="h-8 w-8 p-0"
+              >
+                {slugCopied ? (
+                  <Check className="h-4 w-4 text-green-600" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
+              <input type="hidden" name="slug" value={formData.slug} />
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="excerpt">Excerpt</Label>
+            <Textarea
+              id="excerpt"
+              name="excerpt"
+              value={formData.excerpt || ''}
+              onChange={(e) => updateField('excerpt', e.target.value)}
+              rows={3}
+              className={errors.excerpt?.[0] ? 'border-destructive' : ''}
+            />
+            <div className="flex justify-between items-center mt-1.5">
+              <p className="text-xs text-muted-foreground">
+                Optimize for 150-160 characters for better search visibility
+              </p>
+              <CharacterCounter current={formData.excerpt?.length || 0} max={160} />
+            </div>
+            {errors.excerpt?.[0] && (
+              <p className="text-sm text-destructive">{errors.excerpt[0]}</p>
+            )}
+          </div>
+
+          <div>
+            <Label className="mb-2 block">Tags</Label>
+            <TagMultiSelect
+              availableTags={tags}
+              selectedTagIds={formData.tags || []}
+              onChange={(tagIds) => updateField('tags', tagIds)}
+              placeholder="Select tags"
+            />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

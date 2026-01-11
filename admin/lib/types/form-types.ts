@@ -6,6 +6,22 @@ export interface FAQItem {
   position?: number;
 }
 
+export interface GalleryFormItem {
+  mediaId: string;
+  position: number;
+  caption?: string | null;
+  altText?: string | null;
+  // Temporary: For display purposes (loaded from Media table, not saved to DB)
+  media?: {
+    id: string;
+    url: string;
+    altText?: string | null;
+    width?: number | null;
+    height?: number | null;
+    filename: string;
+  };
+}
+
 export interface ArticleFormData {
   title: string;
   slug: string;
@@ -19,6 +35,7 @@ export interface ArticleFormData {
   scheduledAt?: Date | null;
   featured?: boolean;
   featuredImageId?: string | null;
+  gallery?: GalleryFormItem[];
   seoTitle?: string;
   seoDescription?: string;
   metaRobots?: string;

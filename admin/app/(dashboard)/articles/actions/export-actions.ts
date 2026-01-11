@@ -25,7 +25,9 @@ function formatDate(date: Date | null | undefined): string {
 export async function exportArticlesToCSV(filters?: ArticleFilters): Promise<string> {
   try {
     const validStatuses = [
+      ArticleStatus.WRITING,
       ArticleStatus.DRAFT,
+      ArticleStatus.SCHEDULED,
       ArticleStatus.PUBLISHED,
       ArticleStatus.ARCHIVED,
     ];

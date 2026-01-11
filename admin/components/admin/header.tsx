@@ -16,6 +16,7 @@ import {
 import { User, LogOut, Settings, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./theme-toggle";
+import { Breadcrumb } from "./breadcrumb";
 
 export function Header() {
   const { data: session } = useSession();
@@ -31,7 +32,7 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-card shadow-sm">
       <div className="flex h-14 items-center justify-between px-6">
         <div className="flex items-center gap-4">
-          <h1 className="text-lg font-semibold text-foreground">Admin Dashboard</h1>
+          <Breadcrumb />
         </div>
 
         <div className="flex items-center gap-4">

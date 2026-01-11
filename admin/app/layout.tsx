@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full overflow-hidden" suppressHydrationWarning>
-      <body className="bg-background h-full overflow-hidden">
+      <body className="bg-background h-full overflow-hidden ">
         <GTMContainer />
         <ThemeProvider
           attribute="class"

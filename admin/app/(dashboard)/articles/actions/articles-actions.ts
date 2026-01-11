@@ -30,7 +30,9 @@ export interface ArticleFilters {
 export async function getArticles(filters?: ArticleFilters) {
   try {
     const validStatuses = [
+      ArticleStatus.WRITING,
       ArticleStatus.DRAFT,
+      ArticleStatus.SCHEDULED,
       ArticleStatus.PUBLISHED,
       ArticleStatus.ARCHIVED,
     ];
@@ -199,11 +201,30 @@ export async function getArticleById(id: string) {
             position: "asc",
           },
         },
+        gallery: {
+          include: {
+            media: {
+              select: {
+                id: true,
+                url: true,
+                altText: true,
+                width: true,
+                height: true,
+                filename: true,
+              },
+            },
+          },
+          orderBy: {
+            position: "asc",
+          },
+        },
       },
     });
     // Filter out articles with invalid status (shouldn't happen after migration)
     const validStatuses = [
+      ArticleStatus.WRITING,
       ArticleStatus.DRAFT,
+      ArticleStatus.SCHEDULED,
       ArticleStatus.PUBLISHED,
       ArticleStatus.ARCHIVED,
     ];
@@ -214,6 +235,90 @@ export async function getArticleById(id: string) {
     return article;
   } catch (error) {
     console.error("Error fetching article:", error);
+    return null;
+  }
+}
+
+export async function getArticleBySlug(slug: string, clientId?: string) {
+  try {
+    const article = await db.article.findFirst({
+      where: {
+        slug,
+        ...(clientId && { clientId }),
+      },
+      include: {
+        client: {
+          include: {
+            logoMedia: {
+              select: {
+                id: true,
+                url: true,
+              },
+            },
+          },
+        },
+        category: true,
+        author: true,
+        tags: {
+          include: {
+            tag: true,
+          },
+        },
+        featuredImage: {
+          select: {
+            id: true,
+            url: true,
+            altText: true,
+            width: true,
+            height: true,
+            filename: true,
+          },
+        },
+        faqs: {
+          orderBy: {
+            position: "asc",
+          },
+        },
+        gallery: {
+          include: {
+            media: {
+              select: {
+                id: true,
+                url: true,
+                altText: true,
+                width: true,
+                height: true,
+                filename: true,
+              },
+            },
+          },
+          orderBy: {
+            position: "asc",
+          },
+        },
+      },
+    });
+    
+    if (!article) {
+      return null;
+    }
+
+    const validStatuses = [
+      ArticleStatus.WRITING,
+      ArticleStatus.DRAFT,
+      ArticleStatus.SCHEDULED,
+      ArticleStatus.PUBLISHED,
+      ArticleStatus.ARCHIVED,
+    ];
+    
+    if (!validStatuses.includes(article.status)) {
+      console.warn(`Article ${slug} has invalid status: ${article.status}`);
+      return null;
+    }
+    
+    return article;
+  } catch (error) {
+    console.error("Error fetching article by slug:", error);
     return null;
   }
 }
@@ -281,6 +386,15 @@ export async function createArticle(data: ArticleFormData) {
 
     const sitemapPriority = data.sitemapPriority || (data.featured ? 0.8 : 0.5);
 
+    // Validate status enum if provided, then always use WRITING for new articles
+    if (data.status && !Object.values(ArticleStatus).includes(data.status as ArticleStatus)) {
+      return {
+        success: false,
+        error: "Invalid status value. Status must be a valid ArticleStatus enum value.",
+      };
+    }
+    const finalStatus = ArticleStatus.WRITING;
+
     const article = await db.article.create({
       data: {
         title: data.title,
@@ -291,7 +405,7 @@ export async function createArticle(data: ArticleFormData) {
         clientId: data.clientId,
         categoryId: data.categoryId || null,
         authorId: modontyAuthor.id,
-        status: data.status,
+        status: finalStatus,
         scheduledAt: data.scheduledAt || null,
         featured: data.featured || false,
         featuredImageId: data.featuredImageId || null,
@@ -342,35 +456,18 @@ export async function createArticle(data: ArticleFormData) {
     });
 
     if (data.tags && data.tags.length > 0) {
-      for (const tagName of data.tags) {
-        let tag = await db.tag.findFirst({
-          where: { name: tagName },
-        });
-
-        if (!tag) {
-          const slug = tagName
-            .toLowerCase()
-            .replace(/\s+/g, "-")
-            .replace(/[^\u0600-\u06FF\w\-]+/g, "");
-          tag = await db.tag.create({
-            data: {
-              name: tagName,
-              slug: `${slug}-${Date.now()}`,
-            },
-          });
-        }
-
+      for (const tagId of data.tags) {
         await db.articleTag.create({
           data: {
             articleId: article.id,
-            tagId: tag.id,
+            tagId: tagId,
           },
         });
       }
     }
 
     if (data.faqs && data.faqs.length > 0) {
-      await db.fAQ.createMany({
+      await db.articleFAQ.createMany({
         data: data.faqs.map((faq: FAQItem, index: number) => ({
           articleId: article.id,
           question: faq.question,
@@ -378,6 +475,23 @@ export async function createArticle(data: ArticleFormData) {
           position: faq.position ?? index,
         })),
       });
+    }
+
+    // Process gallery items
+    if (data.gallery && data.gallery.length > 0) {
+      await db.$transaction(
+        data.gallery.map((item, index) =>
+          db.articleMedia.create({
+            data: {
+              articleId: article.id,
+              mediaId: item.mediaId,
+              position: item.position ?? index,
+              caption: item.caption || null,
+              altText: item.altText || null,
+            },
+          })
+        )
+      );
     }
 
     revalidatePath("/articles");
@@ -527,39 +641,22 @@ export async function updateArticle(id: string, data: ArticleFormData) {
     });
 
     if (data.tags && data.tags.length > 0) {
-      for (const tagName of data.tags) {
-        let tag = await db.tag.findFirst({
-          where: { name: tagName },
-        });
-
-        if (!tag) {
-          const slug = tagName
-            .toLowerCase()
-            .replace(/\s+/g, "-")
-            .replace(/[^\u0600-\u06FF\w\-]+/g, "");
-          tag = await db.tag.create({
-            data: {
-              name: tagName,
-              slug: `${slug}-${Date.now()}`,
-            },
-          });
-        }
-
+      for (const tagId of data.tags) {
         await db.articleTag.create({
           data: {
             articleId: id,
-            tagId: tag.id,
+            tagId: tagId,
           },
         });
       }
     }
 
-    await db.fAQ.deleteMany({
+    await db.articleFAQ.deleteMany({
       where: { articleId: id },
     });
 
     if (data.faqs && data.faqs.length > 0) {
-      await db.fAQ.createMany({
+      await db.articleFAQ.createMany({
         data: data.faqs.map((faq: FAQItem, index: number) => ({
           articleId: id,
           question: faq.question,
@@ -567,6 +664,29 @@ export async function updateArticle(id: string, data: ArticleFormData) {
           position: faq.position ?? index,
         })),
       });
+    }
+
+    // Process gallery items
+    // Delete existing gallery items
+    await db.articleMedia.deleteMany({
+      where: { articleId: id },
+    });
+
+    // Create new gallery items
+    if (data.gallery && data.gallery.length > 0) {
+      await db.$transaction(
+        data.gallery.map((item, index) =>
+          db.articleMedia.create({
+            data: {
+              articleId: id,
+              mediaId: item.mediaId,
+              position: item.position ?? index,
+              caption: item.caption || null,
+              altText: item.altText || null,
+            },
+          })
+        )
+      );
     }
 
     revalidatePath("/articles");
@@ -594,7 +714,7 @@ export async function deleteArticle(id: string) {
     await Promise.all([
       db.articleTag.deleteMany({ where: { articleId: id } }),
       db.articleVersion.deleteMany({ where: { articleId: id } }),
-      db.fAQ.deleteMany({ where: { articleId: id } }),
+      db.articleFAQ.deleteMany({ where: { articleId: id } }),
       db.relatedArticle.deleteMany({
         where: {
           OR: [{ articleId: id }, { relatedId: id }],
@@ -792,7 +912,7 @@ export async function bulkDeleteArticles(articleIds: string[]) {
     await Promise.all([
       db.articleTag.deleteMany({ where: { articleId: { in: articleIds } } }),
       db.articleVersion.deleteMany({ where: { articleId: { in: articleIds } } }),
-      db.fAQ.deleteMany({ where: { articleId: { in: articleIds } } }),
+      db.articleFAQ.deleteMany({ where: { articleId: { in: articleIds } } }),
       db.relatedArticle.deleteMany({
         where: {
           OR: [

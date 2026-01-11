@@ -89,8 +89,12 @@ export async function getCategories(filters?: CategoryFilters) {
 
 export async function getCategoryById(id: string) {
   try {
+    // Check if input is a valid ObjectId (24 hex characters)
+    // MongoDB ObjectId must be exactly 24 hex characters
+    const isObjectId = /^[0-9a-fA-F]{24}$/.test(id);
+    
     return await db.category.findUnique({
-      where: { id },
+      where: isObjectId ? { id } : { slug: id },
       include: {
         parent: true,
         children: true,
@@ -110,8 +114,24 @@ export async function getCategoryById(id: string) {
 
 export async function getCategoryArticles(categoryId: string) {
   try {
+    // Check if input is a valid ObjectId (24 hex characters)
+    const isObjectId = /^[0-9a-fA-F]{24}$/.test(categoryId);
+    
+    // If it's not an ObjectId, resolve slug to id first
+    let actualCategoryId = categoryId;
+    if (!isObjectId) {
+      const category = await db.category.findUnique({
+        where: { slug: categoryId },
+        select: { id: true },
+      });
+      if (!category) {
+        return [];
+      }
+      actualCategoryId = category.id;
+    }
+    
     const { getArticles } = await import("@/app/(dashboard)/articles/actions/articles-actions");
-    return await getArticles({ categoryId });
+    return await getArticles({ categoryId: actualCategoryId });
   } catch (error) {
     console.error("Error fetching category articles:", error);
     return [];
@@ -169,6 +189,9 @@ export async function updateCategory(
   }
 ) {
   try {
+    // Check if input is a valid ObjectId (24 hex characters)
+    const isObjectId = /^[0-9a-fA-F]{24}$/.test(id);
+    
     const updateData: {
       name: string;
       slug: string;
@@ -202,7 +225,7 @@ export async function updateCategory(
     }
 
     const category = await db.category.update({
-      where: { id },
+      where: isObjectId ? { id } : { slug: id },
       data: updateData,
     });
     revalidatePath("/categories");
@@ -215,8 +238,11 @@ export async function updateCategory(
 
 export async function deleteCategory(id: string) {
   try {
+    // Check if input is a valid ObjectId (24 hex characters)
+    const isObjectId = /^[0-9a-fA-F]{24}$/.test(id);
+    
     const category = await db.category.findUnique({
-      where: { id },
+      where: isObjectId ? { id } : { slug: id },
       include: {
         _count: {
           select: {
@@ -246,9 +272,9 @@ export async function deleteCategory(id: string) {
     }
 
     // Delete Cloudinary image before database deletion (non-blocking)
-    await deleteOldImage("categories", id);
+    await deleteOldImage("categories", category.id);
 
-    await db.category.delete({ where: { id } });
+    await db.category.delete({ where: { id: category.id } });
     revalidatePath("/categories");
     return { success: true };
   } catch (error) {
@@ -264,10 +290,30 @@ export async function bulkDeleteCategories(categoryIds: string[]) {
       return { success: false, error: "No categories selected" };
     }
 
+    // Separate ObjectIds from slugs
+    const objectIds = categoryIds.filter(id => /^[0-9a-fA-F]{24}$/.test(id));
+    const slugs = categoryIds.filter(id => !/^[0-9a-fA-F]{24}$/.test(id));
+    
+    // Build where clause that handles both ObjectIds and slugs
+    const orConditions: Prisma.CategoryWhereInput[] = [];
+    if (objectIds.length > 0) {
+      orConditions.push({ id: { in: objectIds } });
+    }
+    if (slugs.length > 0) {
+      orConditions.push({ slug: { in: slugs } });
+    }
+    
+    // Safety check: if no valid conditions, return error
+    if (orConditions.length === 0) {
+      return { success: false, error: "No valid category identifiers provided" };
+    }
+    
+    const where: Prisma.CategoryWhereInput = {
+      OR: orConditions,
+    };
+
     const categories = await db.category.findMany({
-      where: {
-        id: { in: categoryIds },
-      },
+      where,
       include: {
         _count: {
           select: {
@@ -293,13 +339,15 @@ export async function bulkDeleteCategories(categoryIds: string[]) {
     }
 
     // Delete Cloudinary images for all categories (non-blocking)
-    for (const categoryId of categoryIds) {
-      await deleteOldImage("categories", categoryId);
+    for (const category of categories) {
+      await deleteOldImage("categories", category.id);
     }
 
+    // Use the actual category IDs for deletion
+    const actualIds = categories.map(c => c.id);
     await db.category.deleteMany({
       where: {
-        id: { in: categoryIds },
+        id: { in: actualIds },
       },
     });
 
