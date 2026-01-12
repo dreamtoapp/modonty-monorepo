@@ -21,9 +21,9 @@ import { getSectionStatus } from '../helpers/section-status';
 const SECTIONS = [
   { id: 'basic', label: 'Basic Info', icon: FileText, component: BasicSection },
   { id: 'content', label: 'Content', icon: Edit, component: ContentSection },
-  { id: 'seo', label: 'SEO', icon: Search, component: SEOSection },
   { id: 'media', label: 'Media', icon: Image, component: MediaSection },
   { id: 'tags', label: 'Tags & FAQs', icon: Tag, component: TagsFAQSection },
+  { id: 'seo', label: 'Technical SEO', icon: Search, component: SEOSection },
   { id: 'seo-validation', label: 'SEO & Validation', icon: CheckCircle, component: SEOValidationSection },
 ];
 

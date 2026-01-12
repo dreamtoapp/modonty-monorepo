@@ -23,33 +23,57 @@ export interface GalleryFormItem {
 }
 
 export interface ArticleFormData {
+  // Basic Content
   title: string;
   slug: string;
   excerpt?: string;
   content: string;
   contentFormat?: string;
+  
+  // Relationships
   clientId: string;
   categoryId?: string;
   authorId: string;
+  
+  // Status & Workflow
   status: ArticleStatus;
   scheduledAt?: Date | null;
   featured?: boolean;
-  featuredImageId?: string | null;
-  gallery?: GalleryFormItem[];
+  
+  // Schema.org Article - Core Fields
+  datePublished?: Date | null;
+  lastReviewed?: Date | null;
+  mainEntityOfPage?: string;
+  
+  // Schema.org Article - Extended Fields
+  wordCount?: number;
+  readingTimeMinutes?: number;
+  contentDepth?: string;
+  inLanguage?: string;
+  isAccessibleForFree?: boolean;
+  license?: string;
+  creativeWorkStatus?: string;
+  
+  // SEO Meta Tags
   seoTitle?: string;
   seoDescription?: string;
   metaRobots?: string;
+  
+  // Open Graph (Complete)
   ogTitle?: string;
   ogDescription?: string;
   ogUrl?: string;
   ogSiteName?: string;
   ogLocale?: string;
   ogType?: string;
+  ogUpdatedTime?: Date | null;
   ogArticleAuthor?: string;
   ogArticlePublishedTime?: Date | null;
   ogArticleModifiedTime?: Date | null;
   ogArticleSection?: string;
   ogArticleTag?: string[];
+  
+  // Twitter Cards (Complete)
   twitterCard?: string;
   twitterTitle?: string;
   twitterDescription?: string;
@@ -57,19 +81,54 @@ export interface ArticleFormData {
   twitterCreator?: string;
   twitterLabel1?: string;
   twitterData1?: string;
+  
+  // Technical SEO
   canonicalUrl?: string;
+  alternateLanguages?: Array<{ hreflang: string; url: string }>;
   robotsMeta?: string;
   sitemapPriority?: number;
   sitemapChangeFreq?: string;
-  alternateLanguages?: Array<{ hreflang: string; url: string }>;
-  license?: string;
-  lastReviewed?: Date | null;
-  datePublished?: Date | null;
-  wordCount?: number;
-  readingTimeMinutes?: number;
-  contentDepth?: string;
+  
+  // Breadcrumb Support
+  breadcrumbPath?: any;
+  
+  // Featured Media
+  featuredImageId?: string | null;
+  gallery?: GalleryFormItem[];
+  
+  // JSON-LD Structured Data
+  jsonLdStructuredData?: string;
+  jsonLdLastGenerated?: Date | null;
+  jsonLdValidationReport?: any;
+  
+  // Content for Structured Data
+  articleBodyText?: string;
+  
+  // Semantic Enhancement
+  semanticKeywords?: any;
+  
+  // E-E-A-T Enhancement
+  citations?: string[];
+  
+  // Schema Versioning
+  jsonLdVersion?: number;
+  jsonLdHistory?: any;
+  jsonLdDiffSummary?: string;
+  
+  // Performance Tracking
+  jsonLdGenerationTimeMs?: number;
+  performanceBudgetMet?: boolean;
+  
+  // Tags & FAQs
   tags?: string[];
   faqs?: FAQItem[];
+  
+  // Related Articles
+  relatedArticles?: Array<{
+    relatedId: string;
+    relationshipType?: 'related' | 'similar' | 'recommended';
+    weight?: number;
+  }>;
 }
 
 export interface ClientFormData {

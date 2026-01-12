@@ -51,14 +51,46 @@ export interface JsonLdNode {
 }
 
 /**
+ * Normalize URL to use the correct site URL from environment
+ * Replaces localhost or any incorrect domain with NEXT_PUBLIC_SITE_URL
+ */
+function normalizeUrl(url: string | null | undefined, siteUrl: string, fallbackPath: string): string {
+  if (!url) {
+    return `${siteUrl}${fallbackPath}`;
+  }
+
+  // If URL already starts with the correct site URL, return as-is
+  if (url.startsWith(siteUrl)) {
+    return url;
+  }
+
+  // If URL contains localhost or any other domain, extract the path and rebuild
+  try {
+    const urlObj = new URL(url);
+    // Extract pathname + search + hash
+    const path = urlObj.pathname + urlObj.search + urlObj.hash;
+    return `${siteUrl}${path}`;
+  } catch {
+    // If URL parsing fails, treat it as a relative path
+    const cleanPath = url.startsWith('/') ? url : `/${url}`;
+    return `${siteUrl}${cleanPath}`;
+  }
+}
+
+/**
  * Generate complete Knowledge Graph for an article
  */
 export function generateArticleKnowledgeGraph(
   article: ArticleWithFullRelations
 ): JsonLdGraph {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://modonty.com";
-  const articleUrl =
-    article.canonicalUrl || `${siteUrl}/articles/${article.slug}`;
+  
+  // Normalize article URL - always use siteUrl from env, never localhost
+  const articlePath = article.canonicalUrl 
+    ? normalizeUrl(article.canonicalUrl, siteUrl, `/articles/${article.slug}`)
+    : `${siteUrl}/articles/${article.slug}`;
+  
+  const articleUrl = articlePath;
 
   // Stable entity IDs (used for cross-referencing)
   const ids = {
@@ -74,7 +106,7 @@ export function generateArticleKnowledgeGraph(
   const graph: JsonLdNode[] = [];
 
   // 1. WebPage (container for the article)
-  graph.push(generateWebPageNode(article, articleUrl, ids));
+  graph.push(generateWebPageNode(article, articleUrl, ids, siteUrl));
 
   // 2. Article (main content)
   graph.push(generateArticleNode(article, articleUrl, ids, siteUrl));
@@ -105,7 +137,8 @@ export function generateArticleKnowledgeGraph(
 function generateWebPageNode(
   article: ArticleWithFullRelations,
   articleUrl: string,
-  ids: Record<string, string>
+  ids: Record<string, string>,
+  siteUrl: string
 ): JsonLdNode {
   return {
     "@type": "WebPage",
@@ -117,9 +150,9 @@ function generateWebPageNode(
     inLanguage: article.inLanguage || "ar",
     isPartOf: {
       "@type": "WebSite",
-      "@id": `${process.env.NEXT_PUBLIC_SITE_URL || "https://modonty.com"}#website`,
+      "@id": `${siteUrl}#website`,
       name: "مودونتي",
-      url: process.env.NEXT_PUBLIC_SITE_URL || "https://modonty.com",
+      url: siteUrl,
     },
     breadcrumb: { "@id": ids.breadcrumb },
     ...(article.datePublished && {

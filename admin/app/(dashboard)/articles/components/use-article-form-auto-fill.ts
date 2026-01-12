@@ -40,31 +40,6 @@ export function useArticleFormAutoFill() {
     }
   }, [formData.slug, formData.canonicalUrl, selectedClient, updateField]);
 
-  // Auto-fill OG Title from SEO Title (if empty)
-  useEffect(() => {
-    if (formData.seoTitle && !formData.ogTitle) {
-      updateField('ogTitle', formData.seoTitle);
-    }
-  }, [formData.seoTitle, formData.ogTitle, updateField]);
-
-  // Auto-fill OG Description from SEO Description (if empty)
-  useEffect(() => {
-    if (formData.seoDescription && !formData.ogDescription) {
-      updateField('ogDescription', formData.seoDescription);
-    }
-  }, [formData.seoDescription, formData.ogDescription, updateField]);
-
-  // Auto-fill Twitter Title from OG Title (if empty)
-  useEffect(() => {
-    if (formData.ogTitle && !formData.twitterTitle) {
-      updateField('twitterTitle', formData.ogTitle);
-    }
-  }, [formData.ogTitle, formData.twitterTitle, updateField]);
-
-  // Auto-fill Twitter Description from OG Description (if empty)
-  useEffect(() => {
-    if (formData.ogDescription && !formData.twitterDescription) {
-      updateField('twitterDescription', formData.ogDescription);
-    }
-  }, [formData.ogDescription, formData.twitterDescription, updateField]);
+  // Social meta (Open Graph & Twitter) are now derived at render time
+  // from SEO fields, canonical URL, category, tags, and featured image.
 }

@@ -13,6 +13,7 @@ import {
   Code,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { calculateStepValidation, calculateOverallProgress, type StepValidation } from '../helpers/step-validation-helpers';
 
 export interface SectionConfig {
   id: string;
@@ -58,6 +59,10 @@ interface ArticleFormContextType {
   categories: Array<{ id: string; name: string; slug?: string }>;
   authors: Array<{ id: string; name: string }>;
   tags: Array<{ id: string; name: string; slug: string }>;
+
+  // Validation
+  getStepValidation: (stepNumber: number) => StepValidation;
+  overallProgress: number;
 }
 
 const ArticleFormContext = createContext<ArticleFormContextType | undefined>(undefined);
@@ -75,28 +80,57 @@ interface ArticleFormProviderProps {
 }
 
 const initialFormData: ArticleFormData = {
+  // Basic Content
   title: '',
   slug: '',
   excerpt: '',
   content: '',
   contentFormat: 'rich_text',
+  
+  // Relationships
   clientId: '',
   categoryId: '',
   authorId: '',
+  
+  // Status & Workflow
   status: 'WRITING',
   featured: false,
   scheduledAt: null,
+  
+  // Schema.org Article - Core Fields
+  datePublished: null,
+  lastReviewed: null,
+  mainEntityOfPage: '',
+  
+  // Schema.org Article - Extended Fields
+  wordCount: undefined,
+  readingTimeMinutes: undefined,
+  contentDepth: '',
+  inLanguage: 'ar',
+  isAccessibleForFree: true,
+  license: '',
+  creativeWorkStatus: '',
+  
+  // SEO Meta Tags
   seoTitle: '',
   seoDescription: '',
   metaRobots: 'index, follow',
+  
+  // Open Graph (Complete)
   ogTitle: '',
   ogDescription: '',
+  ogType: 'article',
   ogUrl: '',
   ogSiteName: 'مودونتي',
   ogLocale: 'ar_SA',
+  ogUpdatedTime: null,
   ogArticleAuthor: '',
+  ogArticlePublishedTime: null,
+  ogArticleModifiedTime: null,
   ogArticleSection: '',
   ogArticleTag: [],
+  
+  // Twitter Cards (Complete)
   twitterCard: 'summary_large_image',
   twitterTitle: '',
   twitterDescription: '',
@@ -104,16 +138,50 @@ const initialFormData: ArticleFormData = {
   twitterCreator: '',
   twitterLabel1: '',
   twitterData1: '',
+  
+  // Technical SEO
   canonicalUrl: '',
+  alternateLanguages: [],
+  robotsMeta: '',
   sitemapPriority: 0.5,
   sitemapChangeFreq: 'weekly',
-  alternateLanguages: [],
-  license: '',
-  lastReviewed: null,
+  
+  // Breadcrumb Support
+  breadcrumbPath: undefined,
+  
+  // Featured Media
   featuredImageId: null,
   gallery: [],
+  
+  // JSON-LD Structured Data
+  jsonLdStructuredData: '',
+  jsonLdLastGenerated: null,
+  jsonLdValidationReport: undefined,
+  
+  // Content for Structured Data
+  articleBodyText: '',
+  
+  // Semantic Enhancement
+  semanticKeywords: undefined,
+  
+  // E-E-A-T Enhancement
+  citations: [],
+  
+  // Schema Versioning
+  jsonLdVersion: 1,
+  jsonLdHistory: undefined,
+  jsonLdDiffSummary: '',
+  
+  // Performance Tracking
+  jsonLdGenerationTimeMs: undefined,
+  performanceBudgetMet: true,
+  
+  // Tags & FAQs
   tags: [],
   faqs: [],
+  
+  // Related Articles
+  relatedArticles: [],
 };
 
 export function ArticleFormProvider({
@@ -136,7 +204,14 @@ export function ArticleFormProvider({
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [currentStep, setCurrentStep] = useState<number>(1);
   
-  const totalSteps = 7;
+  const totalSteps = 8;
+
+  const getStepValidation = useCallback(
+    (stepNumber: number) => calculateStepValidation(stepNumber, formData, errors),
+    [formData, errors]
+  );
+
+  const overallProgress = calculateOverallProgress(formData, errors);
 
   // Get section href based on mode
   const getSectionHref = useCallback(
@@ -153,9 +228,9 @@ export function ArticleFormProvider({
   const sections: SectionConfig[] = [
     { id: 'basic', label: 'Basic Info', icon: FileText, href: getSectionHref('basic') },
     { id: 'content', label: 'Content', icon: Edit, href: getSectionHref('content') },
-    { id: 'seo', label: 'SEO', icon: Search, href: getSectionHref('seo') },
     { id: 'media', label: 'Media', icon: Image, href: getSectionHref('media') },
     { id: 'tags', label: 'Tags & FAQs', icon: Tag, href: getSectionHref('tags') },
+    { id: 'seo', label: 'Technical SEO', icon: Search, href: getSectionHref('seo') },
     { id: 'seo-validation', label: 'SEO & Validation', icon: CheckCircle, href: getSectionHref('seo-validation') },
   ];
 
@@ -389,6 +464,8 @@ export function ArticleFormProvider({
     categories,
     authors,
     tags,
+    getStepValidation,
+    overallProgress,
   };
 
   return <ArticleFormContext.Provider value={value}>{children}</ArticleFormContext.Provider>;

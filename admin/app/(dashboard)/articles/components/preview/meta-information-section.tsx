@@ -46,24 +46,24 @@ export function MetaInformationSection({ article }: MetaInformationSectionProps)
           <div className="space-y-2 text-sm">
             <div>
               <span className="text-muted-foreground">OG Title:</span>
-              <p className="font-medium">{article.ogTitle || article.seoTitle || article.title || 'Not set'}</p>
+              <p className="font-medium">{article.seoTitle || article.title || 'Not set'}</p>
             </div>
             <div>
               <span className="text-muted-foreground">OG Description:</span>
-              <p className="font-medium">{article.ogDescription || article.seoDescription || article.excerpt || 'Not set'}</p>
+              <p className="font-medium">{article.seoDescription || article.excerpt || 'Not set'}</p>
             </div>
             <div>
               <span className="text-muted-foreground">OG URL:</span>
-              <p className="font-medium">{article.ogUrl || article.mainEntityOfPage || 'Not set'}</p>
+              <p className="font-medium">{article.canonicalUrl || article.mainEntityOfPage || 'Not set'}</p>
             </div>
             <div>
               <span className="text-muted-foreground">OG Site Name:</span>
-              <p className="font-medium">{article.ogSiteName || 'Not set'}</p>
+              <p className="font-medium">{article.clientId ? 'Client site' : 'Not set'}</p>
             </div>
             <div>
               <span className="text-muted-foreground">OG Locale:</span>
               <Badge variant="outline" className="ml-2">
-                {article.ogLocale || 'ar_SA'}
+                {article.inLanguage || 'ar_SA'}
               </Badge>
             </div>
           </div>
@@ -80,11 +80,11 @@ export function MetaInformationSection({ article }: MetaInformationSectionProps)
             </div>
             <div>
               <span className="text-muted-foreground">Twitter Title:</span>
-              <p className="font-medium">{article.twitterTitle || article.ogTitle || article.seoTitle || article.title || 'Not set'}</p>
+              <p className="font-medium">{article.seoTitle || article.title || 'Not set'}</p>
             </div>
             <div>
               <span className="text-muted-foreground">Twitter Description:</span>
-              <p className="font-medium">{article.twitterDescription || article.ogDescription || article.seoDescription || article.excerpt || 'Not set'}</p>
+              <p className="font-medium">{article.seoDescription || article.excerpt || 'Not set'}</p>
             </div>
           </div>
         </div>

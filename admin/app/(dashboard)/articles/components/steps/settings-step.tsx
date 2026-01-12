@@ -6,8 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { FormNativeSelect } from '@/components/admin/form-field';
 import { Button } from '@/components/ui/button';
+import { CharacterCounter } from '@/components/shared/character-counter';
 
 export function SettingsStep() {
   const { formData, updateField, authors } = useArticleForm();
@@ -86,6 +88,57 @@ export function SettingsStep() {
               name="authorId"
               value={authors[0]?.id || formData.authorId || ''}
             />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* SEO Basics */}
+      <Card>
+        <CardHeader>
+          <CardTitle>SEO Basics</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>SEO Title</Label>
+            <Input
+              value={formData.seoTitle || ''}
+              onChange={(e) => updateField('seoTitle', e.target.value)}
+              placeholder="Optimized title for search engines (50-60 characters)"
+            />
+            <div className="flex justify-between items-center">
+              <p className="text-xs text-muted-foreground">
+                Optimize for 50-60 characters for better search visibility
+              </p>
+              <CharacterCounter current={(formData.seoTitle || '').length} max={60} />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>SEO Description</Label>
+            <Textarea
+              value={formData.seoDescription || ''}
+              onChange={(e) => updateField('seoDescription', e.target.value)}
+              placeholder="Meta description for search results (150-160 characters)"
+              rows={3}
+            />
+            <div className="flex justify-between items-center">
+              <p className="text-xs text-muted-foreground">
+                Optimize for 150-160 characters for better search visibility
+              </p>
+              <CharacterCounter current={(formData.seoDescription || '').length} max={160} />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Canonical URL</Label>
+            <Input
+              value={formData.canonicalUrl || ''}
+              onChange={(e) => updateField('canonicalUrl', e.target.value)}
+              placeholder="https://example.com/articles/your-article"
+            />
+            <p className="text-xs text-muted-foreground">
+              Leave empty to auto-generate from article slug
+            </p>
           </div>
         </CardContent>
       </Card>

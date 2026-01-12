@@ -165,6 +165,47 @@ export async function getArticles(filters?: ArticleFilters) {
   }
 }
 
+export async function getArticlesForSelection(excludeArticleId?: string) {
+  try {
+    const articles = await db.article.findMany({
+      where: {
+        ...(excludeArticleId ? { id: { not: excludeArticleId } } : {}),
+        status: {
+          in: [
+            ArticleStatus.DRAFT,
+            ArticleStatus.PUBLISHED,
+            ArticleStatus.SCHEDULED,
+          ],
+        },
+      },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        client: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 500,
+    });
+
+    return articles.map((article) => ({
+      id: article.id,
+      title: article.title,
+      slug: article.slug,
+      clientName: article.client.name,
+    }));
+  } catch (error) {
+    console.error('Error fetching articles for selection:', error);
+    return [];
+  }
+}
+
 export async function getArticleById(id: string) {
   try {
     const article = await db.article.findUnique({
@@ -216,6 +257,17 @@ export async function getArticleById(id: string) {
           },
           orderBy: {
             position: "asc",
+          },
+        },
+        relatedTo: {
+          include: {
+            related: {
+              select: {
+                id: true,
+                title: true,
+                slug: true,
+              },
+            },
           },
         },
       },
@@ -422,26 +474,12 @@ export async function createArticle(data: ArticleFormData) {
         seoTitle: seoTitle || null,
         seoDescription: seoDescription || null,
         metaRobots,
-        ogTitle: data.ogTitle || seoTitle || data.title,
-        ogDescription: data.ogDescription || seoDescription || data.excerpt || null,
-        ogUrl: data.ogUrl || canonicalUrl,
-        ogSiteName: data.ogSiteName || "مودونتي",
-        ogLocale: data.ogLocale || "ar_SA",
         ogType: data.ogType || "article",
         ogArticleAuthor: data.ogArticleAuthor || null,
         ogArticlePublishedTime: datePublished,
         ogArticleModifiedTime: new Date(),
         ogUpdatedTime: null,
-        ogArticleSection: data.ogArticleSection || category?.name || null,
-        ogArticleTag: data.ogArticleTag || data.tags || [],
         twitterCard: data.twitterCard || "summary_large_image",
-        twitterTitle: data.twitterTitle || data.ogTitle || seoTitle || data.title,
-        twitterDescription:
-          data.twitterDescription ||
-          data.ogDescription ||
-          seoDescription ||
-          data.excerpt ||
-          null,
         twitterSite: data.twitterSite || null,
         twitterCreator: data.twitterCreator || null,
         twitterLabel1: data.twitterLabel1 || null,
@@ -492,6 +530,18 @@ export async function createArticle(data: ArticleFormData) {
           })
         )
       );
+    }
+
+    // Process related articles
+    if (data.relatedArticles && data.relatedArticles.length > 0) {
+      await db.relatedArticle.createMany({
+        data: data.relatedArticles.map((rel) => ({
+          articleId: article.id,
+          relatedId: rel.relatedId,
+          relationshipType: rel.relationshipType || 'related',
+          weight: rel.weight || 1.0,
+        })),
+      });
     }
 
     revalidatePath("/articles");
@@ -603,26 +653,12 @@ export async function updateArticle(id: string, data: ArticleFormData) {
         seoTitle: seoTitle || null,
         seoDescription: seoDescription || null,
         metaRobots,
-        ogTitle: data.ogTitle || seoTitle || data.title,
-        ogDescription: data.ogDescription || seoDescription || data.excerpt || null,
-        ogUrl: data.ogUrl || canonicalUrl,
-        ogSiteName: data.ogSiteName || "مودونتي",
-        ogLocale: data.ogLocale || "ar_SA",
         ogType: data.ogType || "article",
         ogArticleAuthor: data.ogArticleAuthor || null,
         ogArticlePublishedTime: datePublished,
         ogArticleModifiedTime: new Date(),
         ogUpdatedTime: new Date(),
-        ogArticleSection: data.ogArticleSection || category?.name || null,
-        ogArticleTag: data.ogArticleTag || data.tags || [],
         twitterCard: data.twitterCard || "summary_large_image",
-        twitterTitle: data.twitterTitle || data.ogTitle || seoTitle || data.title,
-        twitterDescription:
-          data.twitterDescription ||
-          data.ogDescription ||
-          seoDescription ||
-          data.excerpt ||
-          null,
         twitterSite: data.twitterSite || null,
         twitterCreator: data.twitterCreator || null,
         twitterLabel1: data.twitterLabel1 || null,
@@ -687,6 +723,24 @@ export async function updateArticle(id: string, data: ArticleFormData) {
           })
         )
       );
+    }
+
+    // Process related articles
+    // Delete existing related articles
+    await db.relatedArticle.deleteMany({
+      where: { articleId: id },
+    });
+
+    // Create new related articles
+    if (data.relatedArticles && data.relatedArticles.length > 0) {
+      await db.relatedArticle.createMany({
+        data: data.relatedArticles.map((rel) => ({
+          articleId: id,
+          relatedId: rel.relatedId,
+          relationshipType: rel.relationshipType || 'related',
+          weight: rel.weight || 1.0,
+        })),
+      });
     }
 
     revalidatePath("/articles");
@@ -765,11 +819,7 @@ export async function duplicateArticle(id: string) {
         seoTitle: original.seoTitle,
         seoDescription: original.seoDescription,
         metaRobots: original.metaRobots,
-        ogTitle: original.ogTitle,
-        ogDescription: original.ogDescription,
         twitterCard: original.twitterCard,
-        twitterTitle: original.twitterTitle,
-        twitterDescription: original.twitterDescription,
         canonicalUrl: original.canonicalUrl,
       },
     });
@@ -853,8 +903,6 @@ export async function getArticlesStats() {
             content: true,
             seoTitle: true,
             seoDescription: true,
-            ogTitle: true,
-            ogDescription: true,
             featuredImage: {
               select: {
                 id: true,
@@ -865,8 +913,6 @@ export async function getArticlesStats() {
               },
             },
             twitterCard: true,
-            twitterTitle: true,
-            twitterDescription: true,
             canonicalUrl: true,
           },
         }),

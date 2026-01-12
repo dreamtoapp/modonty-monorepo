@@ -39,19 +39,10 @@ export default async function EditArticleLayout({
     excerpt: article.excerpt ?? undefined,
     seoTitle: article.seoTitle ?? undefined,
     seoDescription: article.seoDescription ?? undefined,
-    ogTitle: article.ogTitle ?? undefined,
-    ogDescription: article.ogDescription ?? undefined,
-    ogUrl: article.ogUrl ?? undefined,
-    ogSiteName: article.ogSiteName ?? undefined,
-    ogLocale: article.ogLocale ?? undefined,
     ogType: article.ogType ?? undefined,
     ogArticleAuthor: article.ogArticleAuthor ?? undefined,
     ogArticlePublishedTime: article.ogArticlePublishedTime ?? undefined,
     ogArticleModifiedTime: article.ogArticleModifiedTime ?? undefined,
-    ogArticleTag: article.ogArticleTag ?? [],
-    ogArticleSection: article.ogArticleSection ?? undefined,
-    twitterTitle: article.twitterTitle ?? undefined,
-    twitterDescription: article.twitterDescription ?? undefined,
     twitterSite: article.twitterSite ?? undefined,
     twitterCreator: article.twitterCreator ?? undefined,
     twitterLabel1: article.twitterLabel1 ?? undefined,
@@ -63,6 +54,7 @@ export default async function EditArticleLayout({
     robotsMeta: article.robotsMeta ?? undefined,
     sitemapPriority: article.sitemapPriority ?? undefined,
     sitemapChangeFreq: article.sitemapChangeFreq ?? undefined,
+    mainEntityOfPage: article.mainEntityOfPage ?? undefined,
     alternateLanguages: article.alternateLanguages && typeof article.alternateLanguages === 'object' && Array.isArray(article.alternateLanguages)
       ? article.alternateLanguages as Array<{ hreflang: string; url: string }>
       : undefined,
@@ -71,6 +63,12 @@ export default async function EditArticleLayout({
     wordCount: article.wordCount ?? undefined,
     readingTimeMinutes: article.readingTimeMinutes ?? undefined,
     contentDepth: article.contentDepth ?? undefined,
+    creativeWorkStatus: article.creativeWorkStatus ?? undefined,
+    jsonLdStructuredData: article.jsonLdStructuredData ?? undefined,
+    jsonLdDiffSummary: article.jsonLdDiffSummary ?? undefined,
+    articleBodyText: article.articleBodyText ?? undefined,
+    jsonLdLastGenerated: article.jsonLdLastGenerated ?? undefined,
+    jsonLdGenerationTimeMs: article.jsonLdGenerationTimeMs ?? undefined,
     categoryId: article.categoryId || '',
     tags:
       article.tags?.map((t: any) => {
@@ -100,6 +98,11 @@ export default async function EditArticleLayout({
         height: item.media.height || null,
         filename: item.media.filename,
       } : undefined,
+    })) || [],
+    relatedArticles: article.relatedTo?.map((rel: any) => ({
+      relatedId: rel.relatedId,
+      relationshipType: rel.relationshipType || 'related',
+      weight: rel.weight || 1.0,
     })) || [],
   };
 

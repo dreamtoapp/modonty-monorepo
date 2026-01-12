@@ -79,7 +79,7 @@ export async function generateMetadata({ params }: PreviewPageProps): Promise<Me
         image,
         url: article.canonicalUrl || `/articles/${slug}`,
         type: "article",
-        locale: article.ogLocale || "ar_SA",
+        locale: article.inLanguage || "ar_SA",
       },
       { robots: "noindex,nofollow" }
     );
