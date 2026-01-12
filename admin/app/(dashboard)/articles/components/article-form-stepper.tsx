@@ -8,7 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Check, AlertCircle, AlertTriangle, CheckCircle2, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { STEP_CONFIGS, getStepStatus, getMissingRequiredFields } from '../helpers/step-validation-helpers';
+import { STEP_CONFIGS, getStepStatus, getMissingRequiredFields, getMissingOptionalFields } from '../helpers/step-validation-helpers';
 import { useEffect, useRef } from 'react';
 
 export function ArticleFormStepper() {
@@ -41,7 +41,8 @@ export function ArticleFormStepper() {
         {STEP_CONFIGS.map((step, index) => {
           const validation = getStepValidation(step.number);
           const status = getStepStatus(step.number, currentStep, validation);
-          const missingFields = getMissingRequiredFields(step.number, formData);
+          const missingRequiredFields = getMissingRequiredFields(step.number, formData);
+          const missingOptionalFields = getMissingOptionalFields(step.number, formData);
           const isActive = status === 'active';
           const isCompleted = status === 'completed';
           const hasError = status === 'error';
@@ -171,18 +172,36 @@ export function ArticleFormStepper() {
                         </div>
                       </div>
 
-                      {missingFields.length > 0 && (
+                      {missingRequiredFields.length > 0 && (
                         <div className="bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/30 dark:to-amber-950/10 border-2 border-amber-300 dark:border-amber-700 rounded-lg p-3 shadow-sm">
                           <div className="flex items-center gap-1.5 mb-2">
-                            <Info className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                            <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                             <p className="text-sm font-bold text-amber-900 dark:text-amber-100">
-                              Missing Required Fields
+                              Missing Required
                             </p>
                           </div>
                           <ul className="text-xs space-y-1 text-amber-900 dark:text-amber-200 ml-5 font-medium">
-                            {missingFields.map(({ field, label }) => (
+                            {missingRequiredFields.map(({ field, label }) => (
                               <li key={field} className="flex items-center gap-1">
                                 <span className="text-amber-600 dark:text-amber-400">•</span> {label}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {missingOptionalFields.length > 0 && (
+                        <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-950/10 border border-blue-200 dark:border-blue-800 rounded-lg p-3 shadow-sm">
+                          <div className="flex items-center gap-1.5 mb-2">
+                            <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                            <p className="text-sm font-bold text-blue-900 dark:text-blue-100">
+                              Optional (for 100%)
+                            </p>
+                          </div>
+                          <ul className="text-xs space-y-1 text-blue-900 dark:text-blue-200 ml-5 font-medium max-h-32 overflow-y-auto">
+                            {missingOptionalFields.map(({ field, label }) => (
+                              <li key={field} className="flex items-center gap-1">
+                                <span className="text-blue-600 dark:text-blue-400">•</span> {label}
                               </li>
                             ))}
                           </ul>
@@ -247,7 +266,8 @@ export function ArticleFormStepper() {
         {STEP_CONFIGS.map((step) => {
           const validation = getStepValidation(step.number);
           const status = getStepStatus(step.number, currentStep, validation);
-          const missingFields = getMissingRequiredFields(step.number, formData);
+          const missingRequiredFields = getMissingRequiredFields(step.number, formData);
+          const missingOptionalFields = getMissingOptionalFields(step.number, formData);
           const isActive = status === 'active';
           const isCompleted = status === 'completed';
           const hasError = status === 'error';
@@ -316,14 +336,25 @@ export function ArticleFormStepper() {
                       </span>
                     </div>
                   </div>
-                  {missingFields.length > 0 && (
+                  {missingRequiredFields.length > 0 && (
                     <div className="bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/30 dark:to-amber-950/10 border-2 border-amber-300 dark:border-amber-700 rounded-lg p-2">
                       <p className="text-xs font-bold text-amber-900 dark:text-amber-100 mb-1 flex items-center gap-1">
-                        <Info className="h-3.5 w-3.5" />
-                        Missing:
+                        <AlertTriangle className="h-3.5 w-3.5" />
+                        Required:
                       </p>
                       <p className="text-xs text-amber-900 dark:text-amber-200 font-medium pl-4">
-                        {missingFields.map((f) => f.label).join(', ')}
+                        {missingRequiredFields.map((f) => f.label).join(', ')}
+                      </p>
+                    </div>
+                  )}
+                  {missingOptionalFields.length > 0 && (
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-950/10 border border-blue-200 dark:border-blue-800 rounded-lg p-2">
+                      <p className="text-xs font-bold text-blue-900 dark:text-blue-100 mb-1 flex items-center gap-1">
+                        <Info className="h-3.5 w-3.5" />
+                        For 100%:
+                      </p>
+                      <p className="text-xs text-blue-900 dark:text-blue-200 font-medium pl-4 max-h-20 overflow-y-auto">
+                        {missingOptionalFields.map((f) => f.label).join(', ')}
                       </p>
                     </div>
                   )}

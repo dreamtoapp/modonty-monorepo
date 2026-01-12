@@ -28,7 +28,7 @@ export const STEP_CONFIGS: StepConfig[] = [
     id: 'basic',
     description: 'Essential article information: title, slug, client, and author',
     requiredFields: ['title', 'slug', 'clientId', 'authorId'],
-    optionalFields: ['categoryId', 'excerpt', 'status', 'featured', 'scheduledAt'],
+    optionalFields: ['categoryId', 'excerpt', 'status', 'featured'],
   },
   {
     number: 2,
@@ -69,6 +69,7 @@ export const STEP_CONFIGS: StepConfig[] = [
     description: 'Publishing settings, SEO basics, and technical SEO configuration',
     requiredFields: ['seoTitle', 'seoDescription'],
     optionalFields: [
+      'scheduledAt',
       'canonicalUrl',
       'metaRobots',
       'sitemapPriority',
@@ -235,6 +236,93 @@ export function getStepStatus(
   return 'pending';
 }
 
+const FIELD_LABELS: Record<string, string> = {
+  // Basic Info
+  title: 'Title',
+  slug: 'Slug',
+  clientId: 'Client',
+  authorId: 'Author',
+  categoryId: 'Category',
+  excerpt: 'Excerpt',
+  status: 'Status',
+  featured: 'Featured',
+  scheduledAt: 'Scheduled Date',
+  
+  // Content
+  content: 'Content',
+  contentFormat: 'Content Format',
+  wordCount: 'Word Count',
+  readingTimeMinutes: 'Reading Time',
+  contentDepth: 'Content Depth',
+  articleBodyText: 'Article Body Text (Plain)',
+  inLanguage: 'Language',
+  isAccessibleForFree: 'Accessible For Free',
+  
+  // SEO Meta
+  seoTitle: 'SEO Title',
+  seoDescription: 'SEO Description',
+  metaRobots: 'Meta Robots',
+  canonicalUrl: 'Canonical URL',
+  robotsMeta: 'Robots Meta',
+  sitemapPriority: 'Sitemap Priority',
+  sitemapChangeFreq: 'Sitemap Change Frequency',
+  alternateLanguages: 'Alternate Languages',
+  breadcrumbPath: 'Breadcrumb Path',
+  
+  // Open Graph
+  ogTitle: 'Open Graph Title',
+  ogDescription: 'Open Graph Description',
+  ogUrl: 'Open Graph URL',
+  ogSiteName: 'Open Graph Site Name',
+  ogLocale: 'Open Graph Locale',
+  ogType: 'Open Graph Type',
+  ogUpdatedTime: 'Open Graph Updated Time',
+  ogArticleAuthor: 'OG Article Author',
+  ogArticlePublishedTime: 'OG Article Published Time',
+  ogArticleModifiedTime: 'OG Article Modified Time',
+  ogArticleSection: 'OG Article Section',
+  ogArticleTag: 'OG Article Tags',
+  
+  // Twitter Cards
+  twitterCard: 'Twitter Card Type',
+  twitterTitle: 'Twitter Title',
+  twitterDescription: 'Twitter Description',
+  twitterSite: 'Twitter Site',
+  twitterCreator: 'Twitter Creator',
+  twitterLabel1: 'Twitter Label 1',
+  twitterData1: 'Twitter Data 1',
+  
+  // Media
+  featuredImageId: 'Featured Image',
+  gallery: 'Gallery',
+  
+  // Tags & FAQs
+  tags: 'Tags',
+  faqs: 'FAQs',
+  
+  // Settings & Advanced
+  datePublished: 'Date Published',
+  lastReviewed: 'Last Reviewed',
+  mainEntityOfPage: 'Main Entity Of Page',
+  license: 'License',
+  creativeWorkStatus: 'Creative Work Status',
+  semanticKeywords: 'Semantic Keywords',
+  citations: 'Citations',
+  
+  // JSON-LD / Structured Data
+  jsonLdStructuredData: 'JSON-LD Structured Data',
+  jsonLdLastGenerated: 'JSON-LD Last Generated',
+  jsonLdValidationReport: 'JSON-LD Validation Report',
+  jsonLdVersion: 'JSON-LD Version',
+  jsonLdHistory: 'JSON-LD History',
+  jsonLdDiffSummary: 'JSON-LD Diff Summary',
+  jsonLdGenerationTimeMs: 'JSON-LD Generation Time (ms)',
+  performanceBudgetMet: 'Performance Budget Met',
+  
+  // Related
+  relatedArticles: 'Related Articles',
+};
+
 export function getMissingRequiredFields(
   stepNumber: number,
   formData: ArticleFormData
@@ -242,188 +330,30 @@ export function getMissingRequiredFields(
   const stepConfig = STEP_CONFIGS.find((s) => s.number === stepNumber);
   if (!stepConfig) return [];
 
-  const fieldLabels: Record<string, string> = {
-    // Basic Info
-    title: 'Title',
-    slug: 'Slug',
-    clientId: 'Client',
-    authorId: 'Author',
-    categoryId: 'Category',
-    excerpt: 'Excerpt',
-    status: 'Status',
-    featured: 'Featured',
-    scheduledAt: 'Scheduled Date',
-    
-    // Content
-    content: 'Content',
-    contentFormat: 'Content Format',
-    wordCount: 'Word Count',
-    readingTimeMinutes: 'Reading Time',
-    contentDepth: 'Content Depth',
-    articleBodyText: 'Article Body Text (Plain)',
-    inLanguage: 'Language',
-    isAccessibleForFree: 'Accessible For Free',
-    
-    // SEO Meta
-    seoTitle: 'SEO Title',
-    seoDescription: 'SEO Description',
-    metaRobots: 'Meta Robots',
-    canonicalUrl: 'Canonical URL',
-    robotsMeta: 'Robots Meta',
-    sitemapPriority: 'Sitemap Priority',
-    sitemapChangeFreq: 'Sitemap Change Frequency',
-    alternateLanguages: 'Alternate Languages',
-    breadcrumbPath: 'Breadcrumb Path',
-    
-    // Open Graph
-    ogTitle: 'Open Graph Title',
-    ogDescription: 'Open Graph Description',
-    ogUrl: 'Open Graph URL',
-    ogSiteName: 'Open Graph Site Name',
-    ogLocale: 'Open Graph Locale',
-    ogType: 'Open Graph Type',
-    ogUpdatedTime: 'Open Graph Updated Time',
-    ogArticleAuthor: 'OG Article Author',
-    ogArticlePublishedTime: 'OG Article Published Time',
-    ogArticleModifiedTime: 'OG Article Modified Time',
-    ogArticleSection: 'OG Article Section',
-    ogArticleTag: 'OG Article Tags',
-    
-    // Twitter Cards
-    twitterCard: 'Twitter Card Type',
-    twitterTitle: 'Twitter Title',
-    twitterDescription: 'Twitter Description',
-    twitterSite: 'Twitter Site',
-    twitterCreator: 'Twitter Creator',
-    twitterLabel1: 'Twitter Label 1',
-    twitterData1: 'Twitter Data 1',
-    
-    // Media
-    featuredImageId: 'Featured Image',
-    gallery: 'Gallery',
-    
-    // Tags & FAQs
-    tags: 'Tags',
-    faqs: 'FAQs',
-    
-    // Settings & Advanced
-    datePublished: 'Date Published',
-    lastReviewed: 'Last Reviewed',
-    mainEntityOfPage: 'Main Entity Of Page',
-    license: 'License',
-    creativeWorkStatus: 'Creative Work Status',
-    semanticKeywords: 'Semantic Keywords',
-    citations: 'Citations',
-    
-    // JSON-LD / Structured Data
-    jsonLdStructuredData: 'JSON-LD Structured Data',
-    jsonLdLastGenerated: 'JSON-LD Last Generated',
-    jsonLdValidationReport: 'JSON-LD Validation Report',
-    jsonLdVersion: 'JSON-LD Version',
-    jsonLdHistory: 'JSON-LD History',
-    jsonLdDiffSummary: 'JSON-LD Diff Summary',
-    jsonLdGenerationTimeMs: 'JSON-LD Generation Time (ms)',
-    performanceBudgetMet: 'Performance Budget Met',
-    
-    // Related
-    relatedArticles: 'Related Articles',
-  };
-
   return stepConfig.requiredFields
     .filter((field) => !isFieldCompleted(formData[field]))
     .map((field) => ({
       field,
-      label: fieldLabels[field] || field,
+      label: FIELD_LABELS[field] || field,
     }));
 }
 
-export function getFieldLabel(field: string): string {
-  const labels: Record<string, string> = {
-    // Basic Info
-    title: 'Title',
-    slug: 'Slug',
-    clientId: 'Client',
-    categoryId: 'Category',
-    authorId: 'Author',
-    excerpt: 'Excerpt',
-    status: 'Status',
-    featured: 'Featured',
-    scheduledAt: 'Scheduled At',
-    
-    // Content
-    content: 'Content',
-    contentFormat: 'Content Format',
-    wordCount: 'Word Count',
-    readingTimeMinutes: 'Reading Time (minutes)',
-    contentDepth: 'Content Depth',
-    articleBodyText: 'Article Body (Plain Text)',
-    inLanguage: 'Language',
-    isAccessibleForFree: 'Accessible For Free',
-    
-    // SEO Meta
-    seoTitle: 'SEO Title',
-    seoDescription: 'SEO Description',
-    metaRobots: 'Meta Robots',
-    canonicalUrl: 'Canonical URL',
-    robotsMeta: 'Robots Meta',
-    sitemapPriority: 'Sitemap Priority',
-    sitemapChangeFreq: 'Sitemap Change Frequency',
-    alternateLanguages: 'Alternate Languages',
-    breadcrumbPath: 'Breadcrumb Path',
-    
-    // Open Graph
-    ogTitle: 'OG Title',
-    ogDescription: 'OG Description',
-    ogUrl: 'OG URL',
-    ogSiteName: 'OG Site Name',
-    ogLocale: 'OG Locale',
-    ogType: 'OG Type',
-    ogUpdatedTime: 'OG Updated Time',
-    ogArticleAuthor: 'OG Article Author',
-    ogArticlePublishedTime: 'OG Published Time',
-    ogArticleModifiedTime: 'OG Modified Time',
-    ogArticleSection: 'OG Article Section',
-    ogArticleTag: 'OG Article Tags',
-    
-    // Twitter Cards
-    twitterCard: 'Twitter Card Type',
-    twitterTitle: 'Twitter Title',
-    twitterDescription: 'Twitter Description',
-    twitterSite: 'Twitter Site',
-    twitterCreator: 'Twitter Creator',
-    twitterLabel1: 'Twitter Label 1',
-    twitterData1: 'Twitter Data 1',
-    
-    // Media
-    featuredImageId: 'Featured Image',
-    gallery: 'Gallery',
-    
-    // Tags & FAQs
-    tags: 'Tags',
-    faqs: 'FAQs',
-    
-    // Settings & Advanced
-    datePublished: 'Date Published',
-    lastReviewed: 'Last Reviewed',
-    mainEntityOfPage: 'Main Entity Of Page',
-    license: 'License',
-    creativeWorkStatus: 'Creative Work Status',
-    semanticKeywords: 'Semantic Keywords',
-    citations: 'Citations',
-    
-    // JSON-LD / Structured Data
-    jsonLdStructuredData: 'JSON-LD Data',
-    jsonLdLastGenerated: 'JSON-LD Generated',
-    jsonLdValidationReport: 'Validation Report',
-    jsonLdVersion: 'JSON-LD Version',
-    jsonLdHistory: 'JSON-LD History',
-    jsonLdDiffSummary: 'JSON-LD Changes',
-    jsonLdGenerationTimeMs: 'Generation Time (ms)',
-    performanceBudgetMet: 'Performance OK',
-    
-    // Related
-    relatedArticles: 'Related Articles',
-  };
+export function getMissingOptionalFields(
+  stepNumber: number,
+  formData: ArticleFormData
+): Array<{ field: string; label: string }> {
+  const stepConfig = STEP_CONFIGS.find((s) => s.number === stepNumber);
+  if (!stepConfig) return [];
 
-  return labels[field] || field;
+  return stepConfig.optionalFields
+    .filter((field) => !isFieldCompleted(formData[field]))
+    .map((field) => ({
+      field,
+      label: FIELD_LABELS[field] || field,
+    }));
+}
+
+
+export function getFieldLabel(field: string): string {
+  return FIELD_LABELS[field] || field;
 }

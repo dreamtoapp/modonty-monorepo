@@ -440,6 +440,14 @@ export function ArticleFormProvider({
     }
   }, [formData.canonicalUrl, formData.ogUrl]);
 
+  // Auto-fill articleBodyText from content (keep HTML for display)
+  useEffect(() => {
+    if (formData.content && !formData.articleBodyText) {
+      setFormData((prev) => ({ ...prev, articleBodyText: formData.content }));
+      setIsDirty(true);
+    }
+  }, [formData.content, formData.articleBodyText]);
+
   const value: ArticleFormContextType = {
     mode,
     articleId,
