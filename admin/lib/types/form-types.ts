@@ -52,7 +52,6 @@ export interface ArticleFormData {
   inLanguage?: string;
   isAccessibleForFree?: boolean;
   license?: string;
-  creativeWorkStatus?: string;
   
   // SEO Meta Tags
   seoTitle?: string;
@@ -66,7 +65,6 @@ export interface ArticleFormData {
   ogSiteName?: string;
   ogLocale?: string;
   ogType?: string;
-  ogUpdatedTime?: Date | null;
   ogArticleAuthor?: string;
   ogArticlePublishedTime?: Date | null;
   ogArticleModifiedTime?: Date | null;
@@ -79,13 +77,10 @@ export interface ArticleFormData {
   twitterDescription?: string;
   twitterSite?: string;
   twitterCreator?: string;
-  twitterLabel1?: string;
-  twitterData1?: string;
   
   // Technical SEO
   canonicalUrl?: string;
   alternateLanguages?: Array<{ hreflang: string; url: string }>;
-  robotsMeta?: string;
   sitemapPriority?: number;
   sitemapChangeFreq?: string;
   

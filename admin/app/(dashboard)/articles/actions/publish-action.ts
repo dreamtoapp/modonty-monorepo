@@ -112,7 +112,6 @@ export async function publishArticle(
         datePublished: formData.datePublished || now,
         ogArticlePublishedTime: formData.datePublished || now,
         ogArticleModifiedTime: now,
-        ogUpdatedTime: now,
       },
     });
 
@@ -185,7 +184,6 @@ export async function publishArticleById(articleId: string): Promise<FormSubmitR
         datePublished: article.datePublished || now,
         ogArticlePublishedTime: article.ogArticlePublishedTime || now,
         ogArticleModifiedTime: now,
-        ogUpdatedTime: now,
       },
     });
 

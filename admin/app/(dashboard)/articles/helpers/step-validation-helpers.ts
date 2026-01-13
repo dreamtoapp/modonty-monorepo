@@ -79,7 +79,6 @@ export const STEP_CONFIGS: StepConfig[] = [
       'datePublished',
       'lastReviewed',
       'mainEntityOfPage',
-      'creativeWorkStatus',
     ],
   },
   {
@@ -98,15 +97,12 @@ export const STEP_CONFIGS: StepConfig[] = [
     requiredFields: [],
     optionalFields: [
       'ogType',
-      'ogUpdatedTime',
       'ogArticleAuthor',
       'ogArticlePublishedTime',
       'ogArticleModifiedTime',
       'twitterCard',
       'twitterSite',
       'twitterCreator',
-      'twitterLabel1',
-      'twitterData1',
       'breadcrumbPath',
     ],
   },
@@ -263,7 +259,6 @@ const FIELD_LABELS: Record<string, string> = {
   seoDescription: 'SEO Description',
   metaRobots: 'Meta Robots',
   canonicalUrl: 'Canonical URL',
-  robotsMeta: 'Robots Meta',
   sitemapPriority: 'Sitemap Priority',
   sitemapChangeFreq: 'Sitemap Change Frequency',
   alternateLanguages: 'Alternate Languages',
@@ -276,7 +271,6 @@ const FIELD_LABELS: Record<string, string> = {
   ogSiteName: 'Open Graph Site Name',
   ogLocale: 'Open Graph Locale',
   ogType: 'Open Graph Type',
-  ogUpdatedTime: 'Open Graph Updated Time',
   ogArticleAuthor: 'OG Article Author',
   ogArticlePublishedTime: 'OG Article Published Time',
   ogArticleModifiedTime: 'OG Article Modified Time',
@@ -289,8 +283,6 @@ const FIELD_LABELS: Record<string, string> = {
   twitterDescription: 'Twitter Description',
   twitterSite: 'Twitter Site',
   twitterCreator: 'Twitter Creator',
-  twitterLabel1: 'Twitter Label 1',
-  twitterData1: 'Twitter Data 1',
   
   // Media
   featuredImageId: 'Featured Image',
@@ -305,7 +297,6 @@ const FIELD_LABELS: Record<string, string> = {
   lastReviewed: 'Last Reviewed',
   mainEntityOfPage: 'Main Entity Of Page',
   license: 'License',
-  creativeWorkStatus: 'Creative Work Status',
   semanticKeywords: 'Semantic Keywords',
   citations: 'Citations',
   

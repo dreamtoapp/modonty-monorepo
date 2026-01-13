@@ -12,6 +12,7 @@ import { ArticleViewFeaturedImage } from "./article-view-featured-image";
 import { ArticleViewContent } from "./article-view-content";
 import { ArticleViewFaqs } from "./article-view-faqs";
 import { ArticleViewRelated } from "./article-view-related";
+import { ArticleViewRelatedFrom } from "./article-view-related-from";
 import { ArticleViewGallery } from "./article-view-gallery";
 import { ArticleViewInfo } from "./article-view-info";
 import { ArticleViewSeo } from "./article-view-seo";
@@ -72,6 +73,11 @@ export function ArticleView({ article }: ArticleViewProps) {
         <ArticleViewRelated
           article={article}
           sectionRef={getSectionRef("section-related")}
+        />
+
+        <ArticleViewRelatedFrom
+          article={article}
+          sectionRef={getSectionRef("section-related-from")}
         />
 
         <ArticleViewGallery

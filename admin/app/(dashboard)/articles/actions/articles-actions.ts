@@ -335,6 +335,22 @@ export async function getArticleById(id: string) {
             },
           },
         },
+        relatedFrom: {
+          include: {
+            article: {
+              select: {
+                id: true,
+                title: true,
+                slug: true,
+              },
+            },
+          },
+        },
+        versions: {
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
       },
     });
     // Filter out articles with invalid status (shouldn't happen after migration)
@@ -517,13 +533,6 @@ export async function createArticle(data: ArticleFormData) {
       data.datePublished ||
       (data.status === ArticleStatus.PUBLISHED ? new Date() : null);
 
-    const creativeWorkStatus =
-      data.status === ArticleStatus.PUBLISHED
-        ? "published"
-        : (data.status as string) === "SCHEDULED"
-        ? "scheduled"
-        : "draft";
-
     const metaRobots =
       data.metaRobots ||
       (data.status === ArticleStatus.PUBLISHED
@@ -563,7 +572,6 @@ export async function createArticle(data: ArticleFormData) {
         isAccessibleForFree: true,
         license: data.license || null,
         lastReviewed: data.lastReviewed || null,
-        creativeWorkStatus,
         mainEntityOfPage: canonicalUrl,
         seoTitle: seoTitle || null,
         seoDescription: seoDescription || null,
@@ -572,14 +580,10 @@ export async function createArticle(data: ArticleFormData) {
         ogArticleAuthor: data.ogArticleAuthor || null,
         ogArticlePublishedTime: datePublished,
         ogArticleModifiedTime: new Date(),
-        ogUpdatedTime: null,
         twitterCard: data.twitterCard || "summary_large_image",
         twitterSite: data.twitterSite || null,
         twitterCreator: data.twitterCreator || null,
-        twitterLabel1: data.twitterLabel1 || null,
-        twitterData1: data.twitterData1 || null,
         canonicalUrl,
-        robotsMeta: metaRobots,
         sitemapPriority,
         sitemapChangeFreq: data.sitemapChangeFreq || "weekly",
         alternateLanguages: data.alternateLanguages || [],

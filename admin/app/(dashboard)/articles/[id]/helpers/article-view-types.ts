@@ -49,6 +49,11 @@ export interface Article {
     relationshipType?: string | null;
     related: { id: string; title: string; slug: string };
   }[];
+  relatedFrom?: {
+    id: string;
+    relationshipType?: string | null;
+    article: { id: string; title: string; slug: string };
+  }[];
   jsonLdStructuredData?: string | null;
   jsonLdLastGenerated?: Date | null;
   jsonLdValidationReport?: Prisma.JsonValue | null;
@@ -66,11 +71,20 @@ export interface Article {
   twitterCard?: string | null;
   twitterSite?: string | null;
   twitterCreator?: string | null;
-  robotsMeta?: string | null;
   alternateLanguages?: Prisma.JsonValue | null;
   sitemapPriority?: number | null;
   sitemapChangeFreq?: string | null;
   breadcrumbPath?: Prisma.JsonValue | null;
+  versions?: {
+    id: string;
+    title: string;
+    content: string;
+    excerpt?: string | null;
+    seoTitle?: string | null;
+    seoDescription?: string | null;
+    createdAt: Date;
+    createdBy?: string | null;
+  }[];
 }
 
 export interface ContentStats {

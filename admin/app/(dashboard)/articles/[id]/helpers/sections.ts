@@ -8,6 +8,7 @@ import {
   Code,
   Database,
   Settings,
+  ArrowLeft,
 } from "lucide-react";
 import { Article, Section } from "./article-view-types";
 
@@ -33,9 +34,15 @@ export function getArticleSections(article: Article): Section[] {
     },
     {
       id: "section-related",
-      label: "Related Articles",
+      label: "Related (Outgoing)",
       icon: Layers,
-      condition: !!(article.relatedTo && article.relatedTo.length > 0),
+      condition: true,
+    },
+    {
+      id: "section-related-from",
+      label: "Related (Incoming)",
+      icon: ArrowLeft,
+      condition: true,
     },
     {
       id: "section-gallery",

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { FileText, Copy, Check } from "lucide-react";
+import { FileText, Copy, Check, History } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Article, ContentStats } from "../helpers/article-view-types";
 
@@ -129,6 +129,44 @@ export function ArticleViewInfo({ article, contentStats, sectionRef }: ArticleVi
                       {t.tag.name}
                     </Badge>
                     <CopyableId id={t.tag.id} label="Tag" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {article.versions && article.versions.length > 0 && (
+            <div className="space-y-2 pt-2 border-t">
+              <div className="flex items-center gap-2">
+                <History className="h-4 w-4 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">Versions</p>
+                <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
+                  article.versions
+                </Badge>
+                <Badge variant="secondary" className="text-xs">
+                  {article.versions.length}
+                </Badge>
+              </div>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {article.versions.map((version, index) => (
+                  <div key={version.id} className="flex flex-col gap-1 p-2 rounded border bg-muted/30 text-sm">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-xs">
+                          Version {article.versions!.length - index}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(version.createdAt), "MMM d, yyyy 'at' h:mm a")}
+                        </span>
+                        {version.createdBy && (
+                          <span className="text-xs text-muted-foreground">by {version.createdBy}</span>
+                        )}
+                      </div>
+                      <CopyableId id={version.id} label="Version" />
+                    </div>
+                    <p className="text-xs font-medium truncate">{version.title}</p>
+                    {version.seoTitle && version.seoTitle !== version.title && (
+                      <p className="text-xs text-muted-foreground truncate">SEO: {version.seoTitle}</p>
+                    )}
                   </div>
                 ))}
               </div>

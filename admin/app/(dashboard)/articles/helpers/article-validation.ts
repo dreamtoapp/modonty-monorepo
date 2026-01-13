@@ -62,11 +62,8 @@ export const articleFormSchema = z.object({
   twitterCard: TwitterCardEnum.optional().default("summary_large_image"),
   twitterSite: z.string().optional(),
   twitterCreator: z.string().optional(),
-  twitterLabel1: z.string().optional(),
-  twitterData1: z.string().optional(),
 
   canonicalUrl: z.string().url("يجب أن يكون رابط صحيح").optional(),
-  robotsMeta: z.string().optional(),
   sitemapPriority: z.number().min(0).max(1).optional().default(0.5),
   sitemapChangeFreq: SitemapChangeFreqEnum.optional().default("weekly"),
   alternateLanguages: z.array(AlternateLanguageSchema).optional().default([]),

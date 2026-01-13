@@ -106,7 +106,6 @@ const initialFormData: ArticleFormData = {
   inLanguage: 'ar',
   isAccessibleForFree: true,
   license: '',
-  creativeWorkStatus: '',
   
   // SEO Meta Tags
   seoTitle: '',
@@ -120,7 +119,6 @@ const initialFormData: ArticleFormData = {
   ogUrl: '',
   ogSiteName: 'مودونتي',
   ogLocale: 'ar_SA',
-  ogUpdatedTime: null,
   ogArticleAuthor: '',
   ogArticlePublishedTime: null,
   ogArticleModifiedTime: null,
@@ -133,13 +131,10 @@ const initialFormData: ArticleFormData = {
   twitterDescription: '',
   twitterSite: '',
   twitterCreator: '',
-  twitterLabel1: '',
-  twitterData1: '',
   
   // Technical SEO
   canonicalUrl: '',
   alternateLanguages: [],
-  robotsMeta: '',
   sitemapPriority: 0.5,
   sitemapChangeFreq: 'weekly',
   

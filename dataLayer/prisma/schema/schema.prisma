@@ -403,7 +403,6 @@ model Article {
   inLanguage          String  @default("ar") // For hreflang
   isAccessibleForFree Boolean @default(true)
   license             String?
-  creativeWorkStatus  String? // published, draft, etc.
 
   // Meta tags
   seoTitle       String?
@@ -412,7 +411,6 @@ model Article {
 
   // Open Graph (Complete)
   ogType                 String?   @default("article")
-  ogUpdatedTime          DateTime?
   ogArticleAuthor        String?
   ogArticlePublishedTime DateTime?
   ogArticleModifiedTime  DateTime?
@@ -421,13 +419,10 @@ model Article {
   twitterCard        String? // summary_large_image, summary
   twitterSite        String?
   twitterCreator     String? // Author handle
-  twitterLabel1      String?
-  twitterData1       String?
 
   // Technical SEO
   canonicalUrl       String?
   alternateLanguages Json? // Array of {hreflang, url} objects
-  robotsMeta         String? // Combined robots directive
   sitemapPriority    Float?  @default(0.5) // 0.0 to 1.0
   sitemapChangeFreq  String? @default("weekly") // always, hourly, daily, weekly, monthly, yearly, never
 

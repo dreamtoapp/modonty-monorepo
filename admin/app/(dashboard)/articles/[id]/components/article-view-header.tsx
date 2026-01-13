@@ -73,6 +73,10 @@ function CopyableId({ id, label }: { id: string; label: string }) {
 export function ArticleViewHeader({ article }: ArticleViewHeaderProps) {
   return (
     <div className="flex flex-col gap-6">
+      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+        <span>Article ID:</span>
+        <CopyableId id={article.id} label="Article" />
+      </div>
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-4 flex-1">
           <div className="flex flex-wrap items-center gap-3">

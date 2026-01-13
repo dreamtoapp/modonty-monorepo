@@ -168,8 +168,8 @@ export function TechnicalSeoPreview() {
       site: formData.twitterSite || undefined,
       creator: formData.twitterCreator || selectedAuthor?.name || undefined,
       images: featuredMedia?.url ? [featuredMedia.url] : undefined,
-      label1: formData.twitterLabel1 || undefined,
-      data1: formData.twitterData1 || undefined,
+      label1: undefined,
+      data1: undefined,
     };
   }, [formData, effectiveTitle, effectiveDescription, selectedAuthor, featuredMedia]);
 
@@ -378,7 +378,6 @@ export function TechnicalSeoPreview() {
                 <h4 className="text-sm font-semibold mb-2">Meta Robots</h4>
                 <div className="flex gap-2">
                   <Badge variant="outline">{formData.metaRobots || 'index, follow'}</Badge>
-                  {formData.robotsMeta && <Badge variant="outline">{formData.robotsMeta}</Badge>}
                 </div>
               </div>
 

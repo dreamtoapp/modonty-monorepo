@@ -162,8 +162,8 @@ export function SEOStep() {
     site: formData.twitterSite || undefined,
     creator: formData.twitterCreator || selectedAuthor?.name || undefined,
     images: featuredMedia?.url ? [featuredMedia.url] : undefined,
-    label1: formData.twitterLabel1 || undefined,
-    data1: formData.twitterData1 || undefined,
+    label1: undefined,
+    data1: undefined,
   }), [formData, effectiveTitle, effectiveDescription, selectedAuthor, featuredMedia]);
 
   // Build JSON-LD preview

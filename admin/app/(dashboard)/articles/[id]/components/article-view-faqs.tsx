@@ -1,7 +1,54 @@
+"use client";
+
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { HelpCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { HelpCircle, Copy, Check } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { Article } from "../helpers/article-view-types";
+
+function CopyableId({ id, label }: { id: string; label: string }) {
+  const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(id);
+      setCopied(true);
+      toast({
+        title: "Copied",
+        description: `${label} ID copied to clipboard`,
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast({
+        title: "Failed to copy",
+        description: "Could not copy to clipboard",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="text-xs font-mono text-muted-foreground">{id}</span>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-4 w-4"
+        onClick={handleCopy}
+        title={`Copy ${label} ID`}
+      >
+        {copied ? (
+          <Check className="h-3 w-3 text-green-600" />
+        ) : (
+          <Copy className="h-3 w-3" />
+        )}
+      </Button>
+    </div>
+  );
+}
 
 interface ArticleViewFaqsProps {
   article: Article;
@@ -27,9 +74,12 @@ export function ArticleViewFaqs({ article, sectionRef }: ArticleViewFaqsProps) {
         </div>
         {article.faqs.map((faq, index) => (
           <div key={faq.id} className="space-y-2 pb-4 border-b last:border-0 last:pb-0">
-            <div className="text-base font-semibold flex items-start gap-2  text-right">
-              <span className="text-primary mt-0.5 shrink-0">س{index + 1}:</span>
-              <span>{faq.question}</span>
+            <div className="flex items-start justify-between gap-2">
+              <div className="text-base font-semibold flex items-start gap-2 text-right flex-1">
+                <span className="text-primary mt-0.5 shrink-0">س{index + 1}:</span>
+                <span>{faq.question}</span>
+              </div>
+              <CopyableId id={faq.id} label="FAQ" />
             </div>
             <p className="text-sm text-muted-foreground whitespace-pre-wrap text-right" dir="rtl">
               {faq.answer}

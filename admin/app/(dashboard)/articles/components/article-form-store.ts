@@ -110,8 +110,6 @@ const initialFormData: ArticleFormData = {
   twitterDescription: '',
   twitterSite: '',
   twitterCreator: '',
-  twitterLabel1: '',
-  twitterData1: '',
   canonicalUrl: '',
   sitemapPriority: 0.5,
   sitemapChangeFreq: 'weekly',

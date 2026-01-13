@@ -91,7 +91,6 @@ export function ArticleFormNavigation() {
     // Generate dates
     const datePublished = faker.date.recent({ days: 30 });
     const lastReviewed = faker.date.recent({ days: 7 });
-    const ogUpdatedTime = faker.date.recent({ days: 3 });
     
     // Generate SEO content
     const seoTitle = faker.lorem.sentence({ min: 5, max: 10 });
@@ -174,7 +173,6 @@ export function ArticleFormNavigation() {
       inLanguage: 'ar',
       isAccessibleForFree: faker.datatype.boolean({ probability: 0.9 }),
       license: faker.helpers.arrayElement(['CC-BY-SA', 'CC-BY', 'CC0', 'All Rights Reserved', '']),
-      creativeWorkStatus: faker.helpers.arrayElement(['published', 'draft', 'scheduled']),
       
       // SEO Meta Tags
       seoTitle,
@@ -188,10 +186,9 @@ export function ArticleFormNavigation() {
       ogUrl: canonicalUrl,
       ogSiteName: 'مودونتي',
       ogLocale: 'ar_SA',
-      ogUpdatedTime,
       ogArticleAuthor: randomAuthor?.name || faker.person.fullName(),
       ogArticlePublishedTime: datePublished,
-      ogArticleModifiedTime: ogUpdatedTime,
+      ogArticleModifiedTime: faker.date.recent({ days: 3 }),
       ogArticleSection: randomCategory?.name || faker.lorem.word(),
       ogArticleTag,
       
@@ -201,13 +198,10 @@ export function ArticleFormNavigation() {
       twitterDescription: seoDescription.substring(0, 200),
       twitterSite,
       twitterCreator,
-      twitterLabel1: faker.helpers.arrayElement(['قراءة', 'وقت', 'مؤلف']),
-      twitterData1: `${readingTimeMinutes} دقائق`,
       
       // Technical SEO
       canonicalUrl,
       alternateLanguages,
-      robotsMeta: faker.helpers.arrayElement(['index, follow', 'noindex, follow']),
       sitemapPriority: faker.number.float({ min: 0.3, max: 1.0, fractionDigits: 1 }),
       sitemapChangeFreq: faker.helpers.arrayElement(['always', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'never']),
       

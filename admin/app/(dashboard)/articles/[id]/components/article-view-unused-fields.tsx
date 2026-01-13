@@ -63,17 +63,7 @@ export function ArticleViewUnusedFields({
         <div className="mt-6 pt-4 border-t">
           <p className="text-xs font-semibold mb-2">Complete List of Unused DB Fields (from schema):</p>
           <div className="space-y-1 text-xs text-muted-foreground font-mono">
-            <div>• article.articleBodyText (String?) - Plain text extracted from TipTap content (displayed in Content section)</div>
-            <div>• article.isAccessibleForFree (Boolean)</div>
-            <div>• article.creativeWorkStatus (String?)</div>
-            <div>• article.ogUpdatedTime (DateTime?)</div>
-            <div>• article.ogArticleAuthor (String?)</div>
-            <div>• article.twitterLabel1 (String?)</div>
-            <div>• article.twitterData1 (String?)</div>
-            <div>• article.robotsMeta (String?) - Combined robots directive (metaRobots is displayed)</div>
-            <div>• article.versions (ArticleVersion[])</div>
-            <div>• article.analytics (Analytics[])</div>
-            <div>• article.relatedFrom (RelatedArticle[])</div>
+            <div>• article.analytics (Analytics[]) - Relation used in queries/exports but not displayed in view (accessed via API)</div>
           </div>
         </div>
       </CardContent>

@@ -489,7 +489,6 @@ async function seedArticles(
         contentDepth,
         inLanguage: "ar",
         isAccessibleForFree: true,
-        creativeWorkStatus: status === "PUBLISHED" ? "published" : status.toLowerCase(),
         ...seoFields,
       },
     });

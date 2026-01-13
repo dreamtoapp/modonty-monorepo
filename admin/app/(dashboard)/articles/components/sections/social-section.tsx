@@ -145,24 +145,6 @@ export function SocialSection() {
                 placeholder="@username"
               />
             </div>
-
-            <div>
-              <Label>Twitter Label 1</Label>
-              <Input
-                value={formData.twitterLabel1 || ''}
-                onChange={(e) => updateField('twitterLabel1', e.target.value)}
-                placeholder="Optional label for Twitter card"
-              />
-            </div>
-
-            <div>
-              <Label>Twitter Data 1</Label>
-              <Input
-                value={formData.twitterData1 || ''}
-                onChange={(e) => updateField('twitterData1', e.target.value)}
-                placeholder="Optional data for Twitter card"
-              />
-            </div>
           </TabsContent>
         </Tabs>
       </CardContent>
