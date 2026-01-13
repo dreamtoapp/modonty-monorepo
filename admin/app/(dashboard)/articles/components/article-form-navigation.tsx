@@ -8,6 +8,8 @@ import { ChevronLeft, ChevronRight, Save, Loader2, TestTube } from 'lucide-react
 import { ArticleFormStepper } from './article-form-stepper';
 import { faker } from '@faker-js/faker/locale/ar';
 import { slugify } from '../helpers/seo-helpers';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 export function ArticleFormNavigation() {
   const {
@@ -20,12 +22,57 @@ export function ArticleFormNavigation() {
     save,
     isSaving,
     overallProgress,
+    mode,
     updateFields,
     clients,
     categories,
     authors,
     tags,
   } = useArticleForm();
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const handleSave = async () => {
+    try {
+      const result = await save();
+
+      if (result.success) {
+        const articleId = result.article?.id;
+        const articleTitle = result.article?.title;
+        const articleStatus = result.article?.status;
+
+        const detailsParts: string[] = [];
+        if (articleId) detailsParts.push(`المعرّف: ${articleId}`);
+        if (articleTitle) detailsParts.push(`العنوان: "${articleTitle}"`);
+        if (articleStatus) detailsParts.push(`الحالة: ${articleStatus}`);
+
+        toast({
+          title: 'تم الحفظ بنجاح',
+          description:
+            detailsParts.length > 0
+              ? `تم حفظ المقال بنجاح.\n${detailsParts.join(' — ')}`
+              : 'تم حفظ المقال بنجاح وهو في انتظار معاينة المدير',
+        });
+
+        if (mode === 'new') {
+          router.push('/articles');
+          router.refresh();
+        }
+      } else {
+        toast({
+          title: 'فشل الحفظ',
+          description: result.error || 'حدث خطأ أثناء حفظ المقال',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'فشل الحفظ',
+        description: error instanceof Error ? error.message : 'حدث خطأ غير متوقع',
+        variant: 'destructive',
+      });
+    }
+  };
 
   const fillDummyData = () => {
     // Generate random title
@@ -256,7 +303,7 @@ export function ArticleFormNavigation() {
                     <Button
                       variant="default"
                       size="icon"
-                      onClick={save}
+                      onClick={handleSave}
                       disabled={isSaving}
                       className="h-8 w-8 transition-all hover:scale-105"
                       aria-label="Save article"

@@ -114,11 +114,7 @@ export interface ArticleFormData {
   jsonLdVersion?: number;
   jsonLdHistory?: any;
   jsonLdDiffSummary?: string;
-  
-  // Performance Tracking
-  jsonLdGenerationTimeMs?: number;
-  performanceBudgetMet?: boolean;
-  
+
   // Tags & FAQs
   tags?: string[];
   faqs?: FAQItem[];
@@ -256,4 +252,9 @@ export interface UserFormData {
 export interface FormSubmitResult {
   success: boolean;
   error?: string;
+  article?: {
+    id: string;
+    title?: string | null;
+    status?: ArticleStatus;
+  };
 }

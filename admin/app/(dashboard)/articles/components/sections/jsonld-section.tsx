@@ -17,7 +17,6 @@ export function JsonLdSection() {
   } | null>(null);
   const [isGeneratingJsonLd, setIsGeneratingJsonLd] = useState(false);
   const [jsonLdLastGenerated, setJsonLdLastGenerated] = useState<Date | null>(null);
-  const [jsonLdGenerationTimeMs, setJsonLdGenerationTimeMs] = useState<number | null>(null);
 
   // Fetch JSON-LD data when article has ID
   useEffect(() => {
@@ -47,7 +46,6 @@ export function JsonLdSection() {
           validationReport: result.validationReport || null,
         });
         setJsonLdLastGenerated(new Date());
-        setJsonLdGenerationTimeMs(result.generationTimeMs || null);
         router.refresh();
       }
     } catch (error) {
@@ -65,7 +63,6 @@ export function JsonLdSection() {
           validationReport={jsonLdData?.validationReport || null}
           isGenerating={isGeneratingJsonLd}
           lastGenerated={jsonLdLastGenerated}
-          generationTimeMs={jsonLdGenerationTimeMs}
           articleId={articleId}
           onRegenerate={handleRegenerateJsonLd}
           onAutoFix={() => {

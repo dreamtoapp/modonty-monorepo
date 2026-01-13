@@ -45,7 +45,6 @@ interface JsonLdPreviewProps {
   validationReport: ValidationReport | null;
   isGenerating?: boolean;
   lastGenerated?: Date | null;
-  generationTimeMs?: number | null;
   articleId?: string;
   onRegenerate?: () => void;
   onAutoFix?: () => void;
@@ -56,7 +55,6 @@ export function JsonLdPreview({
   validationReport,
   isGenerating = false,
   lastGenerated,
-  generationTimeMs,
   articleId,
   onRegenerate,
   onAutoFix,
@@ -214,7 +212,6 @@ export function JsonLdPreview({
                 })}
               </span>
             )}
-            {generationTimeMs && <span>الوقت: {generationTimeMs}ms</span>}
           </CardDescription>
         </CardHeader>
 

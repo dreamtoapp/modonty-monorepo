@@ -17,7 +17,6 @@ export async function regenerateArticleJsonLd(articleId: string): Promise<{
   success: boolean;
   jsonLd?: object;
   validationReport?: ValidationReport;
-  generationTimeMs?: number;
   error?: string;
 }> {
   try {
@@ -32,7 +31,6 @@ export async function regenerateArticleJsonLd(articleId: string): Promise<{
       success: result.success,
       jsonLd: result.jsonLd,
       validationReport: result.validationReport,
-      generationTimeMs: result.generationTimeMs,
       error: result.error,
     };
   } catch (error) {
@@ -121,7 +119,6 @@ export async function getJsonLdStatistics(): Promise<{
   withJsonLd: number;
   withErrors: number;
   withWarnings: number;
-  avgGenerationTimeMs: number;
 }> {
   return getJsonLdStats();
 }

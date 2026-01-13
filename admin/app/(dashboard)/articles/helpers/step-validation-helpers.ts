@@ -316,8 +316,6 @@ const FIELD_LABELS: Record<string, string> = {
   jsonLdVersion: 'JSON-LD Version',
   jsonLdHistory: 'JSON-LD History',
   jsonLdDiffSummary: 'JSON-LD Diff Summary',
-  jsonLdGenerationTimeMs: 'JSON-LD Generation Time (ms)',
-  performanceBudgetMet: 'Performance Budget Met',
   
   // Related
   relatedArticles: 'Related Articles',

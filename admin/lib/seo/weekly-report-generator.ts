@@ -30,11 +30,6 @@ export interface WeeklyReport {
   errorTrends: ErrorTrend[];
   improvements: string[];
   actionItems: string[];
-  performance: {
-    avgGenerationTimeMs: number;
-    totalErrors: number;
-    totalWarnings: number;
-  };
 }
 
 /**
@@ -61,7 +56,6 @@ export async function generateWeeklyReport(
       title: true,
       jsonLdValidationReport: true,
       jsonLdStructuredData: true,
-      jsonLdGenerationTimeMs: true,
       dateModified: true,
     },
   });
@@ -70,8 +64,6 @@ export async function generateWeeklyReport(
   let articlesWithErrors = 0;
   let articlesWithWarnings = 0;
   const issueCount: Record<string, number> = {};
-  let totalGenerationTime = 0;
-  let generationTimeCount = 0;
   let withJsonLd = 0;
 
   // Analyze articles
@@ -80,10 +72,6 @@ export async function generateWeeklyReport(
       withJsonLd++;
     }
 
-    if (article.jsonLdGenerationTimeMs) {
-      totalGenerationTime += article.jsonLdGenerationTimeMs;
-      generationTimeCount++;
-    }
 
     const report = article.jsonLdValidationReport as any;
     if (report?.adobe?.errors && report.adobe.errors.length > 0) {
@@ -132,11 +120,6 @@ export async function generateWeeklyReport(
   const jsonLdCoverage =
     totalArticles > 0
       ? Math.round((withJsonLd / totalArticles) * 100)
-      : 0;
-
-  const avgGenerationTimeMs =
-    generationTimeCount > 0
-      ? Math.round(totalGenerationTime / generationTimeCount)
       : 0;
 
   // Get JSON-LD stats
@@ -194,11 +177,6 @@ export async function generateWeeklyReport(
     errorTrends,
     improvements,
     actionItems,
-    performance: {
-      avgGenerationTimeMs,
-      totalErrors: jsonLdStats.withErrors,
-      totalWarnings: jsonLdStats.withWarnings,
-    },
   };
 }
 
@@ -311,8 +289,6 @@ function generateReportSummary(report: WeeklyReport): string {
   lines.push(`📈 JSON-LD Coverage: ${report.summary.jsonLdCoverage}%`);
   lines.push(`❌ Articles with Errors: ${report.summary.articlesWithErrors}`);
   lines.push(`⚠️ Articles with Warnings: ${report.summary.articlesWithWarnings}`);
-  lines.push(`⚡ Avg Generation Time: ${report.performance.avgGenerationTimeMs}ms`);
-
   if (report.topIssues.length > 0) {
     lines.push("");
     lines.push("🔴 Top Issues:");

@@ -17,11 +17,23 @@ export function SaveArticleButton() {
     setSaving(true);
     try {
       const result = await save();
-      
+
       if (result.success) {
+        const articleId = result.article?.id;
+        const articleTitle = result.article?.title;
+        const articleStatus = result.article?.status;
+
+        const detailsParts: string[] = [];
+        if (articleId) detailsParts.push(`المعرّف: ${articleId}`);
+        if (articleTitle) detailsParts.push(`العنوان: "${articleTitle}"`);
+        if (articleStatus) detailsParts.push(`الحالة: ${articleStatus}`);
+
         toast({
           title: 'تم الحفظ بنجاح',
-          description: 'تم حفظ المقال بنجاح وهو في انتظار معاينة المدير',
+          description:
+            detailsParts.length > 0
+              ? `تم حفظ المقال بنجاح.\n${detailsParts.join(' — ')}`
+              : 'تم حفظ المقال بنجاح وهو في انتظار معاينة المدير',
         });
 
         // For new articles, redirect to articles list or stay on page

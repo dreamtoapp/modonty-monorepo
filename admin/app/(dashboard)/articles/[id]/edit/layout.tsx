@@ -68,7 +68,6 @@ export default async function EditArticleLayout({
     jsonLdDiffSummary: article.jsonLdDiffSummary ?? undefined,
     articleBodyText: article.articleBodyText ?? undefined,
     jsonLdLastGenerated: article.jsonLdLastGenerated ?? undefined,
-    jsonLdGenerationTimeMs: article.jsonLdGenerationTimeMs ?? undefined,
     categoryId: article.categoryId || '',
     tags:
       article.tags?.map((t: any) => {

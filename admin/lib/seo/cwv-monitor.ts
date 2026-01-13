@@ -36,7 +36,6 @@ export interface JsonLdPerformanceAssessment {
   estimatedParseTimeMs: number;
   impact: "none" | "minimal" | "moderate" | "significant";
   recommendations: string[];
-  passesPerformanceBudget: boolean;
 }
 
 export interface PlacementRecommendation {
@@ -45,13 +44,16 @@ export interface PlacementRecommendation {
   priority: "high" | "medium" | "low";
 }
 
-// Performance budgets
+// Performance budgets (size/parse-focused)
+const MAX_SIZE_BYTES = 50000; // 50KB max recommended
+const WARNING_SIZE_BYTES = 30000; // 30KB warning threshold
+const MAX_PARSE_TIME_MS = 50; // 50ms max parse time
+
 export const JSONLD_PERFORMANCE_BUDGETS = {
-  maxSizeBytes: 50000, // 50KB max recommended
-  warningSizeBytes: 30000, // 30KB warning threshold
-  maxParseTimeMs: 50, // 50ms max parse time
-  maxGenerationTimeMs: 100, // 100ms max generation time
-};
+  MAX_SIZE_BYTES,
+  WARNING_SIZE_BYTES,
+  MAX_PARSE_TIME_MS,
+} as const;
 
 /**
  * Assess JSON-LD performance impact
@@ -71,12 +73,12 @@ export function assessJsonLdPerformanceImpact(
   // Determine impact level
   let impact: JsonLdPerformanceAssessment["impact"] = "none";
 
-  if (sizeBytes > JSONLD_PERFORMANCE_BUDGETS.maxSizeBytes) {
+  if (sizeBytes > MAX_SIZE_BYTES) {
     impact = "significant";
     recommendations.push(
       `JSON-LD كبير جداً (${sizeKB}KB). قلل الحجم إلى أقل من 50KB`
     );
-  } else if (sizeBytes > JSONLD_PERFORMANCE_BUDGETS.warningSizeBytes) {
+  } else if (sizeBytes > WARNING_SIZE_BYTES) {
     impact = "moderate";
     recommendations.push(
       `حجم JSON-LD (${sizeKB}KB) قد يؤثر على الأداء. حاول تقليله`
@@ -96,17 +98,12 @@ export function assessJsonLdPerformanceImpact(
     recommendations.push("قلل طول articleBody أو أزله من JSON-LD");
   }
 
-  const passesPerformanceBudget =
-    sizeBytes <= JSONLD_PERFORMANCE_BUDGETS.maxSizeBytes &&
-    estimatedParseTimeMs <= JSONLD_PERFORMANCE_BUDGETS.maxParseTimeMs;
-
   return {
     sizeBytes,
     sizeKB,
     estimatedParseTimeMs,
     impact,
     recommendations,
-    passesPerformanceBudget,
   };
 }
 
@@ -154,14 +151,12 @@ export function getJsonLdPlacementRecommendation(
  * Check if structured data meets performance budget
  */
 export function checkStructuredDataBudget(
-  jsonLd: object | string,
-  generationTimeMs?: number
+  jsonLd: object | string
 ): {
   passed: boolean;
   issues: string[];
   metrics: {
     sizeKB: number;
-    generationTimeMs: number | null;
     parseTimeMs: number;
   };
 } {
@@ -169,20 +164,12 @@ export function checkStructuredDataBudget(
   const issues: string[] = [];
 
   // Size check
-  if (assessment.sizeBytes > JSONLD_PERFORMANCE_BUDGETS.maxSizeBytes) {
+  if (assessment.sizeBytes > MAX_SIZE_BYTES) {
     issues.push(`حجم JSON-LD (${assessment.sizeKB}KB) يتجاوز الحد (50KB)`);
   }
 
-  // Generation time check
-  if (
-    generationTimeMs &&
-    generationTimeMs > JSONLD_PERFORMANCE_BUDGETS.maxGenerationTimeMs
-  ) {
-    issues.push(`وقت التوليد (${generationTimeMs}ms) يتجاوز الحد (100ms)`);
-  }
-
   // Parse time check
-  if (assessment.estimatedParseTimeMs > JSONLD_PERFORMANCE_BUDGETS.maxParseTimeMs) {
+  if (assessment.estimatedParseTimeMs > MAX_PARSE_TIME_MS) {
     issues.push(
       `وقت التحليل المتوقع (${assessment.estimatedParseTimeMs}ms) قد يؤثر على INP`
     );
@@ -193,7 +180,6 @@ export function checkStructuredDataBudget(
     issues,
     metrics: {
       sizeKB: assessment.sizeKB,
-      generationTimeMs: generationTimeMs || null,
       parseTimeMs: assessment.estimatedParseTimeMs,
     },
   };

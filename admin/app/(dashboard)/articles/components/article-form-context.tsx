@@ -171,11 +171,6 @@ const initialFormData: ArticleFormData = {
   jsonLdVersion: 1,
   jsonLdHistory: undefined,
   jsonLdDiffSummary: '',
-  
-  // Performance Tracking
-  jsonLdGenerationTimeMs: undefined,
-  performanceBudgetMet: true,
-  
   // Tags & FAQs
   tags: [],
   faqs: [],

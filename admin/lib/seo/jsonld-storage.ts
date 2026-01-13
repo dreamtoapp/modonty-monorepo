@@ -9,7 +9,6 @@
  */
 
 import { db } from "@/lib/db";
-import { getPerformanceNow } from "./utils/performance";
 import { convert } from "html-to-text";
 import type { Prisma } from "@prisma/client";
 import {
@@ -28,7 +27,6 @@ export interface JsonLdGenerationResult {
   jsonLd?: object;
   jsonLdString?: string;
   validationReport?: ValidationReport;
-  generationTimeMs?: number;
   error?: string;
 }
 
@@ -93,8 +91,6 @@ export function extractPlainText(content: string): string {
 export async function generateAndSaveJsonLd(
   articleId: string
 ): Promise<JsonLdGenerationResult> {
-  const startTime = getPerformanceNow();
-
   try {
     // Fetch article with all relations
     const article = await fetchArticleForJsonLd(articleId);
@@ -125,9 +121,6 @@ export async function generateAndSaveJsonLd(
 
     // Stringify for storage
     const jsonLdString = stringifyKnowledgeGraph(knowledgeGraph);
-
-    // Calculate generation time
-    const generationTimeMs = Math.round(getPerformanceNow() - startTime);
 
     // Get current article for version tracking
     const currentArticle = await db.article.findUnique({
@@ -167,8 +160,6 @@ export async function generateAndSaveJsonLd(
         articleBodyText,
         jsonLdVersion: (currentArticle?.jsonLdVersion || 0) + 1,
         jsonLdHistory: JSON.parse(JSON.stringify(history)) as Prisma.InputJsonValue,
-        jsonLdGenerationTimeMs: generationTimeMs,
-        performanceBudgetMet: generationTimeMs < 100, // 100ms budget
       },
     });
 
@@ -177,15 +168,11 @@ export async function generateAndSaveJsonLd(
       jsonLd: knowledgeGraph,
       jsonLdString,
       validationReport,
-      generationTimeMs,
     };
   } catch (error) {
-    const generationTimeMs = Math.round(getPerformanceNow() - startTime);
-
     return {
       success: false,
       error: error instanceof Error ? error.message : String(error),
-      generationTimeMs,
     };
   }
 }
@@ -385,23 +372,18 @@ export async function getJsonLdStats(): Promise<{
   withJsonLd: number;
   withErrors: number;
   withWarnings: number;
-  avgGenerationTimeMs: number;
 }> {
   const articles = await db.article.findMany({
     where: { status: "PUBLISHED" },
     select: {
       jsonLdStructuredData: true,
       jsonLdValidationReport: true,
-      jsonLdGenerationTimeMs: true,
     },
   });
 
   let withJsonLd = 0;
   let withErrors = 0;
   let withWarnings = 0;
-  let totalGenerationTime = 0;
-  let generationTimeCount = 0;
-
   for (const article of articles) {
     if (article.jsonLdStructuredData) {
       withJsonLd++;
@@ -417,10 +399,6 @@ export async function getJsonLdStats(): Promise<{
       }
     }
 
-    if (article.jsonLdGenerationTimeMs) {
-      totalGenerationTime += article.jsonLdGenerationTimeMs;
-      generationTimeCount++;
-    }
   }
 
   return {
@@ -428,7 +406,5 @@ export async function getJsonLdStats(): Promise<{
     withJsonLd,
     withErrors,
     withWarnings,
-    avgGenerationTimeMs:
-      generationTimeCount > 0 ? Math.round(totalGenerationTime / generationTimeCount) : 0,
   };
 }
