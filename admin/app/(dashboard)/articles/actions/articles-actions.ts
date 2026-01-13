@@ -15,6 +15,8 @@ import {
 import { ArticleFormData, FAQItem } from "@/lib/types";
 import { calculateSEOScore } from "@/helpers/utils/seo-score-calculator";
 import { articleSEOConfig } from "../helpers/article-seo-config";
+import { generateAndSaveNextjsMetadata } from "@/lib/seo/metadata-storage";
+import { generateAndSaveJsonLd } from "@/lib/seo/jsonld-storage";
 
 export interface ArticleFilters {
   status?: ArticleStatus;
@@ -440,6 +442,35 @@ export async function getArticleBySlug(slug: string, clientId?: string) {
 
 export async function createArticle(data: ArticleFormData) {
   try {
+    // Validate required fields before processing
+    if (!data.title || data.title.trim().length === 0) {
+      return {
+        success: false,
+        error: "العنوان مطلوب",
+      };
+    }
+
+    if (!data.content || data.content.trim().length === 0) {
+      return {
+        success: false,
+        error: "المحتوى مطلوب",
+      };
+    }
+
+    if (!data.clientId) {
+      return {
+        success: false,
+        error: "العميل مطلوب",
+      };
+    }
+
+    if (!data.slug || data.slug.trim().length === 0) {
+      return {
+        success: false,
+        error: "الرابط المختصر مطلوب",
+      };
+    }
+
     const { getModontyAuthor } = await import("@/app/(dashboard)/authors/actions/authors-actions");
     const modontyAuthor = await getModontyAuthor();
     if (!modontyAuthor) {
@@ -557,13 +588,20 @@ export async function createArticle(data: ArticleFormData) {
     });
 
     if (data.tags && data.tags.length > 0) {
+      // Save tags with error handling - if one fails, continue with others
       for (const tagId of data.tags) {
-        await db.articleTag.create({
-          data: {
-            articleId: article.id,
-            tagId: tagId,
-          },
-        });
+        try {
+          await db.articleTag.create({
+            data: {
+              articleId: article.id,
+              tagId: tagId,
+            },
+          });
+        } catch (error) {
+          // Log tag creation error but don't fail article save
+          console.error(`Failed to create tag ${tagId} for article ${article.id}:`, error);
+          // Continue with next tag
+        }
       }
     }
 
@@ -605,6 +643,21 @@ export async function createArticle(data: ArticleFormData) {
           weight: rel.weight || 1.0,
         })),
       });
+    }
+
+    // Generate and save Next.js Metadata and JSON-LD (non-blocking)
+    try {
+      // Generate Next.js Metadata
+      await generateAndSaveNextjsMetadata(article.id, {
+        robots: metaRobots,
+      });
+
+      // Generate JSON-LD
+      await generateAndSaveJsonLd(article.id);
+    } catch (error) {
+      // Log error but don't fail article creation
+      console.error('Failed to generate metadata/JSON-LD for article:', article.id, error);
+      // Article still saved successfully
     }
 
     revalidatePath("/articles");
@@ -740,13 +793,20 @@ export async function updateArticle(id: string, data: ArticleFormData) {
     });
 
     if (data.tags && data.tags.length > 0) {
+      // Save tags with error handling - if one fails, continue with others
       for (const tagId of data.tags) {
-        await db.articleTag.create({
-          data: {
-            articleId: id,
-            tagId: tagId,
-          },
-        });
+        try {
+          await db.articleTag.create({
+            data: {
+              articleId: id,
+              tagId: tagId,
+            },
+          });
+        } catch (error) {
+          // Log tag creation error but don't fail article update
+          console.error(`Failed to create tag ${tagId} for article ${id}:`, error);
+          // Continue with next tag
+        }
       }
     }
 
@@ -804,6 +864,21 @@ export async function updateArticle(id: string, data: ArticleFormData) {
           weight: rel.weight || 1.0,
         })),
       });
+    }
+
+    // Regenerate Next.js Metadata and JSON-LD (non-blocking)
+    try {
+      // Regenerate Next.js Metadata
+      await generateAndSaveNextjsMetadata(id, {
+        robots: metaRobots,
+      });
+
+      // Regenerate JSON-LD
+      await generateAndSaveJsonLd(id);
+    } catch (error) {
+      // Log error but don't fail article update
+      console.error('Failed to regenerate metadata/JSON-LD for article:', id, error);
+      // Article still updated successfully
     }
 
     revalidatePath("/articles");

@@ -19,10 +19,65 @@ export async function generateMetadata({ params }: PreviewPageProps): Promise<Me
   try {
     const { slug } = await params;
 
+    // First: Try to use stored metadata
     const article = await db.article.findFirst({
       where: {
         slug,
       },
+      select: {
+        nextjsMetadata: true,
+        nextjsMetadataLastGenerated: true,
+        // Minimal fields for fallback
+        seoTitle: true,
+        title: true,
+        seoDescription: true,
+        excerpt: true,
+        canonicalUrl: true,
+        inLanguage: true,
+        metaRobots: true,
+        featuredImageId: true,
+        clientId: true,
+      },
+    });
+
+    if (!article) {
+      return {
+        title: "مقال غير موجود - مودونتي",
+      };
+    }
+
+    // Use stored metadata if available (but override robots for preview)
+    if (article.nextjsMetadata) {
+      try {
+        // Validate it's a valid Metadata object
+        const stored = article.nextjsMetadata as Metadata;
+        // Basic validation (has title)
+        if (stored.title) {
+          // Override robots for preview pages
+          return {
+            ...stored,
+            robots: {
+              index: false,
+              follow: false,
+              googleBot: {
+                index: false,
+                follow: false,
+                "max-video-preview": -1,
+                "max-image-preview": "large" as const,
+                "max-snippet": -1,
+              },
+            },
+          };
+        }
+      } catch {
+        // Invalid JSON, fall through to generation
+        console.warn('Invalid stored metadata for article:', slug);
+      }
+    }
+
+    // Fallback: Generate on-the-fly (current behavior)
+    const articleForGeneration = await db.article.findFirst({
+      where: { slug },
       include: {
         client: {
           select: {
@@ -58,18 +113,16 @@ export async function generateMetadata({ params }: PreviewPageProps): Promise<Me
       },
     });
 
-    if (!article) {
-      return {
-        title: "مقال غير موجود - مودونتي",
-      };
+    if (!articleForGeneration) {
+      return { title: "مقال غير موجود - مودونتي" };
     }
 
-    const title = article.seoTitle || article.title;
-    const description = article.seoDescription || article.excerpt || "";
+    const title = articleForGeneration.seoTitle || articleForGeneration.title;
+    const description = articleForGeneration.seoDescription || articleForGeneration.excerpt || "";
     const image =
-      article.featuredImage?.url ||
-      article.client.ogImageMedia?.url ||
-      article.client.logoMedia?.url ||
+      articleForGeneration.featuredImage?.url ||
+      articleForGeneration.client.ogImageMedia?.url ||
+      articleForGeneration.client.logoMedia?.url ||
       undefined;
 
     return generateMetadataFromSEO(
@@ -77,9 +130,9 @@ export async function generateMetadata({ params }: PreviewPageProps): Promise<Me
         title,
         description,
         image,
-        url: article.canonicalUrl || `/articles/${slug}`,
+        url: articleForGeneration.canonicalUrl || `/articles/${slug}`,
         type: "article",
-        locale: article.inLanguage || "ar_SA",
+        locale: articleForGeneration.inLanguage || "ar_SA",
       },
       { robots: "noindex,nofollow" }
     );

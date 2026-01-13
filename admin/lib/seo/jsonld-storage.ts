@@ -9,6 +9,7 @@
  */
 
 import { db } from "@/lib/db";
+import { getPerformanceNow } from "./utils/performance";
 import { convert } from "html-to-text";
 import type { Prisma } from "@prisma/client";
 import {
@@ -92,7 +93,7 @@ export function extractPlainText(content: string): string {
 export async function generateAndSaveJsonLd(
   articleId: string
 ): Promise<JsonLdGenerationResult> {
-  const startTime = performance.now();
+  const startTime = getPerformanceNow();
 
   try {
     // Fetch article with all relations
@@ -126,7 +127,7 @@ export async function generateAndSaveJsonLd(
     const jsonLdString = stringifyKnowledgeGraph(knowledgeGraph);
 
     // Calculate generation time
-    const generationTimeMs = Math.round(performance.now() - startTime);
+    const generationTimeMs = Math.round(getPerformanceNow() - startTime);
 
     // Get current article for version tracking
     const currentArticle = await db.article.findUnique({
@@ -179,7 +180,7 @@ export async function generateAndSaveJsonLd(
       generationTimeMs,
     };
   } catch (error) {
-    const generationTimeMs = Math.round(performance.now() - startTime);
+    const generationTimeMs = Math.round(getPerformanceNow() - startTime);
 
     return {
       success: false,
