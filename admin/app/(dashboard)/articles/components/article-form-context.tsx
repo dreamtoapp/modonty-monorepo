@@ -23,9 +23,8 @@ export interface SectionConfig {
 }
 
 interface ArticleFormContextType {
-  // Mode
-  mode: 'new' | 'edit';
-  articleId?: string;
+  // Mode (always 'new' for article creation)
+  mode: 'new';
 
   // Form Data
   formData: ArticleFormData;
@@ -69,8 +68,6 @@ const ArticleFormContext = createContext<ArticleFormContextType | undefined>(und
 
 interface ArticleFormProviderProps {
   children: ReactNode;
-  mode: 'new' | 'edit';
-  articleId?: string;
   initialData?: Partial<ArticleFormData>;
   onSubmit: (data: ArticleFormData) => Promise<FormSubmitResult>;
   clients: Array<{ id: string; name: string; slug?: string }>;
@@ -181,8 +178,6 @@ const initialFormData: ArticleFormData = {
 
 export function ArticleFormProvider({
   children,
-  mode,
-  articleId,
   initialData,
   onSubmit,
   clients,
@@ -190,6 +185,7 @@ export function ArticleFormProvider({
   authors,
   tags,
 }: ArticleFormProviderProps) {
+  const mode: 'new' = 'new';
   const [formData, setFormData] = useState<ArticleFormData>(() => ({
     ...initialFormData,
     ...initialData,
@@ -208,15 +204,12 @@ export function ArticleFormProvider({
 
   const overallProgress = calculateOverallProgress(formData, errors);
 
-  // Get section href based on mode
+  // Get section href (always new article route)
   const getSectionHref = useCallback(
     (section: string) => {
-      if (mode === 'edit' && articleId) {
-        return `/articles/${articleId}/edit/${section}`;
-      }
       return `/articles/new/${section}`;
     },
-    [mode, articleId],
+    [],
   );
 
   // Sections configuration
@@ -228,16 +221,6 @@ export function ArticleFormProvider({
     { id: 'seo', label: 'Technical SEO', icon: Search, href: getSectionHref('seo') },
     { id: 'seo-validation', label: 'SEO & Validation', icon: CheckCircle, href: getSectionHref('seo-validation') },
   ];
-
-  // Add JSON-LD section only for edit mode
-  if (mode === 'edit' && articleId) {
-    sections.push({
-      id: 'jsonld',
-      label: 'JSON-LD',
-      icon: Code,
-      href: getSectionHref('jsonld'),
-    });
-  }
 
   const updateField = useCallback((field: keyof ArticleFormData, value: any) => {
     setFormData((prev) => {
@@ -435,17 +418,27 @@ export function ArticleFormProvider({
     }
   }, [formData.canonicalUrl, formData.ogUrl]);
 
-  // Auto-fill articleBodyText from content (keep HTML for display)
+  // Auto-fill articleBodyText from content (extract plain text from TipTap HTML)
   useEffect(() => {
-    if (formData.content && !formData.articleBodyText) {
-      setFormData((prev) => ({ ...prev, articleBodyText: formData.content }));
-      setIsDirty(true);
+    if (formData.content) {
+      // Extract plain text from HTML content (TipTap outputs HTML via editor.getHTML())
+      // Use browser's DOMParser for client-side extraction
+      if (typeof window !== 'undefined') {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = formData.content;
+        const plainText = (tempDiv.textContent || tempDiv.innerText || '').trim();
+        
+        // Update articleBodyText with extracted plain text
+        if (plainText && (!formData.articleBodyText || formData.articleBodyText !== plainText)) {
+          setFormData((prev) => ({ ...prev, articleBodyText: plainText }));
+          setIsDirty(true);
+        }
+      }
     }
-  }, [formData.content, formData.articleBodyText]);
+  }, [formData.content]);
 
   const value: ArticleFormContextType = {
     mode,
-    articleId,
     formData,
     updateField,
     updateFields,

@@ -28,9 +28,8 @@ export interface SectionConfig {
 }
 
 interface ArticleFormStore {
-  // Mode
-  mode: 'new' | 'edit';
-  articleId?: string;
+  // Mode (always 'new' for article creation)
+  mode: 'new';
 
   // Form Data (keep all existing fields)
   formData: ArticleFormData;
@@ -38,11 +37,7 @@ interface ArticleFormStore {
   updateFields: (fields: Partial<ArticleFormData>) => void;
   syncFormData: (data: ArticleFormData, dirty: boolean) => void;
   resetForm: () => void;
-  initializeForm: (
-    data: Partial<ArticleFormData>,
-    mode: 'new' | 'edit',
-    articleId?: string,
-  ) => void;
+  initializeForm: (data: Partial<ArticleFormData>) => void;
 
   // UI State
   activeSection: string;
@@ -133,7 +128,6 @@ export const useArticleFormStore = create<ArticleFormStore>()(
     (set, get) => ({
         // Initial State
         mode: 'new',
-        articleId: undefined,
         formData: initialFormData,
         activeSection: 'basic',
         sidebarCollapsed: false,
@@ -151,11 +145,10 @@ export const useArticleFormStore = create<ArticleFormStore>()(
         publishError: null,
 
         // Initialize form
-        initializeForm: (data, mode, articleId) => {
+        initializeForm: (data) => {
           set(
             {
-              mode,
-              articleId,
+              mode: 'new',
               formData: { ...initialFormData, ...data },
               isDirty: false,
               errors: {},
@@ -314,33 +307,12 @@ export const useArticleFormStore = create<ArticleFormStore>()(
           set({ onSubmit }, false, 'setOnSubmit');
         },
 
-        // Validate article (loads from DB only, requires articleId)
+        // Validate article (for new articles, validation happens after saving)
         validateArticle: async () => {
-          const state = get();
           set({ isValidating: true, validationError: null }, false, 'validateArticle:start');
 
           try {
-            if (!state.articleId) {
-              throw new Error('Article ID is required for validation. Please save the article first.');
-            }
-
-            const url = `/api/articles/${state.articleId}/validate`;
-            
-            const response = await fetch(url, {
-              method: 'POST',
-            });
-
-            if (!response.ok) {
-              throw new Error(`Validation failed: ${response.statusText}`);
-            }
-
-            const result: FullPageValidationResult = await response.json();
-            set(
-              { validationResults: result, validationError: null },
-              false,
-              'validateArticle:success',
-            );
-            return result;
+            throw new Error('Validation is only available after saving the article. Please save the article first.');
           } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Failed to validate article';
             set({ validationError: errorMessage }, false, 'validateArticle:error');
@@ -350,18 +322,18 @@ export const useArticleFormStore = create<ArticleFormStore>()(
           }
         },
 
-        // Publish article (uses publishArticleById server action)
+        // Publish article (uses publishArticle action for new articles)
         publishArticle: async () => {
           const state = get();
           set({ isPublishing: true, publishError: null }, false, 'publishArticle:start');
 
           try {
-            if (!state.articleId) {
-              return { success: false, error: 'Article ID is required. Please save the article first.' };
+            if (!state.onSubmit) {
+              return { success: false, error: 'Submit handler not set. Please save the article first.' };
             }
 
-            const { publishArticleById } = await import('../actions/publish-action');
-            const result = await publishArticleById(state.articleId);
+            const { publishArticle } = await import('../actions/publish-action');
+            const result = await publishArticle(state.formData);
 
             if (result.success) {
               set(
@@ -392,8 +364,8 @@ export const useArticleFormStore = create<ArticleFormStore>()(
 );
 
 // Sections configuration helper
-export const getSections = (mode: 'new' | 'edit', articleId?: string): SectionConfig[] => {
-  const sections: SectionConfig[] = [
+export const getSections = (): SectionConfig[] => {
+  return [
     { id: 'basic', label: 'Basic Info', icon: FileText, anchor: '#basic' },
     { id: 'content', label: 'Content', icon: Edit, anchor: '#content' },
     { id: 'meta', label: 'Meta & Relations', icon: Link, anchor: '#meta' },
@@ -409,16 +381,4 @@ export const getSections = (mode: 'new' | 'edit', articleId?: string): SectionCo
       anchor: '#seo-validation',
     },
   ];
-
-  // Add JSON-LD section only for edit mode
-  if (mode === 'edit' && articleId) {
-    sections.push({
-      id: 'jsonld',
-      label: 'JSON-LD',
-      icon: Code,
-      anchor: '#jsonld',
-    });
-  }
-
-  return sections;
 };

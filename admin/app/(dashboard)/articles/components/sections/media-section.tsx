@@ -23,7 +23,7 @@ interface FeaturedMedia {
 }
 
 export function MediaSection() {
-  const { formData, updateField, mode, articleId } = useArticleForm();
+  const { formData, updateField } = useArticleForm();
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
   const [featuredMedia, setFeaturedMedia] = useState<FeaturedMedia | null>(null);
   const [loadingMedia, setLoadingMedia] = useState(false);
@@ -139,7 +139,7 @@ export function MediaSection() {
           />
         </div>
 
-        {/* Gallery - Available in both new and edit modes */}
+        {/* Gallery */}
         <div className="border-t pt-6">
           {!formData.clientId ? (
             <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">

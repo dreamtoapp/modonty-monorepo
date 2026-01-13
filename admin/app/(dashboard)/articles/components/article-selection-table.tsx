@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Search, X, ExternalLink, Edit, ChevronDown } from 'lucide-react';
+import { Search, X, ExternalLink, ChevronDown } from 'lucide-react';
 import { ArticleSelectionItem } from '../actions/articles-actions';
 import { ArticleStatus } from '@prisma/client';
 import { getStatusLabel, getStatusVariant } from '../helpers/status-utils';
@@ -367,13 +367,6 @@ export function ArticleSelectionTable({
                           className="text-muted-foreground hover:text-primary"
                         >
                           <ExternalLink className="h-4 w-4" />
-                        </Link>
-                        <Link
-                          href={`/articles/${article.id}/edit`}
-                          target="_blank"
-                          className="text-muted-foreground hover:text-primary"
-                        >
-                          <Edit className="h-4 w-4" />
                         </Link>
                       </div>
                     </TableCell>

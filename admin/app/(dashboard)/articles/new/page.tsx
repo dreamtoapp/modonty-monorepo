@@ -22,7 +22,6 @@ export default async function NewArticlePage() {
 
   return (
     <ArticleFormProvider
-      mode="new"
       initialData={undefined}
       onSubmit={createArticle}
       clients={clients}

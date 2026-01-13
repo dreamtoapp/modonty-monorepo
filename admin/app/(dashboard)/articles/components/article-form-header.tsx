@@ -3,9 +3,8 @@
 interface ArticleFormHeaderProps {
   currentSection: string;
   mode: string;
-  title?: string;
 }
 
-export function ArticleFormHeader({ currentSection, mode, title }: ArticleFormHeaderProps) {
+export function ArticleFormHeader({ currentSection, mode }: ArticleFormHeaderProps) {
   return null;
 }

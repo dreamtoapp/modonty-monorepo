@@ -220,7 +220,7 @@ export default async function SEOHealthPage() {
                   <li key={article.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
                     <div>
                       <Link
-                        href={`/articles/${article.id}/edit`}
+                        href={`/articles/${article.id}`}
                         className="font-medium hover:underline text-sm"
                       >
                         {article.title.slice(0, 40)}...

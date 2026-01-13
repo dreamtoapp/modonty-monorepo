@@ -13,7 +13,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Search, ArrowUpDown, ArrowUp, ArrowDown, Stethoscope } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ArticleRowActions } from "./article-row-actions";
 import { SEOHealthGauge } from "@/components/shared/seo-doctor/seo-health-gauge";
 import { articleSEOConfig } from "../helpers/article-seo-config";
 
@@ -269,13 +268,12 @@ export function ArticleTable({ articles, onSelectionChange }: ArticleTableProps)
                   {getSortIcon("createdAt")}
                 </div>
               </TableHead>
-              <TableHead className="w-[70px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={11} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
                   <div className="flex flex-col items-center gap-2">
                     <p className="text-sm font-medium">No articles found</p>
                     <p className="text-xs">Try adjusting your filters or search terms</p>
@@ -329,9 +327,6 @@ export function ArticleTable({ articles, onSelectionChange }: ArticleTableProps)
                       : "-"}
                   </TableCell>
                   <TableCell>{format(new Date(article.createdAt), "MMM d, yyyy")}</TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <ArticleRowActions articleId={article.id} />
-                  </TableCell>
                 </TableRow>
               ))
             )}

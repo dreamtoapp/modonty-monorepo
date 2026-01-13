@@ -13,6 +13,7 @@ import {
   validateImageAlt,
 } from "@/components/shared/seo-doctor/validators";
 import type { SEOSettings } from "@/app/(dashboard)/settings/actions/settings-actions";
+import { calculateWordCountImproved } from "./seo-helpers";
 
 // Helper type for Media relations in validators
 type MediaRelation = {
@@ -40,7 +41,8 @@ const validateArticleTitle: SEOFieldValidator = (value) => {
 
 const validateArticleContent: SEOFieldValidator = (value) => {
   if (value && typeof value === "string" && value.trim().length > 0) {
-    const wordCount = value.trim().split(/\s+/).filter(Boolean).length;
+    // Use improved word count function for accurate counting (handles HTML and Arabic)
+    const wordCount = calculateWordCountImproved(value, "ar");
     if (wordCount >= 300) {
       return {
         status: "good",

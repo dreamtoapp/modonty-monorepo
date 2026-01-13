@@ -1,0 +1,85 @@
+import {
+  Image as ImageIcon,
+  FileText,
+  HelpCircle,
+  Layers,
+  Search,
+  Share2,
+  Code,
+  Database,
+  Settings,
+} from "lucide-react";
+import { Article, Section } from "./article-view-types";
+
+export function getArticleSections(article: Article): Section[] {
+  const sections: Section[] = [
+    {
+      id: "section-featured-image",
+      label: "Featured Image",
+      icon: ImageIcon,
+      condition: !!article.featuredImage,
+    },
+    {
+      id: "section-content",
+      label: "Content",
+      icon: FileText,
+      condition: true,
+    },
+    {
+      id: "section-faqs",
+      label: "FAQs",
+      icon: HelpCircle,
+      condition: !!(article.faqs && article.faqs.length > 0),
+    },
+    {
+      id: "section-related",
+      label: "Related Articles",
+      icon: Layers,
+      condition: !!(article.relatedTo && article.relatedTo.length > 0),
+    },
+    {
+      id: "section-gallery",
+      label: "Gallery",
+      icon: ImageIcon,
+      condition: !!(article.gallery && article.gallery.length > 0),
+    },
+    {
+      id: "section-info",
+      label: "Article Info",
+      icon: FileText,
+      condition: true,
+    },
+    {
+      id: "section-seo",
+      label: "SEO",
+      icon: Search,
+      condition: true,
+    },
+    {
+      id: "section-social",
+      label: "Social & Protocols",
+      icon: Share2,
+      condition: true,
+    },
+    {
+      id: "section-structured-data",
+      label: "Structured Data",
+      icon: Code,
+      condition: true,
+    },
+    {
+      id: "section-nextjs-metadata",
+      label: "Next.js Metadata",
+      icon: Settings,
+      condition: true,
+    },
+    {
+      id: "section-unused-fields",
+      label: "Unused Fields",
+      icon: Database,
+      condition: true,
+    },
+  ];
+
+  return sections.filter((section) => section.condition);
+}

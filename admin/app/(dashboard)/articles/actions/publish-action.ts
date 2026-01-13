@@ -4,13 +4,13 @@ import { db } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { ArticleStatus } from '@prisma/client';
 import type { ArticleFormData, FormSubmitResult } from '@/lib/types/form-types';
-import { createArticle, updateArticle } from './articles-actions';
+import { createArticle } from './articles-actions';
 import { validateFullPage } from '@/lib/seo/page-validator';
 
 /**
  * Validate article form data before publishing
  */
-async function validateArticleData(formData: ArticleFormData, articleId?: string): Promise<{
+async function validateArticleData(formData: ArticleFormData): Promise<{
   valid: boolean;
   errors: string[];
   warnings: string[];
@@ -62,27 +62,6 @@ async function validateArticleData(formData: ArticleFormData, articleId?: string
     warnings.push('Featured image is recommended for better social media sharing');
   }
 
-  // Try to run full page validation if article exists
-  if (articleId) {
-    try {
-      const validationResult = await validateFullPage('article', articleId, {
-        includeMetadata: true,
-      });
-
-      // Add critical issues as errors
-      for (const issue of validationResult.issues.critical) {
-        errors.push(`Validation error: ${issue.message}`);
-      }
-
-      // Add warnings
-      for (const issue of validationResult.issues.warnings) {
-        warnings.push(`Validation warning: ${issue.message}`);
-      }
-    } catch (error) {
-      // If validation fails (e.g., article not in DB yet), just log
-      console.warn('Could not run full page validation:', error);
-    }
-  }
 
   return {
     valid: errors.length === 0,
@@ -93,16 +72,14 @@ async function validateArticleData(formData: ArticleFormData, articleId?: string
 
 /**
  * Publish article action
- * Validates form data, saves to DB as DRAFT if needed, then updates to PUBLISHED
+ * Validates form data, saves to DB as WRITING, then updates to PUBLISHED
  */
 export async function publishArticle(
-  formData: ArticleFormData,
-  mode: 'new' | 'edit',
-  articleId?: string
+  formData: ArticleFormData
 ): Promise<FormSubmitResult> {
   try {
     // Step 1: Validate form data
-    const validation = await validateArticleData(formData, articleId);
+    const validation = await validateArticleData(formData);
     
     if (!validation.valid) {
       return {
@@ -111,65 +88,20 @@ export async function publishArticle(
       };
     }
 
-    // Step 2: Ensure article exists in DB (save as WRITING if needed)
-    let finalArticleId = articleId;
+    // Step 2: Create article as WRITING first
+    const createResult = await createArticle({
+      ...formData,
+      status: ArticleStatus.WRITING,
+    });
 
-    if (mode === 'new' || !articleId) {
-      // Create article as WRITING first
-      const createResult = await createArticle({
-        ...formData,
-        status: ArticleStatus.WRITING,
-      });
-
-      if (!createResult.success || !createResult.article) {
-        return {
-          success: false,
-          error: createResult.error || 'Failed to create article',
-        };
-      }
-
-      finalArticleId = createResult.article.id;
-    } else {
-      // Update existing article to DRAFT first (if not already DRAFT)
-      const existingArticle = await db.article.findUnique({
-        where: { id: articleId },
-      });
-
-      if (!existingArticle) {
-        return {
-          success: false,
-          error: 'Article not found',
-        };
-      }
-
-      // Update to WRITING if not already WRITING or DRAFT
-      if (existingArticle.status !== ArticleStatus.WRITING && existingArticle.status !== ArticleStatus.DRAFT) {
-        const updateResult = await updateArticle(articleId, {
-          ...formData,
-          status: ArticleStatus.WRITING,
-        });
-
-        if (!updateResult.success) {
-          return {
-            success: false,
-            error: updateResult.error || 'Failed to update article',
-          };
-        }
-      } else {
-        // Update content while keeping status as WRITING
-        const updateResult = await updateArticle(articleId, {
-          ...formData,
-          status: existingArticle.status === ArticleStatus.WRITING ? ArticleStatus.WRITING : ArticleStatus.DRAFT,
-        });
-
-        if (!updateResult.success) {
-          return {
-            success: false,
-            error: updateResult.error || 'Failed to update article',
-          };
-        }
-      }
+    if (!createResult.success || !createResult.article) {
+      return {
+        success: false,
+        error: createResult.error || 'Failed to create article',
+      };
     }
+
+    const finalArticleId = createResult.article.id;
 
     // Step 3: Update article status to PUBLISHED
     const now = new Date();

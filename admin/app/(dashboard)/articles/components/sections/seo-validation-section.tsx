@@ -20,7 +20,7 @@ import { getArticleJsonLd } from '../../actions/jsonld-actions';
 import { format } from 'date-fns';
 
 export function SEOValidationSection() {
-  const { formData, mode, articleId } = useArticleForm();
+  const { formData } = useArticleForm();
   const [validationReport, setValidationReport] = useState<ValidationReport | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [jsonLd, setJsonLd] = useState<object | null>(null);
@@ -28,19 +28,6 @@ export function SEOValidationSection() {
   // Fetch or generate JSON-LD from form data
   useEffect(() => {
     const loadJsonLd = async () => {
-      // If editing existing article, fetch stored JSON-LD
-      if (mode === 'edit' && articleId) {
-        try {
-          const { jsonLd: fetchedJsonLd } = await getArticleJsonLd(articleId);
-          if (fetchedJsonLd) {
-            setJsonLd(fetchedJsonLd);
-            return;
-          }
-        } catch (error) {
-          console.error('Failed to fetch JSON-LD:', error);
-        }
-      }
-
       // Generate preview JSON-LD from form data (client-side)
       // Note: This is a simplified preview for validation
       // Full JSON-LD with all relations generated server-side via generateArticleKnowledgeGraph
@@ -78,7 +65,7 @@ export function SEOValidationSection() {
     };
 
     loadJsonLd();
-  }, [formData, mode, articleId]);
+  }, [formData]);
 
   // Validate JSON-LD
   const handleValidate = async () => {
@@ -172,9 +159,7 @@ export function SEOValidationSection() {
               <div className="p-3 bg-muted rounded-md text-sm text-muted-foreground">
                 <p className="font-medium mb-1">Note:</p>
                 <p>
-                  {mode === 'edit' && articleId
-                    ? 'Showing validation for saved article. After saving, full JSON-LD with all relations will be generated server-side.'
-                    : 'This is a preview validation. Full validation with all relations happens after saving the article.'}
+                  This is a preview validation. Full validation with all relations happens after saving the article.
                 </p>
               </div>
 

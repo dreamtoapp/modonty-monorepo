@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { RichTextEditor } from '../rich-text-editor';
 import { Label } from '@/components/ui/label';
 import {
-  calculateWordCount,
+  calculateWordCountImproved,
   calculateReadingTime,
   determineContentDepth,
 } from '../../helpers/seo-helpers';
@@ -17,8 +17,8 @@ export function ContentSection() {
 
   // Calculate content stats
   const wordCount = useMemo(
-    () => calculateWordCount(formData.content || ''),
-    [formData.content],
+    () => calculateWordCountImproved(formData.content || '', formData.inLanguage || 'ar'),
+    [formData.content, formData.inLanguage],
   );
   const readingTime = useMemo(() => calculateReadingTime(wordCount), [wordCount]);
   const contentDepth = useMemo(() => determineContentDepth(wordCount), [wordCount]);

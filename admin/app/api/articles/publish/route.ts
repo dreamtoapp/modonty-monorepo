@@ -9,10 +9,8 @@ import type { ArticleFormData } from '@/lib/types/form-types';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { formData, mode, articleId } = body as {
+    const { formData } = body as {
       formData: ArticleFormData;
-      mode: 'new' | 'edit';
-      articleId?: string;
     };
 
     if (!formData) {
@@ -22,14 +20,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!mode) {
-      return NextResponse.json(
-        { success: false, error: 'Missing mode in request body' },
-        { status: 400 }
-      );
-    }
-
-    const result = await publishArticle(formData, mode, articleId);
+    const result = await publishArticle(formData);
 
     if (!result.success) {
       return NextResponse.json(result, { status: 400 });

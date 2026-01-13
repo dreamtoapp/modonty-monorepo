@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useArticleFormStore, getSections } from './article-form-store';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -16,6 +17,7 @@ import {
   Code,
   CheckCircle,
 } from 'lucide-react';
+import { calculateWordCountImproved } from '../helpers/seo-helpers';
 
 const ICONS = {
   basic: FileText,
@@ -32,8 +34,6 @@ const ICONS = {
 
 export function ArticleFormSidebar() {
   const {
-    mode,
-    articleId,
     activeSection,
     setActiveSection,
     sidebarCollapsed,
@@ -41,13 +41,17 @@ export function ArticleFormSidebar() {
     formData,
   } = useArticleFormStore();
 
-  const sections = getSections(mode, articleId);
+  const sections = getSections();
 
   const handleSectionClick = (sectionId: string) => {
     setActiveSection(sectionId);
   };
 
-  const wordCount = formData.content?.split(/\s+/).filter(Boolean).length || 0;
+  const wordCount = useMemo(() => {
+    if (!formData.content) return 0;
+    // Use improved word count function for accurate counting (handles HTML and Arabic)
+    return calculateWordCountImproved(formData.content, formData.inLanguage || 'ar');
+  }, [formData.content, formData.inLanguage]);
 
   return (
     <aside

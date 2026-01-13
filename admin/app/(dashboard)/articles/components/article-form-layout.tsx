@@ -17,7 +17,6 @@ export function ArticleFormLayout({ children }: { children: React.ReactNode }) {
       <ArticleFormHeader
         currentSection={currentSection}
         mode={mode}
-        title={mode === 'edit' ? formData.title : undefined}
       />
 
       {/* Main Content Area */}

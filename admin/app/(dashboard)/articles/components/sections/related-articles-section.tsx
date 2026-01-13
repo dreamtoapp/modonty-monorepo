@@ -7,7 +7,7 @@ import { RelatedArticlesBuilder } from '../related-articles-builder';
 import { Badge } from '@/components/ui/badge';
 
 export function RelatedArticlesSection() {
-  const { formData, updateField, articleId } = useArticleForm();
+  const { formData, updateField } = useArticleForm();
 
   return (
     <Card>
@@ -22,7 +22,6 @@ export function RelatedArticlesSection() {
           <RelatedArticlesBuilder
             relatedArticles={formData.relatedArticles || []}
             onChange={(articles) => updateField('relatedArticles', articles)}
-            excludeArticleId={articleId}
           />
         </div>
       </CardContent>
