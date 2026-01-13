@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, Link2, Globe, Navigation } from "lucide-react";
 import { Article } from "../helpers/article-view-types";
+import { FieldLabel } from "./shared/field-label";
 
 interface ArticleViewSeoProps {
   article: Article;
@@ -27,23 +28,21 @@ export function ArticleViewSeo({ article, sectionRef }: ArticleViewSeoProps) {
       </CardHeader>
       <CardContent className="space-y-4" dir="rtl">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <p className="text-xs text-muted-foreground">SEO Title</p>
-            <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
-              article.seoTitle
-            </Badge>
-          </div>
+          <FieldLabel
+            label="SEO Title"
+            fieldPath="article.seoTitle"
+            fieldType="String?"
+          />
           <p className="text-sm font-medium">
             {article.seoTitle || <span className="text-muted-foreground italic">Missing</span>}
           </p>
         </div>
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <p className="text-xs text-muted-foreground">SEO Description</p>
-            <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
-              article.seoDescription
-            </Badge>
-          </div>
+          <FieldLabel
+            label="SEO Description"
+            fieldPath="article.seoDescription"
+            fieldType="String?"
+          />
           <p className="text-sm line-clamp-3">
             {article.seoDescription || (
               <span className="text-muted-foreground italic">Missing</span>
@@ -51,14 +50,13 @@ export function ArticleViewSeo({ article, sectionRef }: ArticleViewSeoProps) {
           </p>
         </div>
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <Link2 className="h-3 w-3" />
-              Canonical URL
-            </p>
-            <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
-              article.canonicalUrl
-            </Badge>
+          <div className="flex items-center gap-1">
+            <Link2 className="h-3 w-3 text-muted-foreground" />
+            <FieldLabel
+              label="Canonical URL"
+              fieldPath="article.canonicalUrl"
+              fieldType="String?"
+            />
           </div>
           <p className="text-sm">
             {article.canonicalUrl ? (
@@ -71,14 +69,13 @@ export function ArticleViewSeo({ article, sectionRef }: ArticleViewSeoProps) {
           </p>
         </div>
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <Link2 className="h-3 w-3" />
-              Main Entity of Page
-            </p>
-            <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
-              article.mainEntityOfPage
-            </Badge>
+          <div className="flex items-center gap-1">
+            <Link2 className="h-3 w-3 text-muted-foreground" />
+            <FieldLabel
+              label="Main Entity of Page"
+              fieldPath="article.mainEntityOfPage"
+              fieldType="String?"
+            />
           </div>
           <p className="text-sm">
             {article.mainEntityOfPage ? (
@@ -91,25 +88,23 @@ export function ArticleViewSeo({ article, sectionRef }: ArticleViewSeoProps) {
           </p>
         </div>
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <p className="text-xs text-muted-foreground">Meta Robots</p>
-            <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
-              article.metaRobots
-            </Badge>
-          </div>
+          <FieldLabel
+            label="Meta Robots"
+            fieldPath="article.metaRobots"
+            fieldType="String?"
+          />
           <p className="text-sm font-medium">
             {article.metaRobots || <span className="text-muted-foreground italic">Not set</span>}
           </p>
         </div>
         <div className="pt-2 border-t space-y-2">
-          <div className="flex items-center gap-2">
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <Globe className="h-3 w-3" />
-              Alternate Languages (hreflang)
-            </p>
-            <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
-              article.alternateLanguages
-            </Badge>
+          <div className="flex items-center gap-1">
+            <Globe className="h-3 w-3 text-muted-foreground" />
+            <FieldLabel
+              label="Alternate Languages (hreflang)"
+              fieldPath="article.alternateLanguages"
+              fieldType="Json?"
+            />
           </div>
           {alternateLanguages.length > 0 ? (
             <div className="space-y-2">
@@ -135,14 +130,13 @@ export function ArticleViewSeo({ article, sectionRef }: ArticleViewSeoProps) {
           )}
         </div>
         <div className="pt-2 border-t space-y-2">
-          <div className="flex items-center gap-2">
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <Navigation className="h-3 w-3" />
-              Breadcrumb Path
-            </p>
-            <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
-              article.breadcrumbPath
-            </Badge>
+          <div className="flex items-center gap-1">
+            <Navigation className="h-3 w-3 text-muted-foreground" />
+            <FieldLabel
+              label="Breadcrumb Path"
+              fieldPath="article.breadcrumbPath"
+              fieldType="Json?"
+            />
           </div>
           {article.breadcrumbPath ? (
             <div className="p-3 rounded border bg-muted/30">

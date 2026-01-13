@@ -21,6 +21,7 @@ import { FileText, Link2, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Article, ContentStats } from "../helpers/article-view-types";
 import { getArticleLengthClassification } from "../helpers/article-view-helpers";
+import { FieldLabel } from "./shared/field-label";
 
 interface ArticleViewContentProps {
   article: Article;
@@ -36,31 +37,35 @@ export function ArticleViewContent({ article, contentStats, sectionRef }: Articl
     <Card id="section-content" ref={sectionRef} className="scroll-mt-20">
       <CardHeader className="text-right" dir="rtl">
         <div className="flex items-center gap-2 mb-2">
-          <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
-            article.title
-          </Badge>
+          <CardTitle className="text-3xl font-bold leading-tight text-right flex-1">{article.title}</CardTitle>
+          <FieldLabel
+            label=""
+            fieldPath="article.title"
+            fieldType="String"
+          />
         </div>
-        <CardTitle className="text-3xl font-bold leading-tight text-right">{article.title}</CardTitle>
         {article.excerpt && (
-          <>
-            <div className="flex items-center gap-2 mt-2 mb-1">
-              <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
-                article.excerpt
-              </Badge>
-            </div>
-            <CardDescription className="text-base mt-2 leading-relaxed text-right">
+          <div className="flex items-center gap-2 mt-2">
+            <CardDescription className="text-base leading-relaxed text-right flex-1">
               {article.excerpt}
             </CardDescription>
-          </>
+            <FieldLabel
+              label=""
+              fieldPath="article.excerpt"
+              fieldType="String?"
+            />
+          </div>
         )}
       </CardHeader>
       <CardContent className="space-y-4" dir="rtl">
         <div className="flex items-center gap-2 text-sm text-muted-foreground pb-4 border-b">
           <Link2 className="h-4 w-4" />
           <span className="font-mono text-xs break-all">{article.slug}</span>
-          <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
-            article.slug
-          </Badge>
+          <FieldLabel
+            label=""
+            fieldPath="article.slug"
+            fieldType="String"
+          />
         </div>
 
         <div className="flex items-center justify-between pb-2">
@@ -322,6 +327,11 @@ export function ArticleViewContent({ article, contentStats, sectionRef }: Articl
           <div className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             <span>Content {article.contentFormat && `(${article.contentFormat})`}</span>
+            <FieldLabel
+              label=""
+              fieldPath="article.content"
+              fieldType="String"
+            />
           </div>
           {contentStats.listCount > 0 && (
             <span className="text-xs">Lists: {contentStats.listCount}</span>
@@ -368,9 +378,11 @@ export function ArticleViewContent({ article, contentStats, sectionRef }: Articl
           <div className="pt-4 mt-4 border-t space-y-2">
             <div className="flex items-center gap-2">
               <p className="text-xs text-muted-foreground">Plain Text (for SEO)</p>
-              <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
-                article.articleBodyText
-              </Badge>
+              <FieldLabel
+                label=""
+                fieldPath="article.articleBodyText"
+                fieldType="String?"
+              />
             </div>
             <div className="p-3 rounded border bg-muted/30 text-sm whitespace-pre-wrap text-right" dir="rtl">
               {article.articleBodyText}

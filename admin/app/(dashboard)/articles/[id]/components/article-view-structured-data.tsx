@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { Code } from "lucide-react";
 import { Article } from "../helpers/article-view-types";
+import { FieldLabel } from "./shared/field-label";
 
 interface ArticleViewStructuredDataProps {
   article: Article;
@@ -18,7 +19,7 @@ export function ArticleViewStructuredData({
       <CardHeader className="text-right" dir="rtl">
         <div className="flex items-center gap-2">
           <Code className="h-5 w-5 text-primary" />
-          <CardTitle className="text-right">Structured Data</CardTitle>
+          <CardTitle className="text-right">JSON-LD</CardTitle>
         </div>
       </CardHeader>
       <CardContent className="space-y-4 text-sm" dir="rtl">
@@ -28,9 +29,11 @@ export function ArticleViewStructuredData({
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground">Version:</span>
-                <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
-                  article.jsonLdVersion
-                </Badge>
+                <FieldLabel
+                  label=""
+                  fieldPath="article.jsonLdVersion"
+                  fieldType="String?"
+                />
               </div>
               <span className="font-medium">{article.jsonLdVersion ?? "—"}</span>
             </div>
@@ -38,9 +41,11 @@ export function ArticleViewStructuredData({
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">Last generated:</span>
-                  <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
-                    article.jsonLdLastGenerated
-                  </Badge>
+                  <FieldLabel
+                    label=""
+                    fieldPath="article.jsonLdLastGenerated"
+                    fieldType="DateTime?"
+                  />
                 </div>
                 <span className="font-medium text-xs">
                   {format(new Date(article.jsonLdLastGenerated), "MMM d, yyyy")}
@@ -51,9 +56,11 @@ export function ArticleViewStructuredData({
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">Generation time:</span>
-                  <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
-                    article.jsonLdGenerationTimeMs
-                  </Badge>
+                  <FieldLabel
+                    label=""
+                    fieldPath="article.jsonLdGenerationTimeMs"
+                    fieldType="Int?"
+                  />
                 </div>
                 <span className="font-medium">{article.jsonLdGenerationTimeMs} ms</span>
               </div>
@@ -62,9 +69,11 @@ export function ArticleViewStructuredData({
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">Budget:</span>
-                  <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
-                    article.performanceBudgetMet
-                  </Badge>
+                  <FieldLabel
+                    label=""
+                    fieldPath="article.performanceBudgetMet"
+                    fieldType="Boolean?"
+                  />
                 </div>
                 <Badge
                   variant={
@@ -93,9 +102,11 @@ export function ArticleViewStructuredData({
             <div className="space-y-2 pt-2 border-t">
               <div className="flex items-center gap-2">
                 <p className="text-xs text-muted-foreground">Semantic Keywords</p>
-                <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
-                  article.semanticKeywords
-                </Badge>
+                <FieldLabel
+                  label=""
+                  fieldPath="article.semanticKeywords"
+                  fieldType="Json?"
+                />
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {article.semanticKeywords.slice(0, 8).map((kw, index) => {
@@ -122,9 +133,11 @@ export function ArticleViewStructuredData({
           <div className="space-y-2 pt-2 border-t">
             <div className="flex items-center gap-2">
               <p className="text-xs text-muted-foreground">Citations</p>
-              <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
-                article.citations
-              </Badge>
+              <FieldLabel
+                label=""
+                fieldPath="article.citations"
+                fieldType="String[]?"
+              />
             </div>
             <div className="space-y-1 max-h-32 overflow-y-auto">
               {article.citations.slice(0, 3).map((url) => (
@@ -145,9 +158,11 @@ export function ArticleViewStructuredData({
           <div className="space-y-2 pt-2 border-t" dir="ltr">
             <div className="flex items-center gap-2">
               <p className="text-xs text-muted-foreground">JSON-LD Structured Data</p>
-              <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
-                article.jsonLdStructuredData
-              </Badge>
+              <FieldLabel
+                label=""
+                fieldPath="article.jsonLdStructuredData"
+                fieldType="String?"
+              />
             </div>
             <div className="p-3 rounded border bg-muted/30">
               <pre className="text-xs font-mono overflow-auto max-h-96">
@@ -170,9 +185,11 @@ export function ArticleViewStructuredData({
           <div className="space-y-2 pt-2 border-t" dir="ltr">
             <div className="flex items-center gap-2">
               <p className="text-xs text-muted-foreground">JSON-LD Validation Report</p>
-              <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
-                article.jsonLdValidationReport
-              </Badge>
+              <FieldLabel
+                label=""
+                fieldPath="article.jsonLdValidationReport"
+                fieldType="Json?"
+              />
             </div>
             <div className="p-3 rounded border bg-muted/30">
               <pre className="text-xs font-mono overflow-auto max-h-96">
@@ -186,9 +203,11 @@ export function ArticleViewStructuredData({
           <div className="space-y-2 pt-2 border-t" dir="ltr">
             <div className="flex items-center gap-2">
               <p className="text-xs text-muted-foreground">JSON-LD History</p>
-              <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
-                article.jsonLdHistory
-              </Badge>
+              <FieldLabel
+                label=""
+                fieldPath="article.jsonLdHistory"
+                fieldType="Json?"
+              />
             </div>
             <div className="p-3 rounded border bg-muted/30">
               <pre className="text-xs font-mono overflow-auto max-h-96">

@@ -6,7 +6,6 @@ import {
   Search,
   Share2,
   Code,
-  Database,
   Settings,
   ArrowLeft,
 } from "lucide-react";
@@ -70,20 +69,14 @@ export function getArticleSections(article: Article): Section[] {
     },
     {
       id: "section-structured-data",
-      label: "Structured Data",
+      label: "JSON-LD",
       icon: Code,
       condition: true,
     },
     {
       id: "section-nextjs-metadata",
-      label: "Next.js Metadata",
+      label: "Metadata",
       icon: Settings,
-      condition: true,
-    },
-    {
-      id: "section-unused-fields",
-      label: "Unused Fields",
-      icon: Database,
       condition: true,
     },
   ];

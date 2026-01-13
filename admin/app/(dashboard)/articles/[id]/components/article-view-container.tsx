@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef } from "react";
 import { Article } from "../helpers/article-view-types";
 import { useContentStats } from "../helpers/use-content-stats";
 import { createSectionRefHandler } from "../helpers/scroll-utils";
+import { useArticleView } from "./article-view-provider";
 import { ArticleViewHeader } from "./article-view-header";
 import { ArticleViewFeaturedImage } from "./article-view-featured-image";
 import { ArticleViewContent } from "./article-view-content";
@@ -17,13 +17,13 @@ import { ArticleViewSocial } from "./article-view-social";
 import { ArticleViewStructuredData } from "./article-view-structured-data";
 import { ArticleViewNextjsMetadata } from "./article-view-nextjs-metadata";
 
-interface ArticleViewProps {
+interface ArticleViewContainerProps {
   article: Article;
-  sectionRefs: React.MutableRefObject<{ [key: string]: HTMLElement | null }>;
 }
 
-export function ArticleView({ article, sectionRefs }: ArticleViewProps) {
+export function ArticleViewContainer({ article }: ArticleViewContainerProps) {
   const contentStats = useContentStats(article);
+  const { sectionRefs } = useArticleView();
 
   const getSectionRef = (sectionId: string) => {
     return createSectionRefHandler(sectionRefs, sectionId);

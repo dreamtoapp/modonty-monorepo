@@ -1,55 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Layers, Copy, Check } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Layers } from "lucide-react";
 import { Article } from "../helpers/article-view-types";
-
-function CopyableId({ id, label }: { id: string; label: string }) {
-  const [copied, setCopied] = useState(false);
-  const { toast } = useToast();
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(id);
-      setCopied(true);
-      toast({
-        title: "Copied",
-        description: `${label} ID copied to clipboard`,
-      });
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast({
-        title: "Failed to copy",
-        description: "Could not copy to clipboard",
-        variant: "destructive",
-      });
-    }
-  };
-
-  return (
-    <div className="flex items-center gap-1.5">
-      <span className="text-xs font-mono text-muted-foreground">{id}</span>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-4 w-4"
-        onClick={handleCopy}
-        title={`Copy ${label} ID`}
-      >
-        {copied ? (
-          <Check className="h-3 w-3 text-green-600" />
-        ) : (
-          <Copy className="h-3 w-3" />
-        )}
-      </Button>
-    </div>
-  );
-}
+import { FieldLabel } from "./shared/field-label";
+import { CopyableId } from "./shared/copyable-id";
 
 interface ArticleViewRelatedProps {
   article: Article;
@@ -64,15 +21,15 @@ export function ArticleViewRelated({ article, sectionRef }: ArticleViewRelatedPr
       <CardHeader className="text-right" dir="rtl">
         <div className="flex items-center gap-2">
           <Layers className="h-5 w-5 text-primary" />
-          <CardTitle className="text-right">Related Articles (Outgoing Links)</CardTitle>
+          <CardTitle className="text-right flex-1">Related Articles (Outgoing Links)</CardTitle>
+          <FieldLabel
+            label=""
+            fieldPath="article.relatedTo"
+            fieldType="RelatedArticle[]"
+          />
         </div>
       </CardHeader>
       <CardContent className="space-y-3" dir="rtl">
-        <div className="flex items-center gap-2 mb-2">
-          <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
-            article.relatedTo
-          </Badge>
-        </div>
         <p className="text-xs text-muted-foreground mb-3">
           Articles that this article links to (outgoing relationships)
         </p>

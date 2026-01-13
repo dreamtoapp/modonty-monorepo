@@ -1,54 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { HelpCircle, Copy, Check } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { HelpCircle } from "lucide-react";
 import { Article } from "../helpers/article-view-types";
-
-function CopyableId({ id, label }: { id: string; label: string }) {
-  const [copied, setCopied] = useState(false);
-  const { toast } = useToast();
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(id);
-      setCopied(true);
-      toast({
-        title: "Copied",
-        description: `${label} ID copied to clipboard`,
-      });
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast({
-        title: "Failed to copy",
-        description: "Could not copy to clipboard",
-        variant: "destructive",
-      });
-    }
-  };
-
-  return (
-    <div className="flex items-center gap-1.5">
-      <span className="text-xs font-mono text-muted-foreground">{id}</span>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-4 w-4"
-        onClick={handleCopy}
-        title={`Copy ${label} ID`}
-      >
-        {copied ? (
-          <Check className="h-3 w-3 text-green-600" />
-        ) : (
-          <Copy className="h-3 w-3" />
-        )}
-      </Button>
-    </div>
-  );
-}
+import { FieldLabel } from "./shared/field-label";
+import { CopyableId } from "./shared/copyable-id";
 
 interface ArticleViewFaqsProps {
   article: Article;
@@ -63,15 +19,15 @@ export function ArticleViewFaqs({ article, sectionRef }: ArticleViewFaqsProps) {
       <CardHeader className="text-right" dir="rtl">
         <div className="flex items-center gap-2">
           <HelpCircle className="h-5 w-5 text-primary" />
-          <CardTitle className="text-right">Frequently Asked Questions</CardTitle>
+          <CardTitle className="text-right flex-1">Frequently Asked Questions</CardTitle>
+          <FieldLabel
+            label=""
+            fieldPath="article.faqs"
+            fieldType="ArticleFAQ[]"
+          />
         </div>
       </CardHeader>
       <CardContent className="space-y-6 text-right" dir="rtl">
-        <div className="flex items-center gap-2 mb-4">
-          <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
-            article.faqs
-          </Badge>
-        </div>
         {article.faqs.map((faq, index) => (
           <div key={faq.id} className="space-y-2 pb-4 border-b last:border-0 last:pb-0">
             <div className="flex items-start justify-between gap-2">

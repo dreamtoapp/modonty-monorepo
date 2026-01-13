@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { Settings } from "lucide-react";
 import { Article } from "../helpers/article-view-types";
 import { Prisma } from "@prisma/client";
+import { FieldLabel } from "./shared/field-label";
 
 interface ArticleViewNextjsMetadataProps {
   article: Article & {
@@ -26,7 +26,7 @@ export function ArticleViewNextjsMetadata({
       <CardHeader className="text-left" dir="ltr">
         <div className="flex items-center gap-2">
           <Settings className="h-5 w-5 text-primary" />
-          <CardTitle className="text-left">Next.js Metadata</CardTitle>
+          <CardTitle className="text-left">Metadata</CardTitle>
         </div>
       </CardHeader>
       <CardContent className="space-y-4" dir="ltr">
@@ -34,9 +34,11 @@ export function ArticleViewNextjsMetadata({
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <p className="text-xs text-muted-foreground">Last Generated</p>
-              <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
-                article.nextjsMetadataLastGenerated
-              </Badge>
+              <FieldLabel
+                label=""
+                fieldPath="article.nextjsMetadataLastGenerated"
+                fieldType="DateTime?"
+              />
             </div>
             <p className="text-sm font-medium">
               {format(new Date(article.nextjsMetadataLastGenerated), "MMM d, yyyy 'at' h:mm a")}
@@ -47,9 +49,11 @@ export function ArticleViewNextjsMetadata({
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <p className="text-xs text-muted-foreground">Metadata</p>
-              <Badge variant="outline" className="text-xs font-mono font-normal px-1.5 py-0 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800">
-                article.nextjsMetadata
-              </Badge>
+              <FieldLabel
+                label=""
+                fieldPath="article.nextjsMetadata"
+                fieldType="Json?"
+              />
             </div>
             <div className="p-3 rounded border bg-muted/30">
               <pre className="text-xs font-mono overflow-auto max-h-96">
