@@ -3,18 +3,12 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { ArticleStatus } from "@prisma/client";
 import { generateMetadataFromSEO } from "@/lib/seo";
-import {
-  generateArticleStructuredData,
-  generateBreadcrumbStructuredData,
-  generateAuthorStructuredData,
-  generateOrganizationStructuredData,
-  generateFAQPageStructuredData,
-} from "@/lib/seo";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import Image from "next/image";
 import { formatRelativeTime } from "@/helpers/mockData";
+import { GTMClientTracker } from "@/components/gtm/GTMClientTracker";
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
@@ -44,11 +38,52 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   try {
     const { slug } = await params;
 
+    // First: Try to use stored metadata
     const article = await db.article.findFirst({
       where: {
         slug,
         status: ArticleStatus.PUBLISHED,
       },
+      select: {
+        nextjsMetadata: true,
+        nextjsMetadataLastGenerated: true,
+        // Minimal fields for fallback
+        seoTitle: true,
+        title: true,
+        seoDescription: true,
+        excerpt: true,
+        canonicalUrl: true,
+        inLanguage: true,
+        metaRobots: true,
+        featuredImageId: true,
+        clientId: true,
+      },
+    });
+
+    if (!article) {
+      return {
+        title: "مقال غير موجود - مودونتي",
+      };
+    }
+
+    // Use stored metadata if available
+    if (article.nextjsMetadata) {
+      try {
+        // Validate it's a valid Metadata object
+        const stored = article.nextjsMetadata as Metadata;
+        // Basic validation (has title)
+        if (stored.title) {
+          return stored;
+        }
+      } catch {
+        // Invalid JSON, fall through to generation
+        console.warn('Invalid stored metadata for article:', slug);
+      }
+    }
+
+    // Fallback: Generate on-the-fly (current behavior)
+    const articleForGeneration = await db.article.findFirst({
+      where: { slug, status: ArticleStatus.PUBLISHED },
       include: {
         client: {
           select: {
@@ -76,28 +111,25 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       },
     });
 
-    if (!article) {
-      return {
-        title: "مقال غير موجود - مودونتي",
-      };
+    if (!articleForGeneration) {
+      return { title: "مقال غير موجود - مودونتي" };
     }
 
-    const title = article.seoTitle || article.title;
-    const description = article.seoDescription || article.excerpt || "";
+    const title = articleForGeneration.seoTitle || articleForGeneration.title;
+    const description = articleForGeneration.seoDescription || articleForGeneration.excerpt || "";
     const image =
-      article.ogImage ||
-      article.featuredImage?.url ||
-      article.client.ogImage ||
-      article.client.logo ||
+      articleForGeneration.featuredImage?.url ||
+      articleForGeneration.client.ogImage ||
+      articleForGeneration.client.logo ||
       undefined;
 
     return generateMetadataFromSEO({
       title,
       description,
       image,
-      url: article.canonicalUrl || `/articles/${slug}`,
+      url: articleForGeneration.canonicalUrl || `/articles/${slug}`,
       type: "article",
-      locale: article.ogLocale || "ar_SA",
+      locale: articleForGeneration.inLanguage || articleForGeneration.ogLocale || "ar_SA",
     });
   } catch (error) {
     console.error("Error generating metadata:", error);
@@ -182,73 +214,41 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       },
     });
 
+    // Get cached JSON-LD from database (Phase 6)
+    let jsonLdGraph: object | null = null;
+    if (article?.jsonLdStructuredData) {
+      try {
+        jsonLdGraph = JSON.parse(article.jsonLdStructuredData);
+      } catch {
+        console.error("Failed to parse cached JSON-LD for article:", slug);
+      }
+    }
+
     if (!article) {
       notFound();
     }
 
-    const breadcrumbPath = article.breadcrumbPath as Array<{ name: string; url: string }> | null;
-
-    const articleStructuredData = generateArticleStructuredData({
-      ...article,
-      faqs: article.faqs,
-      featuredImage: article.featuredImage
-        ? {
-            url: article.featuredImage.url,
-            altText: article.featuredImage.altText,
-          }
-        : null,
-    });
-
-    const breadcrumbStructuredData = breadcrumbPath
-      ? generateBreadcrumbStructuredData(breadcrumbPath)
-      : generateBreadcrumbStructuredData([
-          { name: "الرئيسية", url: "/" },
-          ...(article.category
-            ? [{ name: article.category.name, url: `/categories/${article.category.slug}` }]
-            : []),
-          { name: article.title, url: `/articles/${article.slug}` },
-        ]);
-
-    const authorStructuredData = generateAuthorStructuredData(article.author);
-    const organizationStructuredData = generateOrganizationStructuredData(article.client);
-
-    const faqStructuredData =
-      article.faqs && article.faqs.length > 0
-        ? generateFAQPageStructuredData(article.faqs)
-        : null;
-
     return (
       <>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(articleStructuredData),
-          }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(breadcrumbStructuredData),
-          }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(authorStructuredData),
-          }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(organizationStructuredData),
-          }}
-        />
-        {faqStructuredData && (
+        {/* Single unified JSON-LD @graph from database cache (Phase 6) */}
+        {jsonLdGraph && (
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
-              __html: JSON.stringify(faqStructuredData),
+              __html: JSON.stringify(jsonLdGraph),
             }}
+          />
+        )}
+
+        {article.client && (
+          <GTMClientTracker
+            clientContext={{
+              client_id: article.client.id,
+              client_slug: article.client.slug,
+              client_name: article.client.name,
+            }}
+            articleId={article.id}
+            pageTitle={article.seoTitle || article.title}
           />
         )}
 
@@ -279,33 +279,24 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               </ol>
             </nav>
 
-            <article itemScope itemType="https://schema.org/Article">
+            {/* Article content - JSON-LD is source of truth (no Microdata) */}
+            <article>
               <header className="mb-8">
-                <h1 itemProp="headline" className="text-3xl font-bold mb-4">
+                <h1 className="text-3xl font-bold mb-4">
                   {article.title}
                 </h1>
 
                 {article.excerpt && (
-                  <p itemProp="description" className="text-lg text-muted-foreground mb-6">
+                  <p className="text-lg text-muted-foreground mb-6">
                     {article.excerpt}
                   </p>
                 )}
 
                 <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6">
                   <div className="flex items-center gap-2">
-                    <span itemProp="author" itemScope itemType="https://schema.org/Person">
-                      <Link
-                        href={`/users/${article.author.slug || article.author.id}`}
-                        className="hover:text-primary"
-                      >
-                        <span itemProp="name">{article.author.name}</span>
-                      </Link>
-                    </span>
+                    <span>{article.author.name}</span>
                   </div>
-                  <time
-                    itemProp="datePublished"
-                    dateTime={article.datePublished?.toISOString()}
-                  >
+                  <time dateTime={article.datePublished?.toISOString()}>
                     {article.datePublished
                       ? formatRelativeTime(article.datePublished)
                       : formatRelativeTime(article.createdAt)}
@@ -319,7 +310,6 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                 {article.featuredImage && (
                   <div className="relative w-full h-96 rounded-lg overflow-hidden mb-6">
                     <Image
-                      itemProp="image"
                       src={article.featuredImage.url}
                       alt={article.featuredImage.altText || article.title}
                       fill
@@ -354,37 +344,25 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               </header>
 
               <div
-                itemProp="articleBody"
                 className="prose prose-lg max-w-none mb-12"
                 dangerouslySetInnerHTML={{ __html: article.content }}
               />
 
               {article.faqs && article.faqs.length > 0 && (
-                <section className="mt-12 mb-8" itemScope itemType="https://schema.org/FAQPage">
+                <section className="mt-12 mb-8">
                   <h2 className="text-2xl font-bold mb-6">الأسئلة الشائعة</h2>
                   <div className="space-y-4">
-                    {article.faqs.map((faq, index) => (
+                    {article.faqs.map((faq) => (
                       <Card key={faq.id}>
                         <CardHeader>
-                          <h3
-                            itemProp="mainEntity"
-                            itemScope
-                            itemType="https://schema.org/Question"
-                            className="text-lg font-semibold"
-                          >
-                            <span itemProp="name">{faq.question}</span>
+                          <h3 className="text-lg font-semibold">
+                            {faq.question}
                           </h3>
                         </CardHeader>
                         <CardContent>
-                          <div
-                            itemProp="acceptedAnswer"
-                            itemScope
-                            itemType="https://schema.org/Answer"
-                          >
-                            <p itemProp="text" className="text-muted-foreground">
-                              {faq.answer}
-                            </p>
-                          </div>
+                          <p className="text-muted-foreground">
+                            {faq.answer}
+                          </p>
                         </CardContent>
                       </Card>
                     ))}

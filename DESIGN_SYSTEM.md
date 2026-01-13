@@ -19,6 +19,8 @@
 9. [Animation & Transitions](#animation--transitions)
 10. [Monorepo Guidelines](#monorepo-guidelines)
 11. [Official Documentation References](#official-documentation-references)
+12. [Best Practices](#best-practices)
+13. [Code Examples](#code-examples)
 
 ---
 
@@ -47,6 +49,8 @@ Our color system uses LinkedIn's exact color values, implemented via HSL CSS var
 /* LinkedIn's exact brand blue */
 --primary: 210 90% 40%; /* #0a66c2 - LinkedIn's signature blue */
 --primary-foreground: 0 0% 100%; /* White text on primary */
+--primary-hover: 210 100% 25%; /* #004182 - Darker blue on hover */
+--primary-light: 210 90% 70%; /* #70b5f9 - Light blue for secondary actions */
 --ring: 210 90% 40%; /* Focus ring color */
 ```
 
@@ -56,6 +60,7 @@ Our color system uses LinkedIn's exact color values, implemented via HSL CSS var
 --foreground: 0 0% 0%; /* #000000 - Black for main text */
 --card-foreground: 0 0% 0%; /* Black text on cards */
 --muted-foreground: 0 0% 40%; /* #666666 - LinkedIn's gray text */
+--secondary-text: 0 0% 60%; /* #999999 - Lighter gray for less important text */
 --popover-foreground: 0 0% 0%; /* Black text in popovers */
 ```
 
@@ -69,15 +74,20 @@ Our color system uses LinkedIn's exact color values, implemented via HSL CSS var
 --accent-foreground: 0 0% 0%; /* Accent text */
 --destructive: 0 84.2% 60.2%; /* Red for destructive actions */
 --destructive-foreground: 0 0% 100%; /* White text on destructive */
+--success: 142 76% 36%; /* Green for success states */
+--warning: 38 92% 50%; /* Yellow for warning states */
 ```
 
 **Usage Guidelines:**
 
 - **Primary Blue (`#0a66c2`)**: Use for primary actions, links, and brand elements
+- **Primary Hover (`#004182`)**: Darker blue for hover states on primary buttons
+- **Primary Light (`#70b5f9`)**: Light blue for secondary actions and highlights
 - **Background (`#f3f2ef`)**: Main page background - creates LinkedIn's warm, professional feel
 - **Cards**: Always white (`#ffffff`) on the warm gray background
 - **Borders**: Subtle gray (`#e0e0de`) for card borders and dividers
 - **Muted Text (`#666666`)**: For secondary information, metadata, timestamps
+- **Secondary Text (`#999999`)**: For less important text, disabled states
 
 **Color Accessibility:**
 
@@ -86,6 +96,7 @@ All color combinations meet WCAG 2.1 AA standards:
 - Primary blue on white: ✅ 4.5:1 contrast ratio
 - Black text on background: ✅ 4.5:1 contrast ratio
 - Muted text on white: ✅ 4.5:1 contrast ratio
+- Primary blue on white (large text): ✅ 3:1 contrast ratio
 
 **Tailwind Usage:**
 
@@ -102,6 +113,9 @@ All color combinations meet WCAG 2.1 AA standards:
 
 // Border colors
 <div className="border border-border"> {/* Subtle gray border */}
+
+// Hover states
+<button className="hover:bg-primary-hover"> {/* Darker blue on hover */}
 ```
 
 ---
@@ -140,11 +154,11 @@ LinkedIn uses a clear, hierarchical type scale:
 
 | Element | Size            | Line Height | Weight         | Usage                      |
 | ------- | --------------- | ----------- | -------------- | -------------------------- |
-| H1      | 2rem (32px)     | 1.2         | 600 (semibold) | Page titles, hero headings |
-| H2      | 1.5rem (24px)   | 1.3         | 600 (semibold) | Section headers            |
-| H3      | 1.25rem (20px)  | 1.3         | 600 (semibold) | Subsection headers         |
+| H1      | 2rem (32px)     | 1.2-1.3     | 600 (semibold) | Page titles, hero headings |
+| H2      | 1.5rem (24px)   | 1.2-1.3     | 600 (semibold) | Section headers            |
+| H3      | 1.25rem (20px)  | 1.2-1.3     | 600 (semibold) | Subsection headers         |
 | H4      | 1.125rem (18px) | 1.4         | 500 (medium)   | Card titles, small headers |
-| Body    | 1rem (16px)     | 1.6         | 400 (regular)  | Default text, paragraphs   |
+| Body    | 1rem (16px)     | 1.5-1.6     | 400 (regular)  | Default text, paragraphs   |
 | Small   | 0.875rem (14px) | 1.4         | 400 (regular)  | Secondary text, captions   |
 | Caption | 0.75rem (12px)  | 1.4         | 400 (regular)  | Metadata, timestamps       |
 
@@ -159,6 +173,13 @@ LinkedIn uses a clear, hierarchical type scale:
 <p className="text-sm leading-normal">                   {/* Small */}
 <span className="text-xs leading-normal">                {/* Caption */}
 ```
+
+**Font Weights:**
+
+- Regular: 400 (default body text)
+- Medium: 500 (for emphasis, H4)
+- Semibold: 600 (for headings H1-H3)
+- Bold: 700 (for strong emphasis)
 
 **SEO-Friendly Heading Hierarchy:**
 
@@ -299,6 +320,9 @@ We use [shadcn/ui](https://ui.shadcn.com) as our component library, styled to ma
 | `DropdownMenu` | Navigation menus       | Clean, accessible dropdowns             |
 | `Dialog`       | Modals                 | Professional modal dialogs              |
 | `Alert`        | Notifications          | Subtle, non-intrusive alerts            |
+| `Accordion`    | Collapsible sections   | Clean, accessible accordions            |
+| `Textarea`     | Multi-line inputs      | LinkedIn-style text areas               |
+| `Select`       | Dropdown selects       | Professional select components          |
 
 **Component Location:**
 All shadcn/ui components are in `components/ui/` directory.
@@ -400,6 +424,7 @@ Buttons follow LinkedIn's clean, professional style.
 **Button Specifications:**
 
 - Primary: LinkedIn blue (`#0a66c2`)
+- Primary Hover: Darker blue (`#004182`)
 - Border Radius: 6px (`rounded-md`)
 - Padding: 8px 16px (default)
 - Font Weight: 500 (medium)
@@ -527,6 +552,8 @@ LinkedIn-style top navigation with sticky positioning.
 - Shadow: Subtle (`shadow-sm`)
 - Max Width: 1128px (LinkedIn standard)
 - Sticky: `sticky top-0`
+- Icon + Text: Consistent icon placement patterns
+- Active States: Clear visual indicators for active navigation items
 
 ---
 
@@ -553,6 +580,7 @@ LinkedIn's signature card grid layout.
 - Desktop (lg): 3 columns
 - Gap: 24px (`gap-6`) between cards
 - Max Width Container: 1128px (LinkedIn standard)
+- Card Hover Effects: Subtle shadow increase
 
 ---
 
@@ -599,6 +627,7 @@ Vertical card stack for article feeds.
 - Vertical spacing: 24px (`space-y-6`)
 - Cards: White on warm gray background
 - Hover: Subtle shadow increase
+- Card Content Structure: Image, title, excerpt, metadata
 
 ---
 
@@ -639,6 +668,11 @@ Always start with mobile styles, then enhance for larger screens:
 ">
 ```
 
+**Responsive Spacing Adjustments:**
+
+- Mobile: Tighter spacing (16px padding, 12px gaps)
+- Desktop: More generous spacing (24px padding, 24px gaps)
+
 ---
 
 ## Icons
@@ -676,6 +710,12 @@ import { Home, User, Settings } from "lucide-react";
 </Button>
 ```
 
+**Icon Usage Guidelines:**
+
+- Consistent sizing within components
+- Proper spacing from text (use `mr-2` or `ml-2` for spacing)
+- RTL icon mirroring (for directional icons)
+
 **RTL Icon Mirroring:**
 
 For directional icons in RTL, use conditional classes:
@@ -690,25 +730,60 @@ For directional icons in RTL, use conditional classes:
 
 ### Implementation
 
-Dark mode is implemented using Tailwind's class-based strategy.
+Dark mode is implemented using Tailwind's class-based strategy, following LinkedIn's design token system approach for flexible theme management.
 
 **Toggle Dark Mode:**
 
 ```tsx
 // Add/remove 'dark' class on html element
 document.documentElement.classList.toggle('dark');
+
+// Or using a theme provider
+import { useTheme } from 'next-themes';
+
+function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
+  return (
+    <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+      Toggle Theme
+    </button>
+  );
+}
 ```
 
-**Dark Mode Colors:**
+**Dark Mode Colors (LinkedIn-Inspired):**
+
+LinkedIn uses a design token system where colors are semantically labeled, allowing for easy theme switching. Our implementation follows this pattern:
 
 ```css
 .dark {
-  --background: 222.2 84% 4.9%; /* Dark blue-gray */
-  --foreground: 210 40% 98%; /* Light text */
-  --card: 222.2 84% 4.9%; /* Dark cards */
-  --card-foreground: 210 40% 98%; /* Light text on cards */
-  --primary: 217.2 91.2% 59.8%; /* Lighter blue for visibility */
+  /* Background & Surfaces */
+  --background: 222.2 84% 4.9%; /* Dark blue-gray - avoids pure black for reduced eye strain */
+  --card: 222.2 84% 6%; /* Slightly lighter dark for cards - creates visual depth */
+  --popover: 222.2 84% 6%; /* Dark popovers */
   --border: 217.2 32.6% 17.5%; /* Subtle dark borders */
+  --input: 217.2 32.6% 17.5%; /* Input borders in dark mode */
+
+  /* Text Colors */
+  --foreground: 210 40% 98%; /* Light text for readability */
+  --card-foreground: 210 40% 98%; /* Light text on cards */
+  --muted-foreground: 215 20.2% 65.1%; /* Muted text in dark mode */
+  --popover-foreground: 210 40% 98%; /* Light text in popovers */
+
+  /* Primary Colors */
+  --primary: 217.2 91.2% 59.8%; /* Lighter blue for better visibility in dark mode */
+  --primary-foreground: 222.2 84% 4.9%; /* Dark text on primary */
+  --primary-hover: 217.2 91.2% 65%; /* Slightly lighter on hover */
+  --ring: 217.2 91.2% 59.8%; /* Focus ring color */
+
+  /* Semantic Colors */
+  --secondary: 217.2 32.6% 17.5%; /* Dark secondary background */
+  --secondary-foreground: 210 40% 98%; /* Light text on secondary */
+  --muted: 217.2 32.6% 17.5%; /* Muted background */
+  --accent: 217.2 32.6% 17.5%; /* Accent background */
+  --accent-foreground: 210 40% 98%; /* Accent text */
+  --destructive: 0 72.2% 50.6%; /* Adjusted red for dark mode */
+  --destructive-foreground: 210 40% 98%; /* Light text on destructive */
 }
 ```
 
@@ -719,6 +794,61 @@ Dark mode works automatically with Tailwind's color system. All components suppo
 ```tsx
 <div className="bg-background text-foreground">{/* Automatically adapts to dark mode */}</div>
 ```
+
+**Dark Mode Design Principles (LinkedIn-Inspired):**
+
+Following LinkedIn's approach to dark mode design:
+
+1. **Balancing Color Contrast**
+   - Use dark grays (`#1a1a1a` range) instead of pure black (`#000000`)
+   - Reduces eye strain in low-light environments
+   - Maintains visual depth without overwhelming brightness
+
+2. **Visual Depth**
+   - Use subtle shadows and soft borders to create layering
+   - Cards should be slightly lighter than background for separation
+   - Careful layering gives dark interfaces a sense of space
+
+3. **User Control**
+   - Provide theme toggle for user preference
+   - Respect system preferences (`prefers-color-scheme`)
+   - Persist user choice in localStorage
+
+4. **Accessibility**
+   - Maintain WCAG 2.1 AA contrast ratios in dark mode
+   - Adjust text and UI element colors for accessibility
+   - Accommodate users with light sensitivities
+
+**Dark Mode Guidelines:**
+
+- **Background**: Dark blue-gray (avoid pure black) - reduces eye strain
+- **Cards**: Slightly lighter dark background - creates visual depth
+- **Text**: Light gray/white for readability - maintains contrast
+- **Borders**: Subtle dark borders - soft, not harsh
+- **Primary**: Lighter blue for better visibility in dark mode
+- **Shadows**: More subtle in dark mode - less prominent than light mode
+
+**Theme Detection:**
+
+```tsx
+// Detect system preference
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+// Use next-themes for React
+import { ThemeProvider } from 'next-themes';
+
+<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+  {/* Your app */}
+</ThemeProvider>
+```
+
+**Testing Dark Mode:**
+
+- Test all components in both light and dark modes
+- Verify contrast ratios meet WCAG standards
+- Check readability of all text elements
+- Ensure interactive elements are clearly visible
+- Test with system preference detection
 
 ---
 
@@ -771,6 +901,13 @@ Arabic uses Tajawal font:
 font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, sans-serif;
 ```
 
+**RTL Patterns:**
+
+- Direction: `dir="rtl"` for Arabic
+- Spacing: Logical properties (margin-inline, padding-inline)
+- Icons: Mirror directional icons
+- Text alignment: Right for Arabic, left for English
+
 ---
 
 ## Accessibility
@@ -815,6 +952,16 @@ All interactive elements have visible focus indicators:
 </Button>
 ```
 
+**Accessibility Checklist:**
+
+- ✅ Color contrast ratios meet WCAG 2.1 AA
+- ✅ All interactive elements keyboard accessible
+- ✅ Clear focus indicators
+- ✅ Semantic HTML structure
+- ✅ ARIA labels for complex components
+- ✅ Alt text for all images
+- ✅ Proper heading hierarchy for SEO
+
 ---
 
 ## Animation & Transitions
@@ -857,6 +1004,13 @@ We use `tailwindcss-animate` plugin for smooth transitions.
 </Card>
 ```
 
+**Animation Guidelines:**
+
+- Keep animations subtle and professional
+- Use transitions for hover states
+- Avoid excessive animations
+- Ensure animations don't cause motion sickness
+
 ---
 
 ## Monorepo Guidelines
@@ -868,6 +1022,7 @@ We use `tailwindcss-animate` plugin for smooth transitions.
 - Uses same design system
 - Admin-specific components in `components/admin/`
 - Dashboard-focused layouts
+- Form-heavy interfaces
 
 **Beta App (`beta/`):**
 
@@ -942,6 +1097,35 @@ If components need to be shared:
   - Subtle shadows
   - Clean typography
 
+### LinkedIn Official Documentation
+
+- **LinkedIn Brand Guidelines**: https://brand.linkedin.com/en-us
+  - Logo usage and brand policies
+  - Color schemes and brand assets
+  - Acceptable brand practices
+
+- **LinkedIn Logo Guidelines**: https://brand.linkedin.com/linkedin-logo/
+  - Logo usage requirements
+  - Spacing and placement guidelines
+  - Color specifications
+
+- **LinkedIn [in] Logo Guidelines**: https://brand.linkedin.com/in-logo
+  - [in] logo usage for members
+  - Hyperlink and business card usage
+  - Email signature guidelines
+
+- **LinkedIn Dark Mode Announcement**: https://www.linkedin.com/pulse/introducing-dark-mode-linkedin-night-day-difference-
+  - Dark mode implementation insights
+  - Design token system approach
+  - Accessibility considerations
+
+- **LinkedIn Branding & UX Guidelines (Verified Features)**: https://learn.microsoft.com/en-us/linkedin/consumer/integrations/verified-on-linkedin/branding-ux-guidelines
+  - Verification badge usage
+  - "Verify on LinkedIn" button guidelines
+  - Consistent member experience standards
+
+**Note**: While LinkedIn has shared insights into their design approach and dark mode implementation, they have not publicly released a complete design system documentation. Our design system is inspired by LinkedIn's visual patterns and best practices, adapted for our monorepo needs.
+
 ---
 
 ## Best Practices
@@ -957,6 +1141,12 @@ If components need to be shared:
 - Use proper heading hierarchy
 - Add alt text to images
 - Test RTL layouts for Arabic
+- Use Tailwind utility classes
+- Keep components under 200 lines
+- Extract complex logic to helpers/hooks
+- Use meaningful variable and function names
+- Prefer composition over inheritance
+- Write self-documenting code
 
 ### ❌ Don't
 
@@ -968,6 +1158,10 @@ If components need to be shared:
 - Create custom components when shadcn/ui has one
 - Break the 8px grid
 - Use heavy shadows (keep them subtle)
+- Use `any` types in TypeScript
+- Use `require()` (use ES6 `import`)
+- Put logic in global scope
+- Skip error handling
 
 ---
 
@@ -1022,6 +1216,46 @@ export function ArticleCard({ article }: { article: Article }) {
 </div>
 ```
 
+### Form Input with Validation
+
+```tsx
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+
+export function EmailInput() {
+  return (
+    <div className="grid gap-2">
+      <Label htmlFor="email">Email Address</Label>
+      <Input
+        id="email"
+        type="email"
+        placeholder="name@example.com"
+        className="border-border focus:ring-primary"
+      />
+      <p className="text-xs text-muted-foreground">
+        We'll never share your email with anyone else.
+      </p>
+    </div>
+  );
+}
+```
+
+### Button with Icon
+
+```tsx
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+
+export function CreateButton() {
+  return (
+    <Button>
+      <Plus className="mr-2 h-4 w-4" />
+      Create New
+    </Button>
+  );
+}
+```
+
 ---
 
 ## Updates & Maintenance
@@ -1039,5 +1273,5 @@ This design system is a living document. When making changes:
 ---
 
 **Last Updated**: 2024
-**Version**: 1.0.0
+**Version**: 2.0.0
 **Maintained By**: Modonty Development Team

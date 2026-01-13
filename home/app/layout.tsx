@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { GTMContainer } from "@/components/gtm/GTMContainer";
 
 export const metadata: Metadata = {
   title: "Coming Soon - Modonty",
@@ -13,7 +14,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="bg-background">{children}</body>
+      <body className="bg-background">
+        <GTMContainer />
+        {children}
+      </body>
     </html>
   );
 }

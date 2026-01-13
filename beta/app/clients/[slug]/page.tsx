@@ -9,6 +9,7 @@ import Link from "next/link";
 import { Building2, ArrowLeft, Globe, Mail, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { GTMClientTracker } from "@/components/gtm/GTMClientTracker";
 
 interface ClientPageProps {
   params: Promise<{ slug: string }>;
@@ -150,6 +151,14 @@ export default async function ClientPage({ params }: ClientPageProps) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbData) }}
+        />
+        <GTMClientTracker
+          clientContext={{
+            client_id: client.id,
+            client_slug: client.slug,
+            client_name: client.name,
+          }}
+          pageTitle={client.seoTitle || client.name}
         />
         <div className="min-h-screen bg-background">
           <div className="container mx-auto max-w-[1128px] px-4 py-8">

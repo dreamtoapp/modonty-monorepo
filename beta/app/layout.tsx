@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { SessionProvider } from "@/components/providers/SessionProvider";
+import { GTMContainer } from "@/components/gtm/GTMContainer";
 
 export const metadata: Metadata = {
   title: "مودونتي - منصة المدونات متعددة العملاء",
@@ -15,6 +16,7 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <body className="bg-background">
+        <GTMContainer />
         <SessionProvider>{children}</SessionProvider>
       </body>
     </html>

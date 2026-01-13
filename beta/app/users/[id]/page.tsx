@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { ArticleStatus } from "@prisma/client";
-import { generateMetadataFromSEO, generateStructuredData } from "@/lib/seo";
+import { generateMetadataFromSEO, generateStructuredData, generateAuthorStructuredData } from "@/lib/seo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Link from "next/link";
@@ -32,10 +32,13 @@ export async function generateMetadata({ params }: UserPageProps): Promise<Metad
         where: { slug: id },
         select: {
           name: true,
+          firstName: true,
+          lastName: true,
           bio: true,
           image: true,
           seoTitle: true,
           seoDescription: true,
+          twitterCreator: true,
         },
       });
 
@@ -46,6 +49,9 @@ export async function generateMetadata({ params }: UserPageProps): Promise<Metad
           image: author.image || undefined,
           url: `/users/${id}`,
           type: "profile",
+          firstName: author.firstName || undefined,
+          lastName: author.lastName || undefined,
+          twitterCreator: author.twitterCreator || undefined,
         });
       }
 
@@ -172,16 +178,16 @@ export default async function UserPage({ params }: UserPageProps) {
       .slice(0, 2)
       .toUpperCase();
 
-    const structuredData = generateStructuredData({
-      type: "Person",
-      name: author?.name || user?.name || "مستخدم",
-      description: author?.bio || undefined,
-      image: author?.image || user?.image || undefined,
-      url: `/users/${id}`,
-      "@type": "Person",
-      jobTitle: author?.jobTitle || undefined,
-      worksFor: author?.worksFor ? { "@type": "Organization" } : undefined,
-    });
+    // Use generateAuthorStructuredData if author exists, otherwise use generateStructuredData
+    const structuredData = author
+      ? generateAuthorStructuredData(author)
+      : generateStructuredData({
+          type: "Person",
+          name: user?.name || "مستخدم",
+          description: undefined,
+          image: user?.image || undefined,
+          url: `/users/${id}`,
+        });
 
     return (
       <>

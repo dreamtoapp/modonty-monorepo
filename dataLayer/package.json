@@ -14,7 +14,8 @@
     "seed:clear": "tsx prisma/seed.ts --clear"
   },
   "dependencies": {
-    "@prisma/client": "^6.19.1"
+    "@prisma/client": "^6.19.1",
+    "mongodb": "^6.0.0"
   },
   "devDependencies": {
     "prisma": "^6.19.1",

@@ -49,10 +49,6 @@ async function seedClients() {
       slug: "techcorp-solutions",
       legalName: "حلول التقنية المتقدمة ش.م.م",
       url: "https://techcorp-solutions.example.com",
-      logo: "https://api.dicebear.com/7.x/shapes/svg?seed=TechCorp",
-      favicon: "https://api.dicebear.com/7.x/shapes/svg?seed=TechCorp",
-      ogImage: "https://api.dicebear.com/7.x/shapes/svg?seed=TechCorp",
-      primaryColor: "#0066CC",
       sameAs: [
         "https://linkedin.com/company/techcorp-solutions",
         "https://twitter.com/techcorp",
@@ -69,10 +65,6 @@ async function seedClients() {
       slug: "design-studio-pro",
       legalName: "استوديو التصميم المحترف ش.م.م",
       url: "https://design-studio-pro.example.com",
-      logo: "https://api.dicebear.com/7.x/shapes/svg?seed=DesignStudio",
-      favicon: "https://api.dicebear.com/7.x/shapes/svg?seed=DesignStudio",
-      ogImage: "https://api.dicebear.com/7.x/shapes/svg?seed=DesignStudio",
-      primaryColor: "#FF6B6B",
       sameAs: [
         "https://linkedin.com/company/design-studio-pro",
         "https://twitter.com/designstudiopro",
@@ -89,10 +81,6 @@ async function seedClients() {
       slug: "digital-marketing-hub",
       legalName: "مركز التسويق الرقمي ش.م.م",
       url: "https://digital-marketing-hub.example.com",
-      logo: "https://api.dicebear.com/7.x/shapes/svg?seed=MarketingHub",
-      favicon: "https://api.dicebear.com/7.x/shapes/svg?seed=MarketingHub",
-      ogImage: "https://api.dicebear.com/7.x/shapes/svg?seed=MarketingHub",
-      primaryColor: "#4ECDC4",
       sameAs: [
         "https://linkedin.com/company/digital-marketing-hub",
         "https://twitter.com/digitalmarketinghub",
@@ -109,10 +97,6 @@ async function seedClients() {
       slug: "innovation-labs",
       legalName: "مختبرات الابتكار ش.م.م",
       url: "https://innovation-labs.example.com",
-      logo: "https://api.dicebear.com/7.x/shapes/svg?seed=InnovationLabs",
-      favicon: "https://api.dicebear.com/7.x/shapes/svg?seed=InnovationLabs",
-      ogImage: "https://api.dicebear.com/7.x/shapes/svg?seed=InnovationLabs",
-      primaryColor: "#9B59B6",
       sameAs: [
         "https://linkedin.com/company/innovation-labs",
         "https://twitter.com/innovationlabs",
@@ -141,182 +125,9 @@ async function seedClients() {
 }
 
 async function seedAuthors() {
-  console.log("Seeding authors...");
-  const authors = [
-    {
-      name: "سارة أحمد",
-      slug: "sarah-ahmed",
-      jobTitle: "مهندسة برمجيات أولى",
-      bio: "مهندسة برمجيات متخصصة في تطوير الويب والتطبيقات الحديثة. لديها خبرة تزيد عن 8 سنوات في مجال التقنية.",
-      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-      url: "https://example.com/authors/sarah-ahmed",
-      linkedIn: "https://linkedin.com/in/sarah-ahmed",
-      twitter: "https://twitter.com/sarah_ahmed",
-      credentials: ["بكالوريوس علوم الحاسب", "شهادة AWS Solutions Architect"],
-      qualifications: ["Full Stack Developer", "Cloud Architect"],
-      expertiseAreas: ["تطوير الويب", "React", "Node.js", "Cloud Computing"],
-      experienceYears: 8,
-      verificationStatus: true,
-      seoTitle: "سارة أحمد - مهندسة برمجيات أولى",
-      seoDescription:
-        "مهندسة برمجيات متخصصة في تطوير الويب والتطبيقات الحديثة مع خبرة تزيد عن 8 سنوات.",
-    },
-    {
-      name: "محمد العلي",
-      slug: "mohammed-alali",
-      jobTitle: "مطور رئيسي",
-      bio: "مطور برمجيات رئيسي متخصص في React وNext.js. يشارك بانتظام في مؤتمرات التقنية.",
-      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Michael",
-      url: "https://example.com/authors/mohammed-alali",
-      linkedIn: "https://linkedin.com/in/mohammed-alali",
-      twitter: "https://twitter.com/mohammed_alali",
-      credentials: ["بكالوريوس هندسة البرمجيات", "شهادة React Advanced"],
-      qualifications: ["Senior Frontend Developer", "React Expert"],
-      expertiseAreas: ["React", "Next.js", "TypeScript", "Frontend Architecture"],
-      experienceYears: 10,
-      verificationStatus: true,
-      seoTitle: "محمد العلي - مطور رئيسي",
-      seoDescription:
-        "مطور برمجيات رئيسي متخصص في React وNext.js مع خبرة تزيد عن 10 سنوات.",
-    },
-    {
-      name: "فاطمة الزهراني",
-      slug: "fatima-alzahrani",
-      jobTitle: "مديرة تصميم تجربة المستخدم",
-      bio: "مصممة تجربة مستخدم محترفة مع شغف بإنشاء واجهات مستخدم جميلة وسهلة الاستخدام.",
-      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Emily",
-      url: "https://example.com/authors/fatima-alzahrani",
-      linkedIn: "https://linkedin.com/in/fatima-alzahrani",
-      twitter: "https://twitter.com/fatima_zahrani",
-      credentials: ["بكالوريوس تصميم جرافيكي", "شهادة UX Design"],
-      qualifications: ["UX Designer", "UI Specialist"],
-      expertiseAreas: ["تصميم UX", "تصميم UI", "User Research", "Prototyping"],
-      experienceYears: 7,
-      verificationStatus: true,
-      seoTitle: "فاطمة الزهراني - مديرة تصميم تجربة المستخدم",
-      seoDescription:
-        "مصممة تجربة مستخدم محترفة متخصصة في إنشاء واجهات مستخدم جميلة وسهلة الاستخدام.",
-    },
-    {
-      name: "خالد الدوسري",
-      slug: "khalid-aldosari",
-      jobTitle: "مصمم منتجات",
-      bio: "مصمم منتجات رقمي متخصص في تحويل الأفكار إلى منتجات رقمية ناجحة.",
-      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=David",
-      url: "https://example.com/authors/khalid-aldosari",
-      linkedIn: "https://linkedin.com/in/khalid-aldosari",
-      twitter: "https://twitter.com/khalid_dosari",
-      credentials: ["بكالوريوس تصميم صناعي", "شهادة Product Design"],
-      qualifications: ["Product Designer", "Design Thinking Expert"],
-      expertiseAreas: ["تصميم المنتجات", "Design Thinking", "Prototyping"],
-      experienceYears: 6,
-      verificationStatus: true,
-      seoTitle: "خالد الدوسري - مصمم منتجات",
-      seoDescription:
-        "مصمم منتجات رقمي متخصص في تحويل الأفكار إلى منتجات رقمية ناجحة.",
-    },
-    {
-      name: "نورا القحطاني",
-      slug: "nora-alqahtani",
-      jobTitle: "مديرة تسويق المحتوى",
-      bio: "خبيرة في تسويق المحتوى والاستراتيجيات الرقمية. تساعد الشركات على بناء حضور قوي عبر الإنترنت.",
-      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jessica",
-      url: "https://example.com/authors/nora-alqahtani",
-      linkedIn: "https://linkedin.com/in/nora-alqahtani",
-      twitter: "https://twitter.com/nora_qahtani",
-      credentials: ["بكالوريوس تسويق", "شهادة Content Marketing"],
-      qualifications: ["Content Marketing Manager", "Digital Strategist"],
-      expertiseAreas: ["تسويق المحتوى", "SEO", "Social Media", "Content Strategy"],
-      experienceYears: 9,
-      verificationStatus: true,
-      seoTitle: "نورا القحطاني - مديرة تسويق المحتوى",
-      seoDescription:
-        "خبيرة في تسويق المحتوى والاستراتيجيات الرقمية مع خبرة تزيد عن 9 سنوات.",
-    },
-    {
-      name: "عبدالله السعيد",
-      slug: "abdullah-alsaeed",
-      jobTitle: "أخصائي تحسين محركات البحث",
-      bio: "خبير SEO مع خبرة واسعة في تحسين المواقع لمحركات البحث وزيادة الزيارات العضوية.",
-      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Robert",
-      url: "https://example.com/authors/abdullah-alsaeed",
-      linkedIn: "https://linkedin.com/in/abdullah-alsaeed",
-      twitter: "https://twitter.com/abdullah_saeed",
-      credentials: ["بكالوريوس تسويق رقمي", "شهادة Google Analytics", "شهادة SEO Advanced"],
-      qualifications: ["SEO Specialist", "Digital Marketing Expert"],
-      expertiseAreas: ["SEO", "Google Analytics", "Technical SEO", "Link Building"],
-      experienceYears: 8,
-      verificationStatus: true,
-      seoTitle: "عبدالله السعيد - أخصائي تحسين محركات البحث",
-      seoDescription:
-        "خبير SEO مع خبرة واسعة في تحسين المواقع لمحركات البحث وزيادة الزيارات العضوية.",
-    },
-    {
-      name: "ريم العتيبي",
-      slug: "reem-alotaibi",
-      jobTitle: "استراتيجية الابتكار",
-      bio: "استراتيجية ابتكار متخصصة في تطوير حلول مبتكرة وتطبيق التقنيات الناشئة في الأعمال.",
-      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Amanda",
-      url: "https://example.com/authors/reem-alotaibi",
-      linkedIn: "https://linkedin.com/in/reem-alotaibi",
-      twitter: "https://twitter.com/reem_otaibi",
-      credentials: ["بكالوريوس إدارة أعمال", "ماجستير إدارة الابتكار"],
-      qualifications: ["Innovation Strategist", "Business Consultant"],
-      expertiseAreas: ["الابتكار", "Business Strategy", "Digital Transformation"],
-      experienceYears: 7,
-      verificationStatus: true,
-      seoTitle: "ريم العتيبي - استراتيجية الابتكار",
-      seoDescription:
-        "استراتيجية ابتكار متخصصة في تطوير حلول مبتكرة وتطبيق التقنيات الناشئة في الأعمال.",
-    },
-    {
-      name: "يوسف الحربي",
-      slug: "youssef-alharbi",
-      jobTitle: "مدير الأبحاث",
-      bio: "باحث ومحلل متخصص في دراسة الاتجاهات التقنية الناشئة وتأثيرها على الأعمال.",
-      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=James",
-      url: "https://example.com/authors/youssef-alharbi",
-      linkedIn: "https://linkedin.com/in/youssef-alharbi",
-      twitter: "https://twitter.com/youssef_harbi",
-      credentials: ["دكتوراه في علوم الحاسب", "باحث في الذكاء الاصطناعي"],
-      qualifications: ["Research Director", "AI Researcher"],
-      expertiseAreas: ["البحث والتطوير", "الذكاء الاصطناعي", "Machine Learning"],
-      experienceYears: 12,
-      verificationStatus: true,
-      seoTitle: "يوسف الحربي - مدير الأبحاث",
-      seoDescription:
-        "باحث ومحلل متخصص في دراسة الاتجاهات التقنية الناشئة وتأثيرها على الأعمال.",
-    },
-  ];
-
-  // Delete existing authors first
-  await db.author.deleteMany({});
-  
-  // Create authors individually to avoid MongoDB unique constraint issues with userId (null)
-  const createdAuthors = [];
-  for (const authorData of authors) {
-    // Omit userId completely - MongoDB doesn't allow multiple nulls for unique fields
-    const { userId, ...dataWithoutUserId } = authorData as any;
-    try {
-      const author = await db.author.create({
-        data: dataWithoutUserId,
-      });
-      createdAuthors.push(author);
-    } catch (error: any) {
-      // If author already exists, fetch it
-      if (error.code === 'P2002') {
-        const existing = await db.author.findUnique({
-          where: { slug: authorData.slug },
-        });
-        if (existing) createdAuthors.push(existing);
-      } else {
-        throw error;
-      }
-    }
-  }
-
-  console.log(`Seeded ${createdAuthors.length} authors.`);
-  return createdAuthors;
+  console.log("Skipping author reseed, using existing authors...");
+  const existingAuthors = await db.author.findMany();
+  return existingAuthors;
 }
 
 async function seedCategories() {
@@ -366,7 +177,79 @@ async function seedCategories() {
     createdCategories.push(category);
   }
 
-  console.log(`Seeded ${createdCategories.length} categories.`);
+  // Seed hierarchical child categories for tree testing
+  const parentSlugs = ["technology", "design", "marketing", "innovation"];
+  const parents = await db.category.findMany({
+    where: { slug: { in: parentSlugs } },
+    select: { id: true, slug: true },
+  });
+  const parentMap = new Map(parents.map((p) => [p.slug, p.id]));
+
+  const childCategories = [
+    {
+      name: "تطوير الويب",
+      slug: "web-development",
+      description: "تطوير مواقع وتطبيقات الويب باستخدام أحدث التقنيات",
+      seoTitle: "تصنيفات تطوير الويب",
+      seoDescription: "مقالات حول تطوير الويب، واجهات المستخدم، وFrontend/Backend.",
+      parentSlug: "technology",
+    },
+    {
+      name: "تطوير المحمول",
+      slug: "mobile-development",
+      description: "تطوير تطبيقات الهواتف الذكية لأنظمة iOS و Android",
+      seoTitle: "تصنيفات تطوير تطبيقات الموبايل",
+      seoDescription: "مقالات حول تطوير تطبيقات الهاتف باستخدام أطر العمل الحديثة.",
+      parentSlug: "technology",
+    },
+    {
+      name: "واجهة المستخدم",
+      slug: "ui-design",
+      description: "تصميم واجهات مستخدم جذابة وسهلة الاستخدام",
+      seoTitle: "تصميم واجهة المستخدم",
+      seoDescription: "مقالات حول تصميم واجهات المستخدم وأنماط التصميم.",
+      parentSlug: "design",
+    },
+    {
+      name: "تجربة المستخدم",
+      slug: "ux-design",
+      description: "تحليل وتحسين تجربة المستخدم في المنتجات الرقمية",
+      seoTitle: "تصميم تجربة المستخدم",
+      seoDescription: "مقالات حول أبحاث وتجارب المستخدم وتحسين الرحلة.",
+      parentSlug: "design",
+    },
+    {
+      name: "تحسين محركات البحث",
+      slug: "seo",
+      description: "استراتيجيات وتقنيات تحسين محركات البحث",
+      seoTitle: "SEO وتحسين محركات البحث",
+      seoDescription: "مقالات حول تحسين ظهور المواقع في نتائج البحث.",
+      parentSlug: "marketing",
+    },
+    {
+      name: "التسويق عبر الشبكات الاجتماعية",
+      slug: "social-media-marketing",
+      description: "استراتيجيات التسويق عبر منصات التواصل الاجتماعي",
+      seoTitle: "التسويق عبر الشبكات الاجتماعية",
+      seoDescription: "مقالات حول إدارة الحملات على منصات التواصل.",
+      parentSlug: "marketing",
+    },
+  ];
+
+  for (const child of childCategories) {
+    const parentId = parentMap.get(child.parentSlug);
+    if (!parentId) continue;
+
+    const { parentSlug, ...categoryData } = child;
+    const category = await db.category.upsert({
+      where: { slug: categoryData.slug },
+      update: { ...categoryData, parentId },
+      create: { ...categoryData, parentId },
+    });
+    createdCategories.push(category);
+  }
+
+  console.log(`Seeded ${createdCategories.length} categories (including hierarchy).`);
   return createdCategories;
 }
 

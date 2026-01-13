@@ -36,7 +36,7 @@ export function PostCard({ post }: PostCardProps) {
     datePublished: post.publishedAt.toISOString(),
     author: {
       "@type": "Person",
-      name: post.author.name,
+      name: post.author?.name || "Modonty",
     },
     publisher: {
       "@type": "Organization",

@@ -84,7 +84,7 @@ export default async function HomePage() {
     clientSlug: article.client.slug,
     author: {
       id: article.author.id,
-      name: article.author.name,
+      name: article.author?.name || "Modonty",
       title: "",
       company: article.client.name,
       avatar: "",
@@ -115,7 +115,7 @@ export default async function HomePage() {
           datePublished: article.datePublished?.toISOString(),
           author: {
             "@type": "Person",
-            name: article.author.name,
+            name: article.author?.name || "Modonty",
           },
           publisher: {
             "@type": "Organization",

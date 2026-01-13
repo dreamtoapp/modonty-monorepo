@@ -9,9 +9,16 @@ export interface SEOData {
   type?: "website" | "article" | "profile";
   siteName?: string;
   locale?: string;
+  firstName?: string;
+  lastName?: string;
+  twitterCreator?: string;
 }
 
-export function generateMetadataFromSEO(data: SEOData): Metadata {
+export interface MetadataOptions {
+  robots?: string;
+}
+
+export function generateMetadataFromSEO(data: SEOData, options?: MetadataOptions): Metadata {
   const {
     title,
     description,
@@ -21,12 +28,57 @@ export function generateMetadataFromSEO(data: SEOData): Metadata {
     type = "website",
     siteName = "مودونتي",
     locale = "ar_SA",
+    firstName,
+    lastName,
+    twitterCreator,
   } = data;
 
   const fullTitle = title ? `${title} - ${siteName}` : siteName;
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://modonty.com";
   const canonicalUrl = url ? `${siteUrl}${url}` : siteUrl;
   const ogImage = image || `${siteUrl}/og-image.jpg`;
+  
+  // Parse robots directive
+  const robotsDirective = options?.robots || "index,follow";
+  const shouldIndex = !robotsDirective.includes("noindex");
+  const shouldFollow = !robotsDirective.includes("nofollow");
+
+  const openGraph: Metadata["openGraph"] = {
+    title: fullTitle,
+    description: description || "",
+    url: canonicalUrl,
+    siteName: siteName,
+    images: [
+      {
+        url: ogImage,
+        width: 1200,
+        height: 630,
+        alt: title || siteName,
+      },
+    ],
+    locale: locale,
+    type: type,
+  };
+
+  // Add profile-specific OG fields when type is "profile"
+  if (type === "profile" && (firstName || lastName)) {
+    openGraph.firstName = firstName;
+    openGraph.lastName = lastName;
+  }
+
+  const twitter: Metadata["twitter"] = {
+    card: "summary_large_image",
+    title: fullTitle,
+    description: description || "",
+    images: [ogImage],
+  };
+
+  // Add twitter:creator if provided
+  if (twitterCreator) {
+    // Remove @ if present, Twitter Cards expects just the username
+    const creatorHandle = twitterCreator.replace(/^@/, "");
+    twitter.creator = `@${creatorHandle}`;
+  }
 
   return {
     title: fullTitle,
@@ -35,34 +87,14 @@ export function generateMetadataFromSEO(data: SEOData): Metadata {
     alternates: {
       canonical: canonicalUrl,
     },
-    openGraph: {
-      title: fullTitle,
-      description: description || "",
-      url: canonicalUrl,
-      siteName: siteName,
-      images: [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: title || siteName,
-        },
-      ],
-      locale: locale,
-      type: type,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: fullTitle,
-      description: description || "",
-      images: [ogImage],
-    },
+    openGraph,
+    twitter,
     robots: {
-      index: true,
-      follow: true,
+      index: shouldIndex,
+      follow: shouldFollow,
       googleBot: {
-        index: true,
-        follow: true,
+        index: shouldIndex,
+        follow: shouldFollow,
         "max-video-preview": -1,
         "max-image-preview": "large",
         "max-snippet": -1,
@@ -124,7 +156,7 @@ export function generateArticleStructuredData(article: any) {
     dateModified: article.dateModified?.toISOString() || article.updatedAt?.toISOString(),
     author: {
       "@type": "Person",
-      name: article.author.name,
+      name: article.author.name || "Modonty",
       ...(article.author.url && { url: article.author.url }),
       ...(article.author.image && { image: article.author.image }),
     },
@@ -172,12 +204,27 @@ export function generateAuthorStructuredData(author: any) {
     ...(author.bio && { description: author.bio }),
     ...(author.image && { image: author.image }),
     ...(author.url && { url: author.url }),
+    ...(author.email && { email: author.email }),
+    ...(author.firstName && { givenName: author.firstName }),
+    ...(author.lastName && { familyName: author.lastName }),
     ...(author.jobTitle && { jobTitle: author.jobTitle }),
+    ...(author.worksFor && {
+      worksFor: {
+        "@type": "Organization",
+        "@id": author.worksFor,
+      },
+    }),
     ...(author.expertiseAreas && author.expertiseAreas.length > 0 && {
       knowsAbout: author.expertiseAreas,
     }),
     ...(author.credentials && author.credentials.length > 0 && {
       hasCredential: author.credentials,
+    }),
+    ...(author.memberOf && author.memberOf.length > 0 && {
+      memberOf: author.memberOf.map((org: string) => ({
+        "@type": "Organization",
+        name: org,
+      })),
     }),
   };
 
