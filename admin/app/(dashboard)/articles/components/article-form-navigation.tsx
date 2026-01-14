@@ -37,12 +37,12 @@ export function ArticleFormNavigation() {
       const result = await save();
 
       if (result.success) {
-        const articleId = result.article?.id;
+        const savedArticleId = result.article?.id;
         const articleTitle = result.article?.title;
         const articleStatus = result.article?.status;
 
         const detailsParts: string[] = [];
-        if (articleId) detailsParts.push(`المعرّف: ${articleId}`);
+        if (savedArticleId) detailsParts.push(`المعرّف: ${savedArticleId}`);
         if (articleTitle) detailsParts.push(`العنوان: "${articleTitle}"`);
         if (articleStatus) detailsParts.push(`الحالة: ${articleStatus}`);
 
@@ -56,6 +56,9 @@ export function ArticleFormNavigation() {
 
         if (mode === 'new') {
           router.push('/articles');
+          router.refresh();
+        } else if (mode === 'edit' && savedArticleId) {
+          router.push(`/articles/${savedArticleId}`);
           router.refresh();
         }
       } else {
@@ -130,12 +133,6 @@ export function ArticleFormNavigation() {
       { name: title, url: articlePath },
     ];
     
-    // Generate alternate languages
-    const alternateLanguages = [
-      { hreflang: 'ar', url: `${baseUrl}/ar${articlePath}` },
-      { hreflang: 'en', url: `${baseUrl}/en${articlePath}` },
-    ];
-    
     // Generate Twitter handles
     const twitterSite = `@${faker.internet.username()}`;
     const twitterCreator = `@${faker.internet.username()}`;
@@ -201,7 +198,6 @@ export function ArticleFormNavigation() {
       
       // Technical SEO
       canonicalUrl,
-      alternateLanguages,
       sitemapPriority: faker.number.float({ min: 0.3, max: 1.0, fractionDigits: 1 }),
       sitemapChangeFreq: faker.helpers.arrayElement(['always', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'never']),
       

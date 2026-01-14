@@ -56,7 +56,6 @@ const fieldMetadataMap: Record<string, FieldMetadata> = {
 
   // Technical SEO
   canonicalUrl: { path: "article.canonicalUrl", type: "String?" },
-  alternateLanguages: { path: "article.alternateLanguages", type: "Json?" },
   sitemapPriority: { path: "article.sitemapPriority", type: "Float?" },
   sitemapChangeFreq: { path: "article.sitemapChangeFreq", type: "String?" },
   breadcrumbPath: { path: "article.breadcrumbPath", type: "Json?" },

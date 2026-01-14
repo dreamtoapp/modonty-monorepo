@@ -618,7 +618,6 @@ export async function createArticle(data: ArticleFormData) {
         canonicalUrl,
         sitemapPriority,
         sitemapChangeFreq: data.sitemapChangeFreq || "weekly",
-        alternateLanguages: data.alternateLanguages || [],
         breadcrumbPath: JSON.parse(JSON.stringify(breadcrumbPath)) as Prisma.InputJsonValue,
       },
     });
@@ -676,7 +675,6 @@ export async function createArticle(data: ArticleFormData) {
           articleId: article.id,
           relatedId: rel.relatedId,
           relationshipType: rel.relationshipType || 'related',
-          weight: rel.weight || 1.0,
         })),
       });
     }
@@ -701,6 +699,239 @@ export async function createArticle(data: ArticleFormData) {
   } catch (error) {
     console.error("Error creating article:", error);
     const message = error instanceof Error ? error.message : "فشل في إنشاء المقال";
+    return {
+      success: false,
+      error: message,
+    };
+  }
+}
+
+export async function updateArticle(articleId: string, data: ArticleFormData) {
+  try {
+    // Validate required fields before processing
+    if (!data.title || data.title.trim().length === 0) {
+      return {
+        success: false,
+        error: "العنوان مطلوب",
+      };
+    }
+
+    if (!data.content || data.content.trim().length === 0) {
+      return {
+        success: false,
+        error: "المحتوى مطلوب",
+      };
+    }
+
+    if (!data.clientId) {
+      return {
+        success: false,
+        error: "العميل مطلوب",
+      };
+    }
+
+    if (!data.slug || data.slug.trim().length === 0) {
+      return {
+        success: false,
+        error: "الرابط المختصر مطلوب",
+      };
+    }
+
+    // Get existing article to preserve authorId and other fields
+    const existingArticle = await db.article.findUnique({
+      where: { id: articleId },
+      select: { authorId: true, ogArticlePublishedTime: true },
+    });
+
+    if (!existingArticle) {
+      return {
+        success: false,
+        error: "المقال غير موجود",
+      };
+    }
+
+    const client = await db.client.findUnique({
+      where: { id: data.clientId },
+      select: { name: true, slug: true },
+    });
+
+    const category = data.categoryId
+      ? await db.category.findUnique({
+          where: { id: data.categoryId },
+          select: { name: true, slug: true },
+        })
+      : null;
+
+    const wordCount = data.wordCount || calculateWordCountImproved(data.content, data.inLanguage || "ar");
+    const readingTimeMinutes =
+      data.readingTimeMinutes || calculateReadingTime(wordCount);
+    const contentDepth = data.contentDepth || determineContentDepth(wordCount);
+
+    const seoTitle =
+      data.seoTitle || generateSEOTitle(data.title, client?.name);
+    const seoDescription =
+      data.seoDescription || generateSEODescription(data.excerpt || "");
+
+    const canonicalUrl =
+      data.canonicalUrl ||
+      generateCanonicalUrl(data.slug, undefined, client?.slug);
+
+    const breadcrumbPath = generateBreadcrumbPath(
+      category?.name,
+      category?.slug,
+      data.title,
+      data.slug
+    );
+
+    const datePublished = data.datePublished || null;
+
+    const metaRobots =
+      data.metaRobots ||
+      (data.status === ArticleStatus.PUBLISHED
+        ? "index, follow"
+        : "noindex, follow");
+
+    const sitemapPriority = data.sitemapPriority || (data.featured ? 0.8 : 0.5);
+
+    // Validate status enum
+    if (data.status && !Object.values(ArticleStatus).includes(data.status as ArticleStatus)) {
+      return {
+        success: false,
+        error: "Invalid status value. Status must be a valid ArticleStatus enum value.",
+      };
+    }
+
+    const article = await db.article.update({
+      where: { id: articleId },
+      data: {
+        title: data.title,
+        slug: data.slug,
+        excerpt: data.excerpt || null,
+        content: data.content,
+        contentFormat: data.contentFormat || "rich_text",
+        clientId: data.clientId,
+        categoryId: data.categoryId || null,
+        authorId: existingArticle.authorId,
+        status: data.status,
+        scheduledAt: data.scheduledAt || null,
+        featured: data.featured || false,
+        featuredImageId: data.featuredImageId || null,
+        datePublished,
+        wordCount,
+        readingTimeMinutes,
+        contentDepth,
+        inLanguage: data.inLanguage || "ar",
+        isAccessibleForFree: data.isAccessibleForFree ?? true,
+        license: data.license || null,
+        lastReviewed: data.lastReviewed || null,
+        mainEntityOfPage: canonicalUrl,
+        seoTitle: seoTitle || null,
+        seoDescription: seoDescription || null,
+        metaRobots,
+        ogType: data.ogType || "article",
+        ogArticleAuthor: data.ogArticleAuthor || null,
+        ogArticlePublishedTime: existingArticle.ogArticlePublishedTime,
+        ogArticleModifiedTime: new Date(),
+        twitterCard: data.twitterCard || "summary_large_image",
+        twitterSite: data.twitterSite || null,
+        twitterCreator: data.twitterCreator || null,
+        canonicalUrl,
+        sitemapPriority,
+        sitemapChangeFreq: data.sitemapChangeFreq || "weekly",
+        breadcrumbPath: JSON.parse(JSON.stringify(breadcrumbPath)) as Prisma.InputJsonValue,
+      },
+    });
+
+    // Update tags (deleteMany + createMany)
+    await db.articleTag.deleteMany({
+      where: { articleId: article.id },
+    });
+
+    if (data.tags && data.tags.length > 0) {
+      for (const tagId of data.tags) {
+        try {
+          await db.articleTag.create({
+            data: {
+              articleId: article.id,
+              tagId: tagId,
+            },
+          });
+        } catch (error) {
+          console.error(`Failed to create tag ${tagId} for article ${article.id}:`, error);
+        }
+      }
+    }
+
+    // Update FAQs (deleteMany + createMany)
+    await db.articleFAQ.deleteMany({
+      where: { articleId: article.id },
+    });
+
+    if (data.faqs && data.faqs.length > 0) {
+      await db.articleFAQ.createMany({
+        data: data.faqs.map((faq: FAQItem, index: number) => ({
+          articleId: article.id,
+          question: faq.question,
+          answer: faq.answer,
+          position: faq.position ?? index,
+        })),
+      });
+    }
+
+    // Update gallery (deleteMany + createMany)
+    await db.articleMedia.deleteMany({
+      where: { articleId: article.id },
+    });
+
+    if (data.gallery && data.gallery.length > 0) {
+      await db.$transaction(
+        data.gallery.map((item, index) =>
+          db.articleMedia.create({
+            data: {
+              articleId: article.id,
+              mediaId: item.mediaId,
+              position: item.position ?? index,
+              caption: item.caption || null,
+              altText: item.altText || null,
+            },
+          })
+        )
+      );
+    }
+
+    // Update related articles (deleteMany + createMany)
+    await db.relatedArticle.deleteMany({
+      where: { articleId: article.id },
+    });
+
+    if (data.relatedArticles && data.relatedArticles.length > 0) {
+      await db.relatedArticle.createMany({
+        data: data.relatedArticles.map((rel) => ({
+          articleId: article.id,
+          relatedId: rel.relatedId,
+          relationshipType: rel.relationshipType || 'related',
+        })),
+      });
+    }
+
+    // Generate and save Next.js Metadata and JSON-LD (non-blocking)
+    try {
+      await generateAndSaveNextjsMetadata(article.id, {
+        robots: metaRobots,
+      });
+
+      await generateAndSaveJsonLd(article.id);
+    } catch (error) {
+      console.error('Failed to generate metadata/JSON-LD for article:', article.id, error);
+    }
+
+    revalidatePath("/articles");
+    revalidatePath(`/articles/${article.id}`);
+    revalidatePath(`/articles/${article.slug}`);
+    return { success: true, article };
+  } catch (error) {
+    console.error("Error updating article:", error);
+    const message = error instanceof Error ? error.message : "فشل في تحديث المقال";
     return {
       success: false,
       error: message,

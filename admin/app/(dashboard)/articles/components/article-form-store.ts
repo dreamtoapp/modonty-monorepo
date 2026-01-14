@@ -113,7 +113,6 @@ const initialFormData: ArticleFormData = {
   canonicalUrl: '',
   sitemapPriority: 0.5,
   sitemapChangeFreq: 'weekly',
-  alternateLanguages: [],
   license: '',
   lastReviewed: null,
   featuredImageId: null,

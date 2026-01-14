@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { getMediaById } from '@/app/(dashboard)/media/actions/get-media-by-id';
 import { generateBreadcrumbStructuredData } from '@/lib/seo';
+import { TechnicalSEOGuidance } from '../sections/technical-seo-guidance';
 
 interface FeaturedMedia {
   url: string;
@@ -355,6 +356,9 @@ export function SEOStep() {
 
   return (
     <div className="space-y-4">
+      {/* SEO Guidance System - Main Component */}
+      <TechnicalSEOGuidance />
+
       {/* Card 1: Meta Tags Preview (HTML Head) */}
       <Collapsible open={metaTagsOpen} onOpenChange={setMetaTagsOpen}>
         <Card>

@@ -83,7 +83,6 @@ export interface Article {
   twitterCard?: string | null;
   twitterSite?: string | null;
   twitterCreator?: string | null;
-  alternateLanguages?: Prisma.JsonValue | null;
   sitemapPriority?: number | null;
   sitemapChangeFreq?: string | null;
   breadcrumbPath?: Prisma.JsonValue | null;

@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { FieldLabel } from "./components/shared/field-label";
-import { ArticleSeoGauge } from "./components/article-seo-gauge";
+import { ArticleSEOGuidance } from "./components/article-seo-guidance";
+import { ArticleSEOScoreBadge } from "./components/article-seo-score-badge";
 import { ArticleViewNavigationWrapper } from "./components/article-view-navigation-wrapper";
 import { ArticleViewProvider } from "./components/article-view-provider";
 import { DeleteArticleButton } from "./components/delete-article-button";
@@ -52,14 +53,14 @@ export default async function ArticleViewPage({ params }: { params: Promise<{ id
             )}
           </div>
           <div className="flex items-center gap-4">
-            <ArticleSeoGauge article={article} />
+            <ArticleSEOScoreBadge article={article} />
             <div className="flex gap-2">
               <Button variant="outline" size="icon" asChild title="Back to list">
                 <Link href="/articles">
                   <FileText className="h-4 w-4" />
                 </Link>
               </Button>
-              <EditArticleButton />
+              <EditArticleButton articleId={article.id} />
               <DeleteArticleButton articleId={article.id} />
               <Button variant="default" size="icon" asChild title="View public">
                 <Link href={`/articles/${article.id}`} target="_blank">

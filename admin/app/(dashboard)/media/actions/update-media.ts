@@ -22,6 +22,13 @@ interface UpdateMediaData {
   cloudinaryPublicId?: string;
   cloudinaryVersion?: string;
   cloudinarySignature?: string;
+  url?: string;
+  filename?: string;
+  mimeType?: string;
+  width?: number;
+  height?: number;
+  fileSize?: number;
+  encodingFormat?: string;
 }
 
 export async function updateMedia(id: string, data: UpdateMediaData) {
@@ -46,6 +53,13 @@ export async function updateMedia(id: string, data: UpdateMediaData) {
         cloudinaryPublicId: data.cloudinaryPublicId,
         cloudinaryVersion: data.cloudinaryVersion,
         cloudinarySignature: data.cloudinarySignature,
+        ...(data.url !== undefined ? { url: data.url } : {}),
+        ...(data.filename !== undefined ? { filename: data.filename } : {}),
+        ...(data.mimeType !== undefined ? { mimeType: data.mimeType } : {}),
+        ...(data.width !== undefined ? { width: data.width } : {}),
+        ...(data.height !== undefined ? { height: data.height } : {}),
+        ...(data.fileSize !== undefined ? { fileSize: data.fileSize } : {}),
+        ...(data.encodingFormat !== undefined ? { encodingFormat: data.encodingFormat } : {}),
       },
     });
     revalidatePath("/media");

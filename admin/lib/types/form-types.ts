@@ -80,7 +80,6 @@ export interface ArticleFormData {
   
   // Technical SEO
   canonicalUrl?: string;
-  alternateLanguages?: Array<{ hreflang: string; url: string }>;
   sitemapPriority?: number;
   sitemapChangeFreq?: string;
   
@@ -118,7 +117,6 @@ export interface ArticleFormData {
   relatedArticles?: Array<{
     relatedId: string;
     relationshipType?: 'related' | 'similar' | 'recommended';
-    weight?: number;
   }>;
 }
 

@@ -8,34 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { FormNativeSelect } from '@/components/admin/form-field';
-import { Button } from '@/components/ui/button';
 import { CharacterCounter } from '@/components/shared/character-counter';
+import { LICENSE_OPTIONS } from '@/lib/constants/licenses';
 
 export function SettingsStep() {
   const { formData, updateField, authors } = useArticleForm();
-
-  const handleAlternateLanguageChange = (
-    index: number,
-    field: 'hreflang' | 'url',
-    value: string,
-  ) => {
-    const updated = [...(formData.alternateLanguages || [])];
-    if (!updated[index]) {
-      updated[index] = { hreflang: '', url: '' };
-    }
-    updated[index] = { ...updated[index], [field]: value };
-    updateField('alternateLanguages', updated);
-  };
-
-  const handleRemoveAlternateLanguage = (index: number) => {
-    const updated = (formData.alternateLanguages || []).filter((_, i) => i !== index);
-    updateField('alternateLanguages', updated);
-  };
-
-  const handleAddAlternateLanguage = () => {
-    const updated = [...(formData.alternateLanguages || []), { hreflang: '', url: '' }];
-    updateField('alternateLanguages', updated);
-  };
 
   return (
     <div className="space-y-4">
@@ -198,49 +175,18 @@ export function SettingsStep() {
           </div>
 
           <div>
-            <Label>Alternate Languages (hreflang)</Label>
-            <div className="space-y-2">
-              {(formData.alternateLanguages || []).map((lang, index) => (
-                <div key={index} className="flex gap-2">
-                  <Input
-                    placeholder="hreflang (e.g., en, fr)"
-                    value={lang.hreflang || ''}
-                    onChange={(e) => handleAlternateLanguageChange(index, 'hreflang', e.target.value)}
-                    className="flex-1"
-                  />
-                  <Input
-                    placeholder="URL"
-                    value={lang.url || ''}
-                    onChange={(e) => handleAlternateLanguageChange(index, 'url', e.target.value)}
-                    className="flex-[2]"
-                    type="url"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleRemoveAlternateLanguage(index)}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              ))}
-              <Button type="button" variant="outline" size="sm" onClick={handleAddAlternateLanguage}>
-                Add Language
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Add alternate links for the article in other languages (hreflang)
-            </p>
-          </div>
-
-          <div>
-            <Label>License</Label>
-            <Input
+            <FormNativeSelect
+              label="License"
+              name="license"
               value={formData.license || ''}
               onChange={(e) => updateField('license', e.target.value)}
-              placeholder="Optional license URL"
-            />
+            >
+              {LICENSE_OPTIONS.map((license) => (
+                <option key={license.value} value={license.value}>
+                  {license.label}
+                </option>
+              ))}
+            </FormNativeSelect>
           </div>
         </CardContent>
       </Card>

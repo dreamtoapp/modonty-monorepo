@@ -2,16 +2,17 @@
 
 import { Button } from "@/components/ui/button";
 import { Edit } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
-export function EditArticleButton() {
-  const { toast } = useToast();
+interface EditArticleButtonProps {
+  articleId: string;
+}
+
+export function EditArticleButton({ articleId }: EditArticleButtonProps) {
+  const router = useRouter();
 
   const handleClick = () => {
-    toast({
-      title: "Coming soon",
-      description: "Edit functionality will be available soon.",
-    });
+    router.push(`/articles/${articleId}/edit`);
   };
 
   return (

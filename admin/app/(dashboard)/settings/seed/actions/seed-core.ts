@@ -1420,7 +1420,6 @@ async function seedRelatedArticles(articles: Awaited<ReturnType<typeof seedArtic
           articleId: article.id,
           relatedId: related.id,
           relationshipType: "related",
-          weight: Math.random() * 0.5 + 0.5,
         },
       });
       count++;

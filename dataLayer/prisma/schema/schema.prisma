@@ -720,7 +720,6 @@ model RelatedArticle {
   related   Article @relation("ArticleRelatedTo", fields: [relatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   relationshipType String? @default("related") // related, similar, recommended
-  weight           Float?  @default(1.0) // Relationship strength
 
   createdAt DateTime @default(now())
 

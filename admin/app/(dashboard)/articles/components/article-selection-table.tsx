@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Search, X, ExternalLink, ChevronDown } from 'lucide-react';
 import { ArticleSelectionItem } from '../actions/articles-actions';
 import { ArticleStatus } from '@prisma/client';
@@ -20,7 +21,6 @@ import { cn } from '@/lib/utils';
 interface RelatedArticleInfo {
   relatedId: string;
   relationshipType?: 'related' | 'similar' | 'recommended';
-  weight?: number;
 }
 
 interface ArticleSelectionTableProps {
@@ -36,6 +36,7 @@ interface ArticleSelectionTableProps {
   defaultCategoryId?: string;
   defaultTagIds?: string[];
   relatedArticles?: RelatedArticleInfo[];
+  onRelationshipTypeChange?: (relatedId: string, type: 'related' | 'similar' | 'recommended') => void;
 }
 
 export function ArticleSelectionTable({
@@ -51,10 +52,20 @@ export function ArticleSelectionTable({
   defaultCategoryId,
   defaultTagIds = [],
   relatedArticles = [],
+  onRelationshipTypeChange,
 }: ArticleSelectionTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>(defaultCategoryId);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>(defaultTagIds);
+
+  // Sync state with default props when they change
+  useEffect(() => {
+    setSelectedCategoryId(defaultCategoryId);
+  }, [defaultCategoryId]);
+
+  useEffect(() => {
+    setSelectedTagIds(defaultTagIds);
+  }, [defaultTagIds]);
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
@@ -269,25 +280,21 @@ export function ArticleSelectionTable({
                 />
               </TableHead>
               <TableHead>العنوان</TableHead>
-              <TableHead>الفئة</TableHead>
-              <TableHead>العلامات</TableHead>
               <TableHead>العميل</TableHead>
               <TableHead>نوع العلاقة</TableHead>
-              <TableHead>الحالة</TableHead>
-              <TableHead>تاريخ النشر</TableHead>
               <TableHead className="w-24">إجراءات</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                   جاري التحميل...
                 </TableCell>
               </TableRow>
             ) : articles.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                   <div className="flex flex-col items-center gap-2">
                     <p className="text-sm font-medium">لا توجد مقالات</p>
                     <p className="text-xs">جرب تعديل الفلاتر أو مصطلحات البحث</p>
@@ -310,54 +317,93 @@ export function ArticleSelectionTable({
                         className="h-4 w-4 rounded border-gray-300"
                       />
                     </TableCell>
-                    <TableCell className="font-medium">{article.title}</TableCell>
-                    <TableCell>
-                      {article.categoryName ? (
-                        <Badge variant="outline">{article.categoryName}</Badge>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {article.tags.slice(0, 2).map((tag) => (
-                          <Badge key={tag.id} variant="secondary" className="text-xs">
-                            {tag.name}
-                          </Badge>
-                        ))}
-                        {article.tags.length > 2 && (
-                          <Badge variant="secondary" className="text-xs">
-                            +{article.tags.length - 2}
-                          </Badge>
-                        )}
-                      </div>
+                    <TableCell className="font-medium">
+                      <HoverCard openDelay={150} closeDelay={100}>
+                        <HoverCardTrigger asChild>
+                          <button
+                            type="button"
+                            className="w-full text-left truncate hover:underline focus:outline-none"
+                          >
+                            {article.title}
+                          </button>
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-80 space-y-3">
+                          <div>
+                            <p className="text-sm font-semibold mb-1">{article.title}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {article.clientName}
+                            </p>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                              <p className="text-[11px] text-muted-foreground mb-1">الحالة</p>
+                              <Badge variant={getStatusVariant(article.status as ArticleStatus)}>
+                                {getStatusLabel(article.status as ArticleStatus)}
+                              </Badge>
+                            </div>
+                            <div>
+                              <p className="text-[11px] text-muted-foreground mb-1">تاريخ النشر</p>
+                              <p className="text-xs">
+                                {article.datePublished
+                                  ? format(new Date(article.datePublished), 'yyyy-MM-dd')
+                                  : '-'}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-[11px] text-muted-foreground mb-1">الفئة</p>
+                              <p className="text-xs">
+                                {article.categoryName || '-'}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-[11px] text-muted-foreground mb-1">العلامات</p>
+                              {article.tags.length > 0 ? (
+                                <div className="flex flex-wrap gap-1">
+                                  {article.tags.slice(0, 3).map((tag) => (
+                                    <Badge key={tag.id} variant="secondary" className="text-[10px]">
+                                      {tag.name}
+                                    </Badge>
+                                  ))}
+                                  {article.tags.length > 3 && (
+                                    <span className="text-[10px] text-muted-foreground">
+                                      +{article.tags.length - 3}
+                                    </span>
+                                  )}
+                                </div>
+                              ) : (
+                                <p className="text-xs text-muted-foreground">-</p>
+                              )}
+                            </div>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
                     </TableCell>
                     <TableCell>{article.clientName}</TableCell>
                     <TableCell>
                       {isSelected ? (
-                        (() => {
-                          const relationshipType = getRelationshipType(article.id);
-                          return relationshipType ? (
-                            <Badge variant={getRelationshipTypeVariant(relationshipType)}>
-                              {getRelationshipTypeLabel(relationshipType)}
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline">ذو صلة</Badge>
-                          );
-                        })()
+                        <div className="space-y-2">
+                          <Select
+                            value={getRelationshipType(article.id) || 'related'}
+                            onValueChange={(value) =>
+                              onRelationshipTypeChange?.(
+                                article.id,
+                                value as 'related' | 'similar' | 'recommended'
+                              )
+                            }
+                          >
+                            <SelectTrigger className="h-8 w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="related">ذو صلة</SelectItem>
+                              <SelectItem value="similar">مشابه</SelectItem>
+                              <SelectItem value="recommended">موصى به</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       ) : (
                         <span className="text-muted-foreground text-xs">-</span>
                       )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusVariant(article.status)}>
-                        {getStatusLabel(article.status)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {article.datePublished
-                        ? format(new Date(article.datePublished), 'yyyy-MM-dd')
-                        : '-'}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">

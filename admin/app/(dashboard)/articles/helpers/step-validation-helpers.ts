@@ -74,10 +74,7 @@ export const STEP_CONFIGS: StepConfig[] = [
       'metaRobots',
       'sitemapPriority',
       'sitemapChangeFreq',
-      'alternateLanguages',
       'license',
-      'datePublished',
-      'lastReviewed',
       'mainEntityOfPage',
     ],
   },
@@ -98,21 +95,12 @@ export const STEP_CONFIGS: StepConfig[] = [
     optionalFields: [
       'ogType',
       'ogArticleAuthor',
-      'ogArticlePublishedTime',
       'ogArticleModifiedTime',
       'twitterCard',
       'twitterSite',
       'twitterCreator',
       'breadcrumbPath',
     ],
-  },
-  {
-    number: 8,
-    label: 'Review',
-    id: 'review',
-    description: 'Comprehensive review with live validation status for all fields',
-    requiredFields: [],
-    optionalFields: [],
   },
 ];
 
@@ -261,7 +249,6 @@ const FIELD_LABELS: Record<string, string> = {
   canonicalUrl: 'Canonical URL',
   sitemapPriority: 'Sitemap Priority',
   sitemapChangeFreq: 'Sitemap Change Frequency',
-  alternateLanguages: 'Alternate Languages',
   breadcrumbPath: 'Breadcrumb Path',
   
   // Open Graph

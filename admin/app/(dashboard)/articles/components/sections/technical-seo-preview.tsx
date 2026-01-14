@@ -381,18 +381,6 @@ export function TechnicalSeoPreview() {
                 </div>
               </div>
 
-              {formData.alternateLanguages && formData.alternateLanguages.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold mb-2">Alternate Languages (hreflang)</h4>
-                  <div className="space-y-1">
-                    {formData.alternateLanguages.map((lang, idx) => (
-                      <div key={idx} className="p-2 bg-muted rounded-md text-sm">
-                        <code className="text-xs">{lang.hreflang}</code> → {lang.url}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           </TabsContent>
 

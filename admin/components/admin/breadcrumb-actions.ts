@@ -9,9 +9,23 @@ import { getMediaById } from '@/app/(dashboard)/media/actions/get-media-by-id';
 import { getUserById } from '@/app/(dashboard)/users/actions/users-actions';
 import { getModontyAuthor } from '@/app/(dashboard)/authors/actions/authors-actions';
 
+function normalizeEntityType(type: string): string {
+  const pluralToSingular: Record<string, string> = {
+    articles: 'article',
+    clients: 'client',
+    categories: 'category',
+    tags: 'tag',
+    industries: 'industry',
+    authors: 'author',
+    users: 'user',
+  };
+  return pluralToSingular[type] || type;
+}
+
 export async function getEntityName(type: string, id: string): Promise<string | null> {
   try {
-    switch (type) {
+    const normalizedType = normalizeEntityType(type);
+    switch (normalizedType) {
       case 'article': {
         const article = await getArticleById(id);
         return article?.title || null;

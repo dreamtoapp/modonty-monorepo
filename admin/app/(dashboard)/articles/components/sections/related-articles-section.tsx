@@ -13,12 +13,11 @@ export function RelatedArticlesSection() {
     <Card>
       <CardContent className="space-y-6 pt-6">
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <Label>المقالات ذات الصلة</Label>
-            {formData.relatedArticles && formData.relatedArticles.length > 0 && (
+          {formData.relatedArticles && formData.relatedArticles.length > 0 && (
+            <div className="flex items-center justify-end mb-2">
               <Badge variant="secondary">{formData.relatedArticles.length} مقال</Badge>
-            )}
-          </div>
+            </div>
+          )}
           <RelatedArticlesBuilder
             relatedArticles={formData.relatedArticles || []}
             onChange={(articles) => updateField('relatedArticles', articles)}

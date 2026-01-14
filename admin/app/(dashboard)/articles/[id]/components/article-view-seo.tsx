@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, Link2, Globe, Navigation } from "lucide-react";
+import { Search, Link2, Navigation } from "lucide-react";
 import { Article } from "../helpers/article-view-types";
 import { FieldLabel } from "./shared/field-label";
 
@@ -10,14 +10,6 @@ interface ArticleViewSeoProps {
 }
 
 export function ArticleViewSeo({ article, sectionRef }: ArticleViewSeoProps) {
-  const alternateLanguages = article.alternateLanguages
-    ? (Array.isArray(article.alternateLanguages)
-        ? article.alternateLanguages
-        : typeof article.alternateLanguages === "object"
-          ? [article.alternateLanguages]
-          : [])
-    : [];
-
   return (
     <Card id="section-seo" ref={sectionRef} className="scroll-mt-20">
       <CardHeader className="text-right" dir="rtl">
@@ -96,38 +88,6 @@ export function ArticleViewSeo({ article, sectionRef }: ArticleViewSeoProps) {
           <p className="text-sm font-medium">
             {article.metaRobots || <span className="text-muted-foreground italic">Not set</span>}
           </p>
-        </div>
-        <div className="pt-2 border-t space-y-2">
-          <div className="flex items-center gap-1">
-            <Globe className="h-3 w-3 text-muted-foreground" />
-            <FieldLabel
-              label="Alternate Languages (hreflang)"
-              fieldPath="article.alternateLanguages"
-              fieldType="Json?"
-            />
-          </div>
-          {alternateLanguages.length > 0 ? (
-            <div className="space-y-2">
-              {alternateLanguages.map((lang: any, index: number) => (
-                <div key={index} className="flex flex-col gap-1 p-2 rounded border bg-muted/30">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium">hreflang:</span>
-                    <Badge variant="outline" className="text-xs font-mono">
-                      {lang?.hreflang || "—"}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium">URL:</span>
-                    <span className="text-xs font-mono break-all text-primary">
-                      {lang?.url || "—"}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground italic">No alternate languages set</p>
-          )}
         </div>
         <div className="pt-2 border-t space-y-2">
           <div className="flex items-center gap-1">

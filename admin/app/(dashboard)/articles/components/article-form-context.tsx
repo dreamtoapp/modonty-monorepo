@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { ArticleFormData, FormSubmitResult } from '@/lib/types/form-types';
 import { slugify, generateSEOTitle, generateSEODescription, generateCanonicalUrl } from '../helpers/seo-helpers';
+import { updateArticle } from '../actions/articles-actions';
 import {
   FileText,
   Edit,
@@ -23,8 +24,8 @@ export interface SectionConfig {
 }
 
 interface ArticleFormContextType {
-  // Mode (always 'new' for article creation)
-  mode: 'new';
+  // Mode ('new' for article creation, 'edit' for editing)
+  mode: 'new' | 'edit';
 
   // Form Data
   formData: ArticleFormData;
@@ -74,6 +75,7 @@ interface ArticleFormProviderProps {
   categories: Array<{ id: string; name: string; slug?: string }>;
   authors: Array<{ id: string; name: string }>;
   tags: Array<{ id: string; name: string; slug: string }>;
+  articleId?: string;
 }
 
 const initialFormData: ArticleFormData = {
@@ -134,7 +136,6 @@ const initialFormData: ArticleFormData = {
   
   // Technical SEO
   canonicalUrl: '',
-  alternateLanguages: [],
   sitemapPriority: 0.5,
   sitemapChangeFreq: 'weekly',
   
@@ -179,8 +180,9 @@ export function ArticleFormProvider({
   categories,
   authors,
   tags,
+  articleId,
 }: ArticleFormProviderProps) {
-  const mode: 'new' = 'new';
+  const mode: 'new' | 'edit' = articleId ? 'edit' : 'new';
   const [formData, setFormData] = useState<ArticleFormData>(() => ({
     ...initialFormData,
     ...initialData,
@@ -190,7 +192,7 @@ export function ArticleFormProvider({
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [currentStep, setCurrentStep] = useState<number>(1);
   
-  const totalSteps = 8;
+  const totalSteps = 7;
 
   const getStepValidation = useCallback(
     (stepNumber: number) => calculateStepValidation(stepNumber, formData, errors),
@@ -199,12 +201,15 @@ export function ArticleFormProvider({
 
   const overallProgress = calculateOverallProgress(formData, errors);
 
-  // Get section href (always new article route)
+  // Get section href (mode-aware)
   const getSectionHref = useCallback(
     (section: string) => {
-      return `/articles/new/${section}`;
+      if (mode === 'edit' && articleId) {
+        return `/articles/${articleId}/edit`;
+      }
+      return `/articles/new`;
     },
-    [],
+    [mode, articleId],
   );
 
   // Sections configuration
@@ -247,7 +252,9 @@ export function ArticleFormProvider({
   const save = useCallback(async () => {
     setIsSaving(true);
     try {
-      const result = await onSubmit(formData);
+      const result = articleId
+        ? await updateArticle(articleId, formData)
+        : await onSubmit(formData);
       if (result.success) {
         setIsDirty(false);
         setErrors({});
@@ -263,7 +270,7 @@ export function ArticleFormProvider({
     } finally {
       setIsSaving(false);
     }
-  }, [formData, onSubmit]);
+  }, [formData, onSubmit, articleId]);
 
   // Step navigation methods
   const goToStep = useCallback((step: number) => {

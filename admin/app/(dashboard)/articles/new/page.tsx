@@ -10,7 +10,6 @@ import { SettingsStep } from '../components/steps/settings-step';
 import { MediaStep } from '../components/steps/media-step';
 import { FAQsStep } from '../components/steps/faqs-step';
 import { RelatedArticlesStep } from '../components/steps/related-articles-step';
-import { ReviewStep } from '../components/steps/review-step';
 
 export default async function NewArticlePage() {
   const [clients, categories, authors, tags] = await Promise.all([
@@ -52,9 +51,6 @@ export default async function NewArticlePage() {
           </ArticleFormStep>
           <ArticleFormStep step={7}>
             <SEOStep />
-          </ArticleFormStep>
-          <ArticleFormStep step={8}>
-            <ReviewStep />
           </ArticleFormStep>
         </div>
       </div>

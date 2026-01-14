@@ -13,6 +13,7 @@ import { ArticleViewRelatedFrom } from "./article-view-related-from";
 import { ArticleViewGallery } from "./article-view-gallery";
 import { ArticleViewInfo } from "./article-view-info";
 import { ArticleViewSeo } from "./article-view-seo";
+import { ArticleSEOGuidance } from "./article-seo-guidance";
 import { ArticleViewSocial } from "./article-view-social";
 import { ArticleViewStructuredData } from "./article-view-structured-data";
 import { ArticleViewNextjsMetadata } from "./article-view-nextjs-metadata";
@@ -69,6 +70,10 @@ export function ArticleViewContainer({ article }: ArticleViewContainerProps) {
         />
 
         <ArticleViewSeo article={article} sectionRef={getSectionRef("section-seo")} />
+
+        <div ref={getSectionRef("section-seo-guidance")} data-section="section-seo-guidance">
+          <ArticleSEOGuidance article={article} />
+        </div>
 
         <ArticleViewSocial
           article={article}

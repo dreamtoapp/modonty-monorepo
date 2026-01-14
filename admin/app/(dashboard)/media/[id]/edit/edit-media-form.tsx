@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,15 +19,18 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { FileText, MapPin, User, CheckCircle2, ArrowLeft, AlertCircle, XCircle, Info, Lightbulb, ChevronDown, ChevronUp } from "lucide-react";
-import { updateMedia, renameCloudinaryAsset } from "../../actions/media-actions";
+import { FileText, MapPin, User, CheckCircle2, ArrowLeft, AlertCircle, XCircle, Info, Lightbulb, ChevronDown, ChevronUp, Upload, X } from "lucide-react";
+import { updateMedia, renameCloudinaryAsset, deleteCloudinaryAsset } from "../../actions/media-actions";
 import { useToast } from "@/hooks/use-toast";
 import NextImage from "next/image";
 import { PageHeader } from "@/components/shared/page-header";
-import { generateSEOFileName, generateCloudinaryPublicId } from "@/lib/utils/image-seo";
+import { generateSEOFileName, generateCloudinaryPublicId, isValidCloudinaryPublicId } from "@/lib/utils/image-seo";
+import { optimizeCloudinaryUrl } from "@/lib/utils/image-seo";
 import { SEOHealthGauge } from "@/components/shared/seo-doctor/seo-health-gauge";
 import { mediaSEOConfig } from "../../helpers/media-seo-config";
 import { MediaType } from "@prisma/client";
+import { validateFile } from "../../components/upload-zone/utils/file-validation";
+import { getCloudinaryErrorMessage } from "../../components/upload-zone/utils/error-handler";
 
 interface Media {
   id: string;
@@ -66,6 +69,9 @@ export function EditMediaForm({ media }: EditMediaFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
+  const [newFile, setNewFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     type: media.type || ("GENERAL" as MediaType),
@@ -84,6 +90,49 @@ export function EditMediaForm({ media }: EditMediaFormProps) {
     geoLocationName: media.geoLocationName || "",
     contentLocation: media.contentLocation || "",
   });
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl && previewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const error = validateFile(file);
+    if (error) {
+      toast({
+        title: "File Error",
+        description: error,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (previewUrl && previewUrl.startsWith("blob:")) {
+      URL.revokeObjectURL(previewUrl);
+    }
+
+    const preview = URL.createObjectURL(file);
+    setNewFile(file);
+    setPreviewUrl(preview);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleRemoveFile = () => {
+    if (previewUrl && previewUrl.startsWith("blob:")) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setNewFile(null);
+    setPreviewUrl(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,17 +177,132 @@ export function EditMediaForm({ media }: EditMediaFormProps) {
         geoLongitude = lng;
       }
 
-      // Check if alt text or title changed - if so, rename Cloudinary asset
-      const originalAltText = media.altText || "";
-      const originalTitle = media.title || "";
-      const altTextChanged = formData.altText.trim() !== originalAltText;
-      const titleChanged = formData.title.trim() !== originalTitle;
-      
       let newCloudinaryPublicId = media.cloudinaryPublicId || undefined;
       let newCloudinaryUrl = media.url;
+      let newCloudinaryVersion = undefined;
+      let newCloudinarySignature = undefined;
+      let newFilename = media.filename;
+      let newMimeType = media.mimeType;
+      let newWidth = media.width;
+      let newHeight = media.height;
+      let newFileSize = undefined;
+      let newEncodingFormat = undefined;
 
-      // If alt text or title changed, and we have a Cloudinary public_id, rename the asset
-      if ((altTextChanged || titleChanged) && media.cloudinaryPublicId) {
+      // If a new file is selected, upload it to Cloudinary first
+      if (newFile) {
+        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+        const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+        if (!cloudName || !uploadPreset) {
+          toast({
+            title: "Configuration Error",
+            description: "Cloudinary configuration missing. Please check your environment variables.",
+            variant: "destructive",
+          });
+          setIsSaving(false);
+          return;
+        }
+
+        const clientId = media.client?.id || "default";
+
+        // Generate SEO-friendly public_id from alt text/title
+        const seoFileName = generateSEOFileName(
+          formData.altText.trim() || "",
+          formData.title.trim() || "",
+          newFile.name,
+          undefined
+        );
+
+        const folderPath = `clients/${clientId}`;
+        const publicId = generateCloudinaryPublicId(seoFileName, folderPath);
+
+        if (!isValidCloudinaryPublicId(publicId)) {
+          toast({
+            title: "Validation Error",
+            description: "Generated filename is invalid. Please check your alt text or title.",
+            variant: "destructive",
+          });
+          setIsSaving(false);
+          return;
+        }
+
+        try {
+          const uploadFormData = new FormData();
+          uploadFormData.append("file", newFile);
+          uploadFormData.append("upload_preset", uploadPreset);
+          uploadFormData.append("public_id", publicId);
+          uploadFormData.append("asset_folder", folderPath);
+
+          const resourceType = newFile.type.startsWith("image/") ? "image" : "video";
+          const uploadResponse = await fetch(
+            `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`,
+            {
+              method: "POST",
+              body: uploadFormData,
+            }
+          );
+
+          if (!uploadResponse.ok) {
+            const errorMessage = await getCloudinaryErrorMessage(uploadResponse);
+            toast({
+              title: "Upload Failed",
+              description: errorMessage,
+              variant: "destructive",
+            });
+            setIsSaving(false);
+            return;
+          }
+
+          const uploadResult = await uploadResponse.json();
+          const cloudinaryUrl = uploadResult.secure_url || uploadResult.url;
+          const cloudinaryPublicId = uploadResult.public_id;
+
+          const optimizedUrl = optimizeCloudinaryUrl(
+            cloudinaryUrl,
+            cloudinaryPublicId,
+            uploadResult.format,
+            resourceType
+          );
+
+          newCloudinaryPublicId = cloudinaryPublicId;
+          newCloudinaryUrl = optimizedUrl;
+          newCloudinaryVersion = uploadResult.version?.toString();
+          newCloudinarySignature = uploadResult.signature;
+          newFilename = newFile.name;
+          newMimeType = newFile.type;
+          newWidth = uploadResult.width || null;
+          newHeight = uploadResult.height || null;
+          newFileSize = uploadResult.bytes || newFile.size;
+          newEncodingFormat = uploadResult.format || undefined;
+
+          // Delete old Cloudinary asset if public_id exists
+          if (media.cloudinaryPublicId) {
+            const oldResourceType = media.mimeType.startsWith("image/") ? "image" : "video";
+            const deleteResult = await deleteCloudinaryAsset(media.cloudinaryPublicId, oldResourceType);
+            if (!deleteResult.success) {
+              console.error("Failed to delete old Cloudinary asset:", deleteResult.error);
+            }
+          }
+        } catch (error) {
+          toast({
+            title: "Upload Failed",
+            description: error instanceof Error ? error.message : "Failed to upload file to Cloudinary",
+            variant: "destructive",
+          });
+          setIsSaving(false);
+          return;
+        }
+      }
+
+      // Check if alt text or title changed - if so, rename Cloudinary asset (only if no new file was uploaded)
+      if (!newFile) {
+        const originalAltText = media.altText || "";
+        const originalTitle = media.title || "";
+        const altTextChanged = formData.altText.trim() !== originalAltText;
+        const titleChanged = formData.title.trim() !== originalTitle;
+
+        // If alt text or title changed, and we have a Cloudinary public_id, rename the asset
+        if ((altTextChanged || titleChanged) && media.cloudinaryPublicId) {
         // Use client ID for folder organization (immutable, stable)
         const clientId = media.client?.id || "default";
 
@@ -203,6 +367,7 @@ export function EditMediaForm({ media }: EditMediaFormProps) {
             });
           }
         }
+        }
       }
 
       const result = await updateMedia(media.id, {
@@ -221,8 +386,15 @@ export function EditMediaForm({ media }: EditMediaFormProps) {
         contentLocation: formData.contentLocation.trim() || undefined,
         exifData: media.exifData || undefined,
         cloudinaryPublicId: newCloudinaryPublicId,
-        // Update URL if it changed
+        cloudinaryVersion: newCloudinaryVersion,
+        cloudinarySignature: newCloudinarySignature,
         ...(newCloudinaryUrl !== media.url ? { url: newCloudinaryUrl } : {}),
+        ...(newFilename !== media.filename ? { filename: newFilename } : {}),
+        ...(newMimeType !== media.mimeType ? { mimeType: newMimeType } : {}),
+        ...(newWidth !== media.width ? { width: newWidth ?? undefined } : {}),
+        ...(newHeight !== media.height ? { height: newHeight ?? undefined } : {}),
+        ...(newFileSize !== undefined ? { fileSize: newFileSize } : {}),
+        ...(newEncodingFormat !== undefined ? { encodingFormat: newEncodingFormat } : {}),
       });
 
       if (result.success) {
@@ -401,21 +573,65 @@ export function EditMediaForm({ media }: EditMediaFormProps) {
               {/* Preview - Left Column */}
               {isImage && (
                 <div className="space-y-2">
-                  <Label>Preview</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Preview</Label>
+                    <div className="flex gap-2">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="hidden"
+                        disabled={isSaving}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isSaving}
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        Replace Image
+                      </Button>
+                      {newFile && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleRemoveFile}
+                          disabled={isSaving}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                   <div className="border rounded-lg p-4 bg-muted/50 sticky top-4 space-y-3">
-                    <NextImage
-                      src={media.url}
-                      alt={formData.altText || media.filename}
-                      width={media.mimeType.includes("svg") ? 400 : 400}
-                      height={media.mimeType.includes("svg") ? 400 : 400}
-                      className="max-w-full h-auto max-h-96 mx-auto rounded"
-                      unoptimized
-                    />
+                    <div className="relative">
+                      {previewUrl ? (
+                        <img
+                          src={previewUrl}
+                          alt={formData.altText || media.filename}
+                          className="max-w-full h-auto max-h-96 mx-auto rounded"
+                        />
+                      ) : (
+                        <NextImage
+                          src={media.url}
+                          alt={formData.altText || media.filename}
+                          width={media.mimeType.includes("svg") ? 400 : 400}
+                          height={media.mimeType.includes("svg") ? 400 : 400}
+                          className="max-w-full h-auto max-h-96 mx-auto rounded"
+                          unoptimized
+                        />
+                      )}
+                    </div>
                     {media.width && media.height && (
                       <div className="flex items-start gap-1.5 p-2 rounded-md bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
                         <Info className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                         <p className="text-xs text-blue-800 dark:text-blue-300">
                           <span className="font-medium">SEO Dimensions:</span> Current {media.width}×{media.height}px. Optimal: 1200×800px+ (10 points)
+                          {newFile && " (new image will update dimensions after upload)"}
                         </p>
                       </div>
                     )}

@@ -25,12 +25,6 @@ export const FAQSchema = z.object({
 export const RelatedArticleSchema = z.object({
   relatedId: z.string().min(1, "معرف المقال المرتبط مطلوب"),
   relationshipType: z.enum(["related", "similar", "recommended"]).optional().default("related"),
-  weight: z.number().min(0).max(1).optional().default(1.0),
-});
-
-export const AlternateLanguageSchema = z.object({
-  hreflang: z.string().min(1),
-  url: z.string().url("يجب أن يكون رابط صحيح"),
 });
 
 export const articleFormSchema = z.object({
@@ -66,8 +60,6 @@ export const articleFormSchema = z.object({
   canonicalUrl: z.string().url("يجب أن يكون رابط صحيح").optional(),
   sitemapPriority: z.number().min(0).max(1).optional().default(0.5),
   sitemapChangeFreq: SitemapChangeFreqEnum.optional().default("weekly"),
-  alternateLanguages: z.array(AlternateLanguageSchema).optional().default([]),
-
   license: z.string().optional().nullable(),
   lastReviewed: z.date().optional().nullable(),
 

@@ -38,7 +38,6 @@ export async function autoSaveArticle(data: ArticleFormData, articleId?: string)
       twitterSite: data.twitterSite || null,
       twitterCreator: data.twitterCreator || null,
       canonicalUrl: data.canonicalUrl || null,
-      alternateLanguages: data.alternateLanguages || [],
       sitemapPriority: data.sitemapPriority || 0.5,
       sitemapChangeFreq: data.sitemapChangeFreq || "weekly",
       breadcrumbPath: null,

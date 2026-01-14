@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,12 +15,16 @@ import { format } from "date-fns";
 import NextImage from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Edit, Trash2, Copy, Eye, Loader2 } from "lucide-react";
+import { Edit, Trash2, Copy, Eye, Loader2, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SEOHealthGauge } from "@/components/shared/seo-doctor/seo-health-gauge";
 import { mediaSEOConfig } from "../helpers/media-seo-config";
 import { MediaType } from "@prisma/client";
 import { getMediaTypeLabel, getMediaTypeBadgeVariant } from "../helpers/media-utils";
+import { updateMedia, deleteCloudinaryAsset } from "../actions";
+import { validateFile } from "./upload-zone/utils/file-validation";
+import { getCloudinaryErrorMessage } from "./upload-zone/utils/error-handler";
+import { generateSEOFileName, generateCloudinaryPublicId, isValidCloudinaryPublicId, optimizeCloudinaryUrl } from "@/lib/utils/image-seo";
 
 interface Media {
   id: string;
@@ -62,6 +67,9 @@ export function MediaGrid({
 }: MediaGridProps) {
   const router = useRouter();
   const { toast } = useToast();
+  const [replacingMediaId, setReplacingMediaId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const currentReplacingMedia = useRef<Media | null>(null);
 
   const isImage = (mimeType: string) => mimeType.startsWith("image/");
 
@@ -150,10 +158,192 @@ export function MediaGrid({
     }
   };
 
+  const handleReplaceImageClick = (item: Media) => {
+    currentReplacingMedia.current = item;
+    fileInputRef.current?.click();
+  };
+
+  const handleReplaceImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !currentReplacingMedia.current) {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
+
+    const media = currentReplacingMedia.current;
+    setReplacingMediaId(media.id);
+
+    // Validate file
+    const error = validateFile(file);
+    if (error) {
+      toast({
+        title: "File Error",
+        description: error,
+        variant: "destructive",
+      });
+      setReplacingMediaId(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
+
+    try {
+      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+      const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+      if (!cloudName || !uploadPreset) {
+        toast({
+          title: "Configuration Error",
+          description: "Cloudinary configuration missing. Please check your environment variables.",
+          variant: "destructive",
+        });
+        setReplacingMediaId(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        return;
+      }
+
+      const clientId = media.client?.id || "default";
+
+      // Generate SEO-friendly public_id from existing alt text/title
+      // Use altText, title, filename, or fallback to media ID
+      const altText = media.altText?.trim() || "";
+      const title = media.title?.trim() || "";
+      let seoFileName = generateSEOFileName(
+        altText,
+        title,
+        file.name,
+        undefined
+      );
+
+      const folderPath = `clients/${clientId}`;
+      let publicId = generateCloudinaryPublicId(seoFileName, folderPath);
+
+      // If validation fails, try using media ID as fallback
+      if (!isValidCloudinaryPublicId(publicId)) {
+        seoFileName = generateSEOFileName(
+          "",
+          "",
+          media.id,
+          undefined
+        );
+        publicId = generateCloudinaryPublicId(seoFileName, folderPath);
+        
+        // If still invalid, use a simple fallback with ID
+        if (!isValidCloudinaryPublicId(publicId)) {
+          publicId = `${folderPath}/image-${media.id}`;
+        }
+      }
+
+      // Upload to Cloudinary
+      const uploadFormData = new FormData();
+      uploadFormData.append("file", file);
+      uploadFormData.append("upload_preset", uploadPreset);
+      uploadFormData.append("public_id", publicId);
+      uploadFormData.append("asset_folder", folderPath);
+
+      const resourceType = "image"; // Only images for fast replace
+      const uploadResponse = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`,
+        {
+          method: "POST",
+          body: uploadFormData,
+        }
+      );
+
+      if (!uploadResponse.ok) {
+        const errorMessage = await getCloudinaryErrorMessage(uploadResponse);
+        toast({
+          title: "Upload Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        setReplacingMediaId(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        return;
+      }
+
+      const uploadResult = await uploadResponse.json();
+      const cloudinaryUrl = uploadResult.secure_url || uploadResult.url;
+      const cloudinaryPublicId = uploadResult.public_id;
+
+      const optimizedUrl = optimizeCloudinaryUrl(
+        cloudinaryUrl,
+        cloudinaryPublicId,
+        uploadResult.format,
+        resourceType
+      );
+
+      // Delete old Cloudinary asset if public_id exists
+      if (media.cloudinaryPublicId) {
+        const oldResourceType = media.mimeType.startsWith("image/") ? "image" : "video";
+        const deleteResult = await deleteCloudinaryAsset(media.cloudinaryPublicId, oldResourceType);
+        if (!deleteResult.success) {
+          console.error("Failed to delete old Cloudinary asset:", deleteResult.error);
+        }
+      }
+
+      // Update media record with new file details, keeping existing metadata
+      const result = await updateMedia(media.id, {
+        url: optimizedUrl,
+        filename: file.name,
+        mimeType: file.type,
+        width: uploadResult.width || null,
+        height: uploadResult.height || null,
+        fileSize: uploadResult.bytes || file.size,
+        encodingFormat: uploadResult.format || undefined,
+        cloudinaryPublicId: cloudinaryPublicId,
+        cloudinaryVersion: uploadResult.version?.toString(),
+        cloudinarySignature: uploadResult.signature,
+        // Preserve existing metadata
+        type: media.type,
+        altText: media.altText || undefined,
+        title: media.title || undefined,
+        description: media.description || undefined,
+      });
+
+      if (result.success) {
+        toast({
+          title: "Image Replaced",
+          description: "Image has been replaced successfully.",
+        });
+        router.refresh();
+      } else {
+        throw new Error(result.error || "Failed to update media");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to replace image",
+        variant: "destructive",
+      });
+    } finally {
+      setReplacingMediaId(null);
+      currentReplacingMedia.current = null;
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
 
   if (viewMode === "list") {
     return (
-      <Card>
+      <>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleReplaceImageFileChange}
+          className="hidden"
+        />
+        <Card>
         <CardContent className="p-0">
           <div className="divide-y">
             {/* Header */}
@@ -261,6 +451,34 @@ export function MediaGrid({
                   </span>
                 </div>
                 <div className="col-span-1 flex items-center gap-1">
+                  {isImage(item.mimeType) && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleReplaceImageClick(item);
+                            }}
+                            disabled={replacingMediaId === item.id}
+                            className="h-8 w-8 p-0"
+                          >
+                            {replacingMediaId === item.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Upload className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Replace Image</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                   <Button
                     variant="ghost"
                     size="sm"
@@ -298,11 +516,20 @@ export function MediaGrid({
           </div>
         </CardContent>
       </Card>
+      </>
     );
   }
 
   // Grid View
   return (
+    <>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleReplaceImageFileChange}
+        className="hidden"
+      />
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {media.map((item) => (
         <Card
@@ -462,6 +689,33 @@ export function MediaGrid({
                     </TooltipContent>
                   </Tooltip>
 
+                  {isImage(item.mimeType) && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleReplaceImageClick(item);
+                          }}
+                          disabled={replacingMediaId === item.id}
+                        >
+                          {replacingMediaId === item.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Upload className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Replace Image</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
@@ -515,6 +769,7 @@ export function MediaGrid({
         </Card>
       ))}
     </div>
+    </>
   );
 }
 
