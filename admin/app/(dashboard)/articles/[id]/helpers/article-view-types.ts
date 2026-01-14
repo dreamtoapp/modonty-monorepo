@@ -47,12 +47,24 @@ export interface Article {
   relatedTo?: {
     id: string;
     relationshipType?: string | null;
-    related: { id: string; title: string; slug: string };
+    related: {
+      id: string;
+      title: string;
+      slug: string;
+      category?: { id: string; name: string } | null;
+      tags?: { tag: { id: string; name: string } }[];
+    };
   }[];
   relatedFrom?: {
     id: string;
     relationshipType?: string | null;
-    article: { id: string; title: string; slug: string };
+    article: {
+      id: string;
+      title: string;
+      slug: string;
+      category?: { id: string; name: string } | null;
+      tags?: { tag: { id: string; name: string } }[];
+    };
   }[];
   jsonLdStructuredData?: string | null;
   jsonLdLastGenerated?: Date | null;

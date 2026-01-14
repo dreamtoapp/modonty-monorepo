@@ -331,6 +331,22 @@ export async function getArticleById(id: string) {
                 id: true,
                 title: true,
                 slug: true,
+                category: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+                tags: {
+                  select: {
+                    tag: {
+                      select: {
+                        id: true,
+                        name: true,
+                      },
+                    },
+                  },
+                },
               },
             },
           },
@@ -342,6 +358,22 @@ export async function getArticleById(id: string) {
                 id: true,
                 title: true,
                 slug: true,
+                category: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+                tags: {
+                  select: {
+                    tag: {
+                      select: {
+                        id: true,
+                        name: true,
+                      },
+                    },
+                  },
+                },
               },
             },
           },

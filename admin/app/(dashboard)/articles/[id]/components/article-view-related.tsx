@@ -7,6 +7,7 @@ import { Layers } from "lucide-react";
 import { Article } from "../helpers/article-view-types";
 import { FieldLabel } from "./shared/field-label";
 import { CopyableId } from "./shared/copyable-id";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface ArticleViewRelatedProps {
   article: Article;
@@ -34,35 +35,51 @@ export function ArticleViewRelated({ article, sectionRef }: ArticleViewRelatedPr
           Articles that this article links to (outgoing relationships)
         </p>
         {hasData ? (
-          article.relatedTo!.map((rel) => (
-          <Link
-            key={rel.id}
-            href={`/articles/${rel.related.id}`}
-            className="block p-3 rounded-lg border hover:bg-muted/50 transition-colors group"
-          >
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1">
-                <p className="text-sm font-medium group-hover:text-primary transition-colors">
-                  {rel.related.title}
-                </p>
-                <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                  <span className="font-mono break-all">/{rel.related.slug}</span>
-                  {rel.relationshipType && (
-                    <Badge variant="secondary" className="text-[10px] uppercase">
-                      {rel.relationshipType}
-                    </Badge>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-muted-foreground">Related ID:</span>
-                  <CopyableId id={rel.id} label="Relationship" />
-                  <span className="text-xs text-muted-foreground">Article ID:</span>
-                  <CopyableId id={rel.related.id} label="Article" />
-                </div>
-              </div>
-            </div>
-          </Link>
-        ))
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-right">ID</TableHead>
+                <TableHead className="text-right">Title</TableHead>
+                <TableHead className="text-right">Category</TableHead>
+                <TableHead className="text-right">Tags</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {article.relatedTo!.map((rel) => (
+                <TableRow key={rel.id} className="cursor-pointer" onClick={() => {}}>
+                  <TableCell className="whitespace-nowrap">
+                    <CopyableId id={rel.related.id} label={rel.related.title} />
+                  </TableCell>
+                  <TableCell className="max-w-[260px]">
+                    <Link
+                      href={`/articles/${rel.related.id}`}
+                      className="flex flex-col items-start gap-1 group"
+                    >
+                      <span className="text-sm font-medium group-hover:text-primary transition-colors">
+                        {rel.related.title}
+                      </span>
+                      <span className="text-xs text-muted-foreground font-mono break-all">
+                        /{rel.related.slug}
+                      </span>
+                      {rel.relationshipType && (
+                        <Badge variant="secondary" className="text-[10px] uppercase">
+                          {rel.relationshipType}
+                        </Badge>
+                      )}
+                    </Link>
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {rel.related.category?.name ?? "-"}
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {rel.related.tags && rel.related.tags.length > 0
+                      ? rel.related.tags.map((tag) => tag.tag.name).join(", ")
+                      : "-"}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         ) : (
           <p className="text-sm text-muted-foreground text-center py-4">
             This article doesn't link to any other articles yet.
