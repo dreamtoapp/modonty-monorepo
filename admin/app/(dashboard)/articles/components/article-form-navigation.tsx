@@ -4,12 +4,14 @@ import { useArticleForm } from './article-form-context';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ChevronLeft, ChevronRight, Save, Loader2, TestTube } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Save, Loader2, Sparkles } from 'lucide-react';
 import { ArticleFormStepper } from './article-form-stepper';
 import { faker } from '@faker-js/faker/locale/ar';
 import { slugify } from '../helpers/seo-helpers';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { AiArticleDialog } from './ai-article-dialog';
+import { useState } from 'react';
 
 export function ArticleFormNavigation() {
   const {
@@ -31,6 +33,7 @@ export function ArticleFormNavigation() {
   } = useArticleForm();
   const router = useRouter();
   const { toast } = useToast();
+  const [aiDialogOpen, setAiDialogOpen] = useState(false);
 
   const handleSave = async () => {
     try {
@@ -273,21 +276,29 @@ export function ArticleFormNavigation() {
                     {overallProgress}% Complete
                   </span>
                 </div>
-                {/* TEMPORARY: Fill Dummy Data Button - Remove before production */}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={fillDummyData}
-                      className="h-8 w-8 transition-all hover:scale-105 border-amber-500/50 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30"
-                      aria-label="Fill dummy data (testing only)"
-                    >
-                      <TestTube className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Fill Dummy Data (Testing Only)</TooltipContent>
-                </Tooltip>
+                {/* AI Article Generator */}
+                {mode === 'new' && (
+                  <>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setAiDialogOpen(true)}
+                          className="h-8 w-8 transition-all hover:scale-105 border-amber-500/50 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30"
+                          aria-label="Generate Article with AI"
+                        >
+                          <Sparkles className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Generate Article with AI</TooltipContent>
+                    </Tooltip>
+                    <AiArticleDialog
+                      open={aiDialogOpen}
+                      onOpenChange={setAiDialogOpen}
+                    />
+                  </>
+                )}
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button

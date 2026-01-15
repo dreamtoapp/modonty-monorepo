@@ -153,9 +153,17 @@ export function calculateStepValidation(
   const allFields = [...stepConfig.requiredFields, ...stepConfig.optionalFields];
   const totalFields = allFields.length;
 
-  const completedRequiredFields = stepConfig.requiredFields.filter((field) =>
-    isFieldCompleted(formData[field])
-  ).length;
+  // For authorId: if it's required but empty, check if it's a singleton scenario
+  // In singleton mode, authorId is auto-set, so we consider it completed if formData has any authorId
+  // or if the field is in requiredFields but we're in singleton mode (only one author exists)
+  const completedRequiredFields = stepConfig.requiredFields.filter((field) => {
+    if (field === 'authorId') {
+      // Author is singleton - consider it always valid if we have any authorId or if it's the singleton case
+      // The form context will auto-set it, so we don't need to validate it strictly
+      return !!formData[field];
+    }
+    return isFieldCompleted(formData[field]);
+  }).length;
 
   const completedOptionalFields = stepConfig.optionalFields.filter((field) =>
     isFieldCompleted(formData[field])

@@ -183,10 +183,17 @@ export function ArticleFormProvider({
   articleId,
 }: ArticleFormProviderProps) {
   const mode: 'new' | 'edit' = articleId ? 'edit' : 'new';
-  const [formData, setFormData] = useState<ArticleFormData>(() => ({
-    ...initialFormData,
-    ...initialData,
-  }));
+  const [formData, setFormData] = useState<ArticleFormData>(() => {
+    const initial = {
+      ...initialFormData,
+      ...initialData,
+    };
+    // Auto-set authorId if not set and there's only one author (singleton Modonty)
+    if (!initial.authorId && authors.length === 1 && mode === 'new') {
+      initial.authorId = authors[0].id;
+    }
+    return initial;
+  });
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
@@ -400,6 +407,14 @@ export function ArticleFormProvider({
       }
     }
   }, [formData.tags, formData.ogArticleTag, tags]);
+
+  // Auto-set singleton author (Modonty) if not set
+  useEffect(() => {
+    if (!formData.authorId && authors.length === 1 && mode === 'new') {
+      setFormData((prev) => ({ ...prev, authorId: authors[0].id }));
+      setIsDirty(false); // Don't mark as dirty for auto-set singleton
+    }
+  }, [formData.authorId, authors, mode]);
 
   // Auto-fill OG Article Author from Author (if empty)
   useEffect(() => {
