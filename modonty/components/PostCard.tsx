@@ -2,6 +2,12 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, ThumbsUp, ThumbsDown, MessageCircle, Share2, Images, Video, Heart } from "lucide-react";
 import { formatRelativeTime, type Post } from "@/helpers/mockData";
 import { TextToSpeech } from "@/components/TextToSpeech";
@@ -86,9 +92,31 @@ export function PostCard({ post }: PostCardProps) {
                   </time>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" className="min-h-11 min-w-11">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="min-h-11 min-w-11">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem asChild>
+                    <Link href={`/articles/${post.slug}/gallery/images`} className="flex items-center gap-2 cursor-pointer">
+                      <Images className="h-4 w-4" />
+                      الصور
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href={`/articles/${post.slug}/gallery/videos`} className="flex items-center gap-2 cursor-pointer">
+                      <Video className="h-4 w-4" />
+                      الفيديو
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+                    <Share2 className="h-4 w-4" />
+                    مشاركة
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </header>
           </CardHeader>
 
@@ -126,46 +154,23 @@ export function PostCard({ post }: PostCardProps) {
               </Link>
             )}
 
-        <div className="flex items-center justify-between pt-2 border-t">
-          <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" className="min-h-11 min-w-11 gap-2 hover:text-primary">
-                <ThumbsUp className="h-4 w-4" />
-                <span>{post.likes}</span>
-              </Button>
-              <Button variant="ghost" className="min-h-11 min-w-11 gap-2 hover:text-primary">
-                <ThumbsDown className="h-4 w-4" />
-                <span>{post.dislikes}</span>
-              </Button>
-            </div>
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" className="min-h-11 min-w-11 gap-2 hover:text-primary">
-                <Heart className="h-4 w-4" />
-                <span>{post.favorites}</span>
-              </Button>
-              <Button variant="ghost" className="min-h-11 min-w-11 gap-2 hover:text-primary">
-                <MessageCircle className="h-4 w-4" />
-                <span>{post.comments}</span>
-              </Button>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href={`/articles/${post.slug}/gallery/images`}
-              className="inline-flex items-center justify-center min-h-11 min-w-11 rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              <Images className="h-4 w-4" />
-            </Link>
-            <Link
-              href={`/articles/${post.slug}/gallery/videos`}
-              className="inline-flex items-center justify-center min-h-11 min-w-11 rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              <Video className="h-4 w-4" />
-            </Link>
-            <Button variant="ghost" size="icon" className="min-h-11 min-w-11">
-              <Share2 className="h-4 w-4" />
-            </Button>
-          </div>
+        <div className="flex items-center justify-between text-sm text-muted-foreground pt-2 border-t">
+          <Button variant="ghost" className="min-h-11 min-w-11 gap-1 hover:text-primary px-1 sm:px-2">
+            <ThumbsUp className="h-4 w-4" />
+            <span>{post.likes}</span>
+          </Button>
+          <Button variant="ghost" className="min-h-11 min-w-11 gap-1 hover:text-primary px-1 sm:px-2">
+            <ThumbsDown className="h-4 w-4" />
+            <span>{post.dislikes}</span>
+          </Button>
+          <Button variant="ghost" className="min-h-11 min-w-11 gap-1 hover:text-primary px-1 sm:px-2">
+            <Heart className="h-4 w-4" />
+            <span>{post.favorites}</span>
+          </Button>
+          <Button variant="ghost" className="min-h-11 min-w-11 gap-1 hover:text-primary px-1 sm:px-2">
+            <MessageCircle className="h-4 w-4" />
+            <span>{post.comments}</span>
+          </Button>
         </div>
       </CardContent>
     </Card>
