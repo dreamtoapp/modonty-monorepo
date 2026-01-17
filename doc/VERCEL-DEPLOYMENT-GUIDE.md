@@ -23,12 +23,12 @@
 
 | Setting | Admin | Modonty | Console |
 |---------|-------|---------|---------|
-| **Root Directory** | `admin` | `modonty` | `console` |
+| **Root Directory** | `.` (root) ⚠️ | `.` (root) ⚠️ | `.` (root) ⚠️ |
 | **Framework** | Next.js | Next.js | Next.js |
 | **Node Version** | `20.x` | `20.x` | `20.x` |
 | **Build Command** | `pnpm --filter @modonty/admin build` | `pnpm --filter @modonty/modonty build` | `pnpm --filter @modonty/console build` |
 | **Install Command** | `pnpm install` | `pnpm install` | `pnpm install` |
-| **Output Directory** | `.next` (auto) | `.next` (auto) | `.next` (auto) |
+| **Output Directory** | `admin/.next` | `modonty/.next` | `console/.next` |
 
 ### Required Environment Variables
 
@@ -105,7 +105,7 @@ Create `admin/vercel.json`, `modonty/vercel.json`, `console/vercel.json`:
   "buildCommand": "pnpm --filter @modonty/admin build",
   "installCommand": "pnpm install",
   "framework": "nextjs",
-  "outputDirectory": ".next"
+  "outputDirectory": "admin/.next"
 }
 ```
 
@@ -115,7 +115,7 @@ Create `admin/vercel.json`, `modonty/vercel.json`, `console/vercel.json`:
   "buildCommand": "pnpm --filter @modonty/modonty build",
   "installCommand": "pnpm install",
   "framework": "nextjs",
-  "outputDirectory": ".next"
+  "outputDirectory": "modonty/.next"
 }
 ```
 
@@ -125,16 +125,16 @@ Create `admin/vercel.json`, `modonty/vercel.json`, `console/vercel.json`:
   "buildCommand": "pnpm --filter @modonty/console build",
   "installCommand": "pnpm install",
   "framework": "nextjs",
-  "outputDirectory": ".next"
+  "outputDirectory": "console/.next"
 }
 ```
 
 **Important:** 
-- ⚠️ **Root Directory should be set to the app folder** (e.g., `admin`, `modonty`, `console`) in Vercel Dashboard
-- **pnpm automatically detects workspace root** when `pnpm-workspace.yaml` exists in a parent directory
-- No need for `cd ../..` - pnpm finds the root automatically
-- Using pnpm filters (`--filter`) works from any directory within the workspace
-- Output Directory is relative to Root Directory: `.next` (not `admin/.next`)
+- ⚠️ **Root Directory MUST be set to `.` (root)** in Vercel Dashboard for monorepo setups
+- **pnpm filters require workspace root context** - they don't work correctly when Root Directory is set to a subfolder
+- According to Vercel docs: "when you set Root Directory, you cannot use `..` to access files outside of it"
+- Using pnpm filters (`--filter`) works correctly when run from monorepo root
+- Output Directory must be relative to root: `admin/.next`, `modonty/.next`, `console/.next`
 
 #### Option 3: Via Vercel CLI
 
@@ -217,10 +217,10 @@ NEXTAUTH_SECRET="your-nextauth-secret"
 2. Configure project:
    - **Name**: `modonty-admin` (or your preferred name)
    - **Framework Preset**: Next.js
-   - **Root Directory**: `admin` ⚠️ **Set to app folder, pnpm auto-detects workspace root**
+   - **Root Directory**: `.` (root) ⚠️ **CRITICAL: Must be root for pnpm filters to work**
    - **Build Command**: `pnpm --filter @modonty/admin build` (or use `vercel.json` - recommended)
-   - **Output Directory**: `.next` (auto-detected, relative to Root Directory)
-   - **Install Command**: `pnpm install` (pnpm auto-detects workspace root)
+   - **Output Directory**: `admin/.next` ⚠️ **Must be relative to root**
+   - **Install Command**: `pnpm install` (runs from root)
    - **Node.js Version**: `20.x`
 3. Add environment variables (see above)
 4. Click **Deploy**
@@ -232,10 +232,10 @@ NEXTAUTH_SECRET="your-nextauth-secret"
 3. Configure project:
    - **Name**: `modonty-platform`
    - **Framework Preset**: Next.js
-   - **Root Directory**: `modonty` ⚠️ **Set to app folder, pnpm auto-detects workspace root**
+   - **Root Directory**: `.` (root) ⚠️ **CRITICAL: Must be root for pnpm filters to work**
    - **Build Command**: `pnpm --filter @modonty/modonty build` (or use `vercel.json` - recommended)
-   - **Output Directory**: `.next` (auto-detected, relative to Root Directory)
-   - **Install Command**: `pnpm install` (pnpm auto-detects workspace root)
+   - **Output Directory**: `modonty/.next` ⚠️ **Must be relative to root**
+   - **Install Command**: `pnpm install` (runs from root)
    - **Node.js Version**: `20.x`
 4. Add environment variables
 5. Click **Deploy**
@@ -247,10 +247,10 @@ NEXTAUTH_SECRET="your-nextauth-secret"
 3. Configure project:
    - **Name**: `modonty-console`
    - **Framework Preset**: Next.js
-   - **Root Directory**: `console` ⚠️ **Set to app folder, pnpm auto-detects workspace root**
+   - **Root Directory**: `.` (root) ⚠️ **CRITICAL: Must be root for pnpm filters to work**
    - **Build Command**: `pnpm --filter @modonty/console build` (or use `vercel.json` - recommended)
-   - **Output Directory**: `.next` (auto-detected, relative to Root Directory)
-   - **Install Command**: `pnpm install` (pnpm auto-detects workspace root)
+   - **Output Directory**: `console/.next` ⚠️ **Must be relative to root**
+   - **Install Command**: `pnpm install` (runs from root)
    - **Node.js Version**: `20.x`
 4. Add environment variables
 5. Click **Deploy**
@@ -312,7 +312,7 @@ npx prisma migrate deploy
 **Option 2: Add to build command**
 
 ```bash
-cd ../.. && pnpm install && cd dataLayer && pnpm prisma migrate deploy && cd .. && pnpm build:admin
+pnpm install && cd dataLayer && pnpm prisma migrate deploy && cd .. && pnpm --filter @modonty/admin build
 ```
 
 **Option 3: Use deployment hook**
@@ -347,7 +347,7 @@ Add to root `package.json`:
 **Solution**:
 - Add Prisma generate to build command:
   ```bash
-  cd ../.. && pnpm install && pnpm prisma:generate && pnpm build:admin
+  pnpm install && pnpm prisma:generate && pnpm --filter @modonty/admin build
   ```
 - Verify `DATABASE_URL` environment variable is set
 - Check Prisma schema path in `package.json`
@@ -357,9 +357,10 @@ Add to root `package.json`:
 **Problem**: `@modonty/database` workspace package not found
 
 **Solution**:
+- Ensure **Root Directory** is set to `.` (root) in Vercel Dashboard
 - Ensure `dataLayer/package.json` exists with name `@modonty/database`
 - Verify `pnpm-workspace.yaml` includes `dataLayer`
-- Run install from root: `cd ../.. && pnpm install`
+- Run install from root: `pnpm install` (Root Directory = `.`)
 
 ### Build Succeeds but App Doesn't Work
 
@@ -426,8 +427,8 @@ Preview deployments are automatically enabled when using Git integration:
 ## ✨ Success Checklist
 
 - [ ] All 3 Vercel projects created
-- [ ] Root directories configured correctly (`admin`, `modonty`, `console`)
-- [ ] Build commands configured (with `cd ../..`)
+- [ ] Root directories configured correctly (`.` - root for all projects)
+- [ ] Build commands configured (using pnpm filters from root)
 - [ ] Environment variables added to all projects
 - [ ] Database migrations run
 - [ ] Custom domains configured (optional)

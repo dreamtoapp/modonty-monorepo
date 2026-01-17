@@ -2,6 +2,7 @@
   "name": "@modonty/monorepo",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@10.12.3",
   "scripts": {
     "dev:admin": "pnpm --filter @modonty/admin dev",
     "dev:modonty": "pnpm --filter @modonty/modonty dev",

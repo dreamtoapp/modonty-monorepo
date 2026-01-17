@@ -2,5 +2,5 @@
   "buildCommand": "pnpm --filter @modonty/console build",
   "installCommand": "pnpm install",
   "framework": "nextjs",
-  "outputDirectory": ".next"
+  "outputDirectory": "console/.next"
 }

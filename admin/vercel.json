@@ -2,5 +2,5 @@
   "buildCommand": "pnpm --filter @modonty/admin build",
   "installCommand": "pnpm install",
   "framework": "nextjs",
-  "outputDirectory": ".next"
+  "outputDirectory": "admin/.next"
 }
