@@ -1,5 +1,5 @@
 packages:
   - 'admin'
-  - 'beta'
-  - 'home'
+  - 'modonty'
+  - 'console'
   - 'dataLayer'
