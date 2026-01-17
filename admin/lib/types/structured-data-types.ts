@@ -47,31 +47,71 @@ export interface ArticleStructuredData extends StructuredDataBase {
 }
 
 export interface OrganizationStructuredData extends StructuredDataBase {
-  "@type": "Organization";
+  "@type": "Organization" | "Corporation" | "LocalBusiness" | "NonProfit" | "EducationalOrganization" | "GovernmentOrganization" | "SportsOrganization" | "NGO";
   name: string;
   legalName?: string;
+  alternateName?: string;
   url?: string;
   logo?: string | {
     "@type": "ImageObject";
     url: string;
+    width?: number;
+    height?: number;
   };
   image?: string;
   description?: string;
+  slogan?: string;
+  keywords?: string[];
   sameAs?: string[];
-  contactPoint?: {
+
+  // Identifiers
+  identifier?: Array<{
+    "@type": "PropertyValue";
+    name: string;
+    value: string;
+  }>;
+  vatID?: string;
+  taxID?: string;
+
+  // Contact Points (now array)
+  contactPoint?: Array<{
     "@type": "ContactPoint";
     telephone?: string;
     email?: string;
     contactType?: string;
-  };
+    availableLanguage?: string[];
+    areaServed?: string | string[];
+  }>;
+
+  // Address (enhanced)
   address?: {
     "@type": "PostalAddress";
     streetAddress?: string;
     addressLocality?: string;
-    addressCountry?: string;
+    addressRegion?: string;
+    addressNeighborhood?: string;
     postalCode?: string;
+    addressCountry?: string;
   };
+
+  // Classification
+  isicV4?: string;
+  numberOfEmployees?: {
+    "@type": "QuantitativeValue";
+    value?: string | number;
+    minValue?: number;
+    maxValue?: number;
+  };
+
+  // Relationships
+  parentOrganization?: {
+    "@type": "Organization";
+    name: string;
+    "@id"?: string;
+  };
+
   foundingDate?: string;
+  knowsLanguage?: string[];
 }
 
 export interface PersonStructuredData extends StructuredDataBase {

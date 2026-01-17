@@ -60,7 +60,7 @@ export default async function ClientsPage({
       </div>
       <ClientsStats stats={stats} />
       <ClientsFilters />
-      <ClientsPageClient clients={clients} />
+      <ClientsPageClient clients={clients as any} />
     </div>
   );
 }

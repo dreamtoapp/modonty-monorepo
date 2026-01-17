@@ -170,70 +170,73 @@ function generateSEOFields(title: string, excerpt: string, category: string) {
   };
 }
 
-async function clearDatabase() {
-  console.log("Clearing existing data...");
+async function clearDatabase(logCallback?: (message: string, level?: "info" | "success" | "error") => void) {
+  const log = logCallback || console.log;
+  const logError = logCallback || console.error;
+  
+  log("Clearing existing data...", "info");
 
   try {
-    console.log("  [1/6] Deleting related articles...");
+    log("  [1/6] Deleting related articles...", "info");
     const relatedCount = await db.relatedArticle.count();
     if (relatedCount > 0) {
       await db.relatedArticle.deleteMany({});
-      console.log(`    Deleted ${relatedCount} related articles`);
+      log(`    Deleted ${relatedCount} related articles`, "success");
     }
 
-    console.log("  [2/6] Deleting FAQs...");
+    log("  [2/6] Deleting FAQs...", "info");
     const faqCount = await db.articleFAQ.count();
     if (faqCount > 0) {
       await db.articleFAQ.deleteMany({});
-      console.log(`    Deleted ${faqCount} FAQs`);
+      log(`    Deleted ${faqCount} FAQs`, "success");
     }
 
-    console.log("  [3/6] Deleting analytics...");
+    log("  [3/6] Deleting analytics...", "info");
     const analyticsCount = await db.analytics.count();
     if (analyticsCount > 0) {
       await db.analytics.deleteMany({});
-      console.log(`    Deleted ${analyticsCount} analytics records`);
+      log(`    Deleted ${analyticsCount} analytics records`, "success");
     }
 
-    console.log("  [4/6] Deleting article media gallery...");
+    log("  [4/6] Deleting article media gallery...", "info");
     const mediaCount = await db.articleMedia.count();
     if (mediaCount > 0) {
       await db.articleMedia.deleteMany({});
-      console.log(`    Deleted ${mediaCount} article media records`);
+      log(`    Deleted ${mediaCount} article media records`, "success");
     }
 
-    console.log("  [5/6] Deleting article tags...");
+    log("  [5/6] Deleting article tags...", "info");
     const tagCount = await db.articleTag.count();
     if (tagCount > 0) {
       await db.articleTag.deleteMany({});
-      console.log(`    Deleted ${tagCount} article tags`);
+      log(`    Deleted ${tagCount} article tags`, "success");
     }
 
-    console.log("  [6/6] Deleting article versions...");
+    log("  [6/6] Deleting article versions...", "info");
     const versionCount = await db.articleVersion.count();
     if (versionCount > 0) {
       await db.articleVersion.deleteMany({});
-      console.log(`    Deleted ${versionCount} article versions`);
+      log(`    Deleted ${versionCount} article versions`, "success");
     }
 
-    console.log("  Deleting articles...");
+    log("  Deleting articles...", "info");
     const articleCount = await db.article.count();
     if (articleCount > 0) {
       await db.article.deleteMany({});
-      console.log(`    Deleted ${articleCount} articles`);
+      log(`    Deleted ${articleCount} articles`, "success");
     }
 
-    console.log("  Deleting article tags (before deleting tags - children first)...");
+    log("  Deleting article tags (before deleting tags - children first)...", "info");
     await db.articleTag.deleteMany({});
     await new Promise((resolve) => setTimeout(resolve, 200));
 
-    console.log("  Deleting tags (parent)...");
+    log("  Deleting tags (parent)...", "info");
     await db.tag.deleteMany({});
 
-    console.log("  Deleting subscribers (depend on clients - children)...");
+    log("  Deleting subscribers (depend on clients - children)...", "info");
     await db.subscriber.deleteMany({});
 
-    console.log("  Clearing media references from clients...");
+    log("  Clearing media references from clients...", "info");
     await db.client.updateMany({
       data: {
         logoMediaId: null,
@@ -242,38 +245,109 @@ async function clearDatabase() {
       },
     });
 
-    console.log("  Deleting clients (parent)...");
+    log("  Deleting clients (parent)...", "info");
     await db.client.deleteMany({});
 
-    console.log("  Deleting media (parent)...");
+    log("  Deleting media (parent)...", "info");
     await db.media.deleteMany({});
 
-    console.log("  Clearing parent references from categories...");
+    log("  Clearing parent references from categories...", "info");
     await db.category.updateMany({
       data: { parentId: null },
     });
 
-    console.log("  Deleting categories...");
+    log("  Deleting categories...", "info");
     await db.category.deleteMany({});
 
-    console.log("  Deleting authors...");
+    log("  Deleting authors...", "info");
     await db.author.deleteMany({});
 
-    console.log("  Deleting industries...");
+    log("  Deleting industries...", "info");
     await db.industry.deleteMany({});
 
-    console.log("  Deleting settings...");
+    log("  Deleting settings...", "info");
     await db.settings.deleteMany({});
 
-    console.log("✅ Database cleared successfully.");
+    log("  Deleting subscription tier configs...", "info");
+    await db.subscriptionTierConfig.deleteMany({});
+
+    log("✅ Database cleared successfully.", "success");
   } catch (error) {
-    console.error("❌ Error during database clearing:", error);
+    logError("❌ Error during database clearing:", "error");
+    if (error instanceof Error) {
+      logError(`   ${error.message}`, "error");
+    }
     throw error;
   }
 }
 
-async function seedIndustries() {
-  console.log("Seeding industries...");
+async function seedSubscriptionTierConfigs(logCallback?: (message: string, level?: "info" | "success" | "error") => void) {
+  const log = logCallback || console.log;
+  log("Seeding subscription tier configs...", "info");
+  
+  const tierConfigs = [
+    {
+      tier: SubscriptionTier.BASIC,
+      name: "Basic",
+      articlesPerMonth: 2,
+      price: 2499,
+      isActive: true,
+      isPopular: false,
+      description: "Perfect for small businesses getting started with content marketing",
+    },
+    {
+      tier: SubscriptionTier.STANDARD,
+      name: "Standard",
+      articlesPerMonth: 4,
+      price: 3999,
+      isActive: true,
+      isPopular: true,
+      description: "Most popular choice for growing businesses (Most Popular)",
+    },
+    {
+      tier: SubscriptionTier.PRO,
+      name: "Pro",
+      articlesPerMonth: 8,
+      price: 6999,
+      isActive: true,
+      isPopular: false,
+      description: "Ideal for established businesses with consistent content needs",
+    },
+    {
+      tier: SubscriptionTier.PREMIUM,
+      name: "Premium",
+      articlesPerMonth: 12,
+      price: 9999,
+      isActive: true,
+      isPopular: false,
+      description: "Best for large enterprises and agencies requiring high-volume content",
+    },
+  ];
+
+  const createdConfigs = [];
+  for (const configData of tierConfigs) {
+    const config = await db.subscriptionTierConfig.upsert({
+      where: { tier: configData.tier },
+      update: {
+        name: configData.name,
+        articlesPerMonth: configData.articlesPerMonth,
+        price: configData.price,
+        isActive: configData.isActive,
+        isPopular: configData.isPopular,
+        description: configData.description,
+      },
+      create: configData,
+    });
+    createdConfigs.push(config);
+  }
+
+  log(`Seeded ${createdConfigs.length} subscription tier configs.`, "success");
+  return createdConfigs;
+}
+
+async function seedIndustries(logCallback?: (message: string, level?: "info" | "success" | "error") => void) {
+  const log = logCallback || console.log;
+  log("Seeding industries...", "info");
   const industriesData = [
     {
       name: "التقنية والبرمجيات",
@@ -343,12 +417,17 @@ async function seedIndustries() {
     createdIndustries.push(industry);
   }
 
-  console.log(`Seeded ${createdIndustries.length} industries.`);
+  log(`Seeded ${createdIndustries.length} industries.`, "success");
   return createdIndustries;
 }
 
-async function seedClients(industries: Awaited<ReturnType<typeof seedIndustries>>) {
-  console.log("Seeding clients...");
+async function seedClients(
+  industries: Awaited<ReturnType<typeof seedIndustries>>,
+  tierConfigs: Awaited<ReturnType<typeof seedSubscriptionTierConfigs>>,
+  logCallback?: (message: string, level?: "info" | "success" | "error") => void
+) {
+  const log = logCallback || console.log;
+  log("Seeding clients...", "info");
   const clientsData = [
     {
       name: "حلول التقنية المتقدمة",
@@ -513,50 +592,50 @@ async function seedClients(industries: Awaited<ReturnType<typeof seedIndustries>
   ];
 
   const createdClients = [];
+  const now = new Date();
+  // Set subscription start to 12 months ago to align with article publication dates
+  const subscriptionStartDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+  // Set subscription end to 1 year from start (18 months total: 12 months paid = 18 months content)
+  const subscriptionEndDate = new Date(subscriptionStartDate.getTime() + 365 * 24 * 60 * 60 * 1000);
+  
   for (const clientData of clientsData) {
     const industry = industries.find((i) => i.slug === clientData.industrySlug);
+    const tierConfig = tierConfigs.find((t) => t.tier === clientData.subscriptionTier);
     const { industrySlug, ...clientFields } = clientData;
+
+    // Get articlesPerMonth and subscriptionTierConfigId from tier config
+    const articlesPerMonth = tierConfig?.articlesPerMonth || 0;
+    const subscriptionTierConfigId = tierConfig?.id || null;
 
     const client = await db.client.upsert({
       where: { slug: clientFields.slug },
       update: {
         ...clientFields,
         industryId: industry?.id,
-        subscriptionStartDate: new Date(),
-        subscriptionEndDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-        articlesPerMonth:
-          clientFields.subscriptionTier === SubscriptionTier.PREMIUM
-            ? 50
-            : clientFields.subscriptionTier === SubscriptionTier.PRO
-            ? 30
-            : clientFields.subscriptionTier === SubscriptionTier.STANDARD
-            ? 20
-            : 10,
+        subscriptionStartDate,
+        subscriptionEndDate,
+        articlesPerMonth,
+        subscriptionTierConfigId,
       },
       create: {
         ...clientFields,
         industryId: industry?.id,
-        subscriptionStartDate: new Date(),
-        subscriptionEndDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-        articlesPerMonth:
-          clientFields.subscriptionTier === SubscriptionTier.PREMIUM
-            ? 50
-            : clientFields.subscriptionTier === SubscriptionTier.PRO
-            ? 30
-            : clientFields.subscriptionTier === SubscriptionTier.STANDARD
-            ? 20
-            : 10,
+        subscriptionStartDate,
+        subscriptionEndDate,
+        articlesPerMonth,
+        subscriptionTierConfigId,
       },
     });
     createdClients.push(client);
   }
 
-  console.log(`Seeded ${createdClients.length} clients.`);
+  log(`Seeded ${createdClients.length} clients.`, "success");
   return createdClients;
 }
 
-async function seedAuthors() {
-  console.log("Seeding author (singleton: modonty)...");
+async function seedAuthors(logCallback?: (message: string, level?: "info" | "success" | "error") => void) {
+  const log = logCallback || console.log;
+  log("Seeding author (singleton: modonty)...", "info");
 
   const author = await db.author.upsert({
     where: { slug: "modonty" },
@@ -643,12 +722,13 @@ async function seedAuthors() {
     },
   });
 
-  console.log(`Seeded author: ${author.name}`);
+  log(`Seeded author: ${author.name}`, "success");
   return author;
 }
 
-async function seedCategories() {
-  console.log("Seeding categories...");
+async function seedCategories(logCallback?: (message: string, level?: "info" | "success" | "error") => void) {
+  const log = logCallback || console.log;
+  log("Seeding categories...", "info");
   const categoriesData = [
     {
       name: "Technical SEO",
@@ -781,12 +861,13 @@ async function seedCategories() {
     createdCategories.push(category);
   }
 
-  console.log(`Seeded ${createdCategories.length} categories (including hierarchy).`);
+  log(`Seeded ${createdCategories.length} categories (including hierarchy).`, "success");
   return createdCategories;
 }
 
-async function seedTags() {
-  console.log("Seeding tags...");
+async function seedTags(logCallback?: (message: string, level?: "info" | "success" | "error") => void) {
+  const log = logCallback || console.log;
+  log("Seeding tags...", "info");
   const tagsData = [
     "SEO",
     "Technical SEO",
@@ -848,7 +929,7 @@ async function seedTags() {
   ];
 
   const createdTags = [];
-  console.log(`  Creating ${tagsData.length} tags...`);
+  log(`  Creating ${tagsData.length} tags...`, "info");
   for (let idx = 0; idx < tagsData.length; idx++) {
     const tagName = tagsData[idx];
     const tag = await db.tag.upsert({
@@ -859,11 +940,11 @@ async function seedTags() {
     createdTags.push(tag);
 
     if ((idx + 1) % 10 === 0) {
-      console.log(`    ✓ Created ${idx + 1}/${tagsData.length} tags...`);
+      log(`    ✓ Created ${idx + 1}/${tagsData.length} tags...`, "info");
     }
   }
 
-  console.log(`✅ Seeded ${createdTags.length} tags.`);
+  log(`✅ Seeded ${createdTags.length} tags.`, "success");
   return createdTags;
 }
 
@@ -872,9 +953,11 @@ async function seedArticles(
   author: Awaited<ReturnType<typeof seedAuthors>>,
   categories: Awaited<ReturnType<typeof seedCategories>>,
   articleCount: number,
-  useOpenAI: boolean
+  useOpenAI: boolean,
+  logCallback?: (message: string, level?: "info" | "success" | "error") => void
 ) {
-  console.log(`Seeding ${articleCount} SEO articles...`);
+  const log = logCallback || console.log;
+  log(`Seeding ${articleCount} SEO articles...`, "info");
   const startTime = Date.now();
 
   const seoArticleTitles = [
@@ -1023,10 +1106,14 @@ async function seedArticles(
         excerpt = aiData.excerpt;
         wordCount = aiData.wordCount;
       } catch (error) {
-        console.error(
+        const logError = logCallback || console.error;
+        logError(
           "OpenAI article generation failed, falling back to templates:",
-          error
+          "error"
         );
+        if (error instanceof Error) {
+          logError(`   ${error.message}`, "error");
+        }
         const fallback = generateSEOArticleContent(title, categorySlug, length);
         content = fallback.content;
         excerpt = fallback.excerpt;
@@ -1084,22 +1171,25 @@ async function seedArticles(
 
     if ((i + 1) % 10 === 0 || i === 0) {
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-      console.log(
-        `    ✓ Created ${i + 1}/${articleCount} articles (${status}, ${length}, ${wordCount} words) - ${elapsed}s`
+      log(
+        `    ✓ Created ${i + 1}/${articleCount} articles (${status}, ${length}, ${wordCount} words) - ${elapsed}s`,
+        "info"
       );
     }
   }
 
   const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
-  console.log(`✅ Seeded ${articles.length} articles in ${totalTime} seconds.`);
+  log(`✅ Seeded ${articles.length} articles in ${totalTime} seconds.`, "success");
   return articles;
 }
 
 async function seedArticleTags(
   articles: Awaited<ReturnType<typeof seedArticles>>,
-  tags: Awaited<ReturnType<typeof seedTags>>
+  tags: Awaited<ReturnType<typeof seedTags>>,
+  logCallback?: (message: string, level?: "info" | "success" | "error") => void
 ) {
-  console.log("Seeding article tags...");
+  const log = logCallback || console.log;
+  log("Seeding article tags...", "info");
   const startTime = Date.now();
   let count = 0;
   const total = articles.length;
@@ -1128,26 +1218,29 @@ async function seedArticleTags(
 
     if ((idx + 1) % 10 === 0) {
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-      console.log(
-        `    ✓ Processed ${idx + 1}/${total} articles (${count} tag relations) - ${elapsed}s`
+      log(
+        `    ✓ Processed ${idx + 1}/${total} articles (${count} tag relations) - ${elapsed}s`,
+        "info"
       );
     }
   }
 
   const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
-  console.log(`✅ Seeded ${count} article-tag relationships in ${totalTime} seconds.`);
+  log(`✅ Seeded ${count} article-tag relationships in ${totalTime} seconds.`, "success");
 }
 
 async function seedMedia(
   articles: Awaited<ReturnType<typeof seedArticles>>,
   clients: Awaited<ReturnType<typeof seedClients>>,
-  author: Awaited<ReturnType<typeof seedAuthors>>
+  author: Awaited<ReturnType<typeof seedAuthors>>,
+  logCallback?: (message: string, level?: "info" | "success" | "error") => void
 ) {
-  console.log("Seeding media...");
+  const log = logCallback || console.log;
+  log("Seeding media...", "info");
   const startTime = Date.now();
   const createdMedia = [];
 
-  console.log("  Creating featured images for articles...");
+  log("  Creating featured images for articles...", "info");
   for (let idx = 0; idx < articles.length; idx++) {
     const article = articles[idx];
     const media = await db.media.create({
@@ -1178,13 +1271,14 @@ async function seedMedia(
 
     if ((idx + 1) % 10 === 0) {
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-      console.log(
-        `    ✓ Created ${idx + 1}/${articles.length} article featured images - ${elapsed}s`
+      log(
+        `    ✓ Created ${idx + 1}/${articles.length} article featured images - ${elapsed}s`,
+        "info"
       );
     }
   }
 
-  console.log("  Creating client logos and OG images...");
+  log("  Creating client logos and OG images...", "info");
   for (let idx = 0; idx < clients.length; idx++) {
     const client = clients[idx];
     const logoMedia = await db.media.create({
@@ -1232,7 +1326,7 @@ async function seedMedia(
     });
 
     createdMedia.push(logoMedia, ogMedia);
-    console.log(`  Created media for client ${idx + 1}/${clients.length}: ${client.name}`);
+    log(`  Created media for client ${idx + 1}/${clients.length}: ${client.name}`, "info");
   }
 
   const authorMedia = await db.media.create({
@@ -1260,12 +1354,16 @@ async function seedMedia(
   createdMedia.push(authorMedia);
 
   const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
-  console.log(`✅ Seeded ${createdMedia.length} media files in ${totalTime} seconds.`);
+  log(`✅ Seeded ${createdMedia.length} media files in ${totalTime} seconds.`, "success");
   return createdMedia;
 }
 
-async function seedAnalytics(articles: Awaited<ReturnType<typeof seedArticles>>) {
-  console.log("Seeding analytics...");
+async function seedAnalytics(
+  articles: Awaited<ReturnType<typeof seedArticles>>,
+  logCallback?: (message: string, level?: "info" | "success" | "error") => void
+) {
+  const log = logCallback || console.log;
+  log("Seeding analytics...", "info");
   const startTime = Date.now();
   let count = 0;
   const publishedArticles = articles.filter((a) => a.status === ArticleStatus.PUBLISHED);
@@ -1278,7 +1376,7 @@ async function seedAnalytics(articles: Awaited<ReturnType<typeof seedArticles>>)
     "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15",
   ];
 
-  console.log(`  Creating analytics for ${publishedArticles.length} published articles...`);
+  log(`  Creating analytics for ${publishedArticles.length} published articles...`, "info");
   for (let idx = 0; idx < publishedArticles.length; idx++) {
     const article = publishedArticles[idx];
     const viewCount = Math.floor(Math.random() * 15) + 5;
@@ -1322,18 +1420,23 @@ async function seedAnalytics(articles: Awaited<ReturnType<typeof seedArticles>>)
     processed++;
     if (processed % 5 === 0) {
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-      console.log(
-        `    ✓ Processed ${processed}/${publishedArticles.length} articles (${count} analytics records) - ${elapsed}s`
+      log(
+        `    ✓ Processed ${processed}/${publishedArticles.length} articles (${count} analytics records) - ${elapsed}s`,
+        "info"
       );
     }
   }
 
   const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
-  console.log(`✅ Seeded ${count} analytics records in ${totalTime} seconds.`);
+  log(`✅ Seeded ${count} analytics records in ${totalTime} seconds.`, "success");
 }
 
-async function seedFAQs(articles: Awaited<ReturnType<typeof seedArticles>>) {
-  console.log("Seeding FAQs...");
+async function seedFAQs(
+  articles: Awaited<ReturnType<typeof seedArticles>>,
+  logCallback?: (message: string, level?: "info" | "success" | "error") => void
+) {
+  const log = logCallback || console.log;
+  log("Seeding FAQs...", "info");
   const startTime = Date.now();
   let count = 0;
   const publishedArticles = articles.filter((a) => a.status === ArticleStatus.PUBLISHED);
@@ -1346,7 +1449,7 @@ async function seedFAQs(articles: Awaited<ReturnType<typeof seedArticles>>) {
     { q: "ما هي أفضل الممارسات في {topic}؟", a: "أفضل الممارسات في {topic} تشمل {practices}." },
   ];
 
-  console.log(`  Creating FAQs for ${publishedArticles.length} published articles...`);
+  log(`  Creating FAQs for ${publishedArticles.length} published articles...`, "info");
   for (let idx = 0; idx < publishedArticles.length; idx++) {
     const article = publishedArticles[idx];
     const faqCount = Math.floor(Math.random() * 3) + 2;
@@ -1375,24 +1478,29 @@ async function seedFAQs(articles: Awaited<ReturnType<typeof seedArticles>>) {
     processed++;
     if (processed % 10 === 0) {
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-      console.log(
-        `    ✓ Processed ${processed}/${publishedArticles.length} articles (${count} FAQs) - ${elapsed}s`
+      log(
+        `    ✓ Processed ${processed}/${publishedArticles.length} articles (${count} FAQs) - ${elapsed}s`,
+        "info"
       );
     }
   }
 
   const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
-  console.log(`✅ Seeded ${count} FAQs in ${totalTime} seconds.`);
+  log(`✅ Seeded ${count} FAQs in ${totalTime} seconds.`, "success");
 }
 
-async function seedRelatedArticles(articles: Awaited<ReturnType<typeof seedArticles>>) {
-  console.log("Seeding related articles...");
+async function seedRelatedArticles(
+  articles: Awaited<ReturnType<typeof seedArticles>>,
+  logCallback?: (message: string, level?: "info" | "success" | "error") => void
+) {
+  const log = logCallback || console.log;
+  log("Seeding related articles...", "info");
   const startTime = Date.now();
   let count = 0;
   const publishedArticles = articles.filter((a) => a.status === ArticleStatus.PUBLISHED);
   let processed = 0;
 
-  console.log(`  Creating relationships for ${publishedArticles.length} published articles...`);
+  log(`  Creating relationships for ${publishedArticles.length} published articles...`, "info");
   for (let idx = 0; idx < publishedArticles.length; idx++) {
     const article = publishedArticles[idx];
     const relatedCount = Math.floor(Math.random() * 3) + 2;
@@ -1428,18 +1536,23 @@ async function seedRelatedArticles(articles: Awaited<ReturnType<typeof seedArtic
     processed++;
     if (processed % 10 === 0) {
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-      console.log(
-        `    ✓ Processed ${processed}/${publishedArticles.length} articles (${count} relationships) - ${elapsed}s`
+      log(
+        `    ✓ Processed ${processed}/${publishedArticles.length} articles (${count} relationships) - ${elapsed}s`,
+        "info"
       );
     }
   }
 
   const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
-  console.log(`✅ Seeded ${count} related article relationships in ${totalTime} seconds.`);
+  log(`✅ Seeded ${count} related article relationships in ${totalTime} seconds.`, "success");
 }
 
-async function seedSubscribers(clients: Awaited<ReturnType<typeof seedClients>>) {
-  console.log("Seeding subscribers...");
+async function seedSubscribers(
+  clients: Awaited<ReturnType<typeof seedClients>>,
+  logCallback?: (message: string, level?: "info" | "success" | "error") => void
+) {
+  const log = logCallback || console.log;
+  log("Seeding subscribers...", "info");
   const startTime = Date.now();
   let count = 0;
 
@@ -1483,7 +1596,7 @@ async function seedSubscribers(clients: Awaited<ReturnType<typeof seedClients>>)
     "الغامدي",
   ];
 
-  console.log(`  Creating subscribers for ${clients.length} clients...`);
+  log(`  Creating subscribers for ${clients.length} clients...`, "info");
   for (let clientIdx = 0; clientIdx < clients.length; clientIdx++) {
     const client = clients[clientIdx];
     const subscriberCount = Math.floor(Math.random() * 15) + 10;
@@ -1521,19 +1634,21 @@ async function seedSubscribers(clients: Awaited<ReturnType<typeof seedClients>>)
     }
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.log(
+    log(
       `    ✓ Created ${subscriberCount} subscribers for client ${clientIdx + 1}/${
         clients.length
-      }: ${client.name} (total: ${count}) - ${elapsed}s`
+      }: ${client.name} (total: ${count}) - ${elapsed}s`,
+      "info"
     );
   }
 
   const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
-  console.log(`✅ Seeded ${count} subscribers in ${totalTime} seconds.`);
+  log(`✅ Seeded ${count} subscribers in ${totalTime} seconds.`, "success");
 }
 
-async function seedSettings() {
-  console.log("Seeding settings (singleton)...");
+async function seedSettings(logCallback?: (message: string, level?: "info" | "success" | "error") => void) {
+  const log = logCallback || console.log;
+  log("Seeding settings (singleton)...", "info");
 
   const existingSettings = await db.settings.findFirst();
 
@@ -1566,7 +1681,7 @@ async function seedSettings() {
         youtubeUrl: "https://youtube.com/modonty",
       },
     });
-    console.log("Updated existing settings.");
+    log("Updated existing settings.", "success");
     return settings;
   } else {
     const settings = await db.settings.create({
@@ -1596,19 +1711,23 @@ async function seedSettings() {
         youtubeUrl: "https://youtube.com/modonty",
       },
     });
-    console.log("Created new settings.");
+    log("Created new settings.", "success");
     return settings;
   }
 }
 
-async function seedArticleVersions(articles: Awaited<ReturnType<typeof seedArticles>>) {
-  console.log("Seeding article versions...");
+async function seedArticleVersions(
+  articles: Awaited<ReturnType<typeof seedArticles>>,
+  logCallback?: (message: string, level?: "info" | "success" | "error") => void
+) {
+  const log = logCallback || console.log;
+  log("Seeding article versions...", "info");
   const startTime = Date.now();
   let count = 0;
 
   const articlesToVersion = getRandomElements(articles, Math.floor(articles.length * 0.4));
 
-  console.log(`  Creating versions for ${articlesToVersion.length} articles...`);
+  log(`  Creating versions for ${articlesToVersion.length} articles...`, "info");
 
   for (let idx = 0; idx < articlesToVersion.length; idx++) {
     const article = articlesToVersion[idx];
@@ -1631,24 +1750,29 @@ async function seedArticleVersions(articles: Awaited<ReturnType<typeof seedArtic
 
     if ((idx + 1) % 10 === 0) {
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-      console.log(
-        `    ✓ Processed ${idx + 1}/${articlesToVersion.length} articles (${count} versions) - ${elapsed}s`
+      log(
+        `    ✓ Processed ${idx + 1}/${articlesToVersion.length} articles (${count} versions) - ${elapsed}s`,
+        "info"
       );
     }
   }
 
   const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
-  console.log(`✅ Seeded ${count} article versions in ${totalTime} seconds.`);
+  log(`✅ Seeded ${count} article versions in ${totalTime} seconds.`, "success");
 }
 
-async function seedArticleMedia(articles: Awaited<ReturnType<typeof seedArticles>>) {
-  console.log("Seeding article media gallery...");
+async function seedArticleMedia(
+  articles: Awaited<ReturnType<typeof seedArticles>>,
+  logCallback?: (message: string, level?: "info" | "success" | "error") => void
+) {
+  const log = logCallback || console.log;
+  log("Seeding article media gallery...", "info");
   const startTime = Date.now();
   let count = 0;
 
   const articlesForGallery = getRandomElements(articles, Math.floor(articles.length * 0.45));
 
-  console.log(`  Creating galleries for ${articlesForGallery.length} articles...`);
+  log(`  Creating galleries for ${articlesForGallery.length} articles...`, "info");
 
   for (let idx = 0; idx < articlesForGallery.length; idx++) {
     const article = articlesForGallery[idx];
@@ -1705,14 +1829,15 @@ async function seedArticleMedia(articles: Awaited<ReturnType<typeof seedArticles
 
     if ((idx + 1) % 10 === 0) {
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-      console.log(
-        `    ✓ Processed ${idx + 1}/${articlesForGallery.length} articles (${count} gallery items) - ${elapsed}s`
+      log(
+        `    ✓ Processed ${idx + 1}/${articlesForGallery.length} articles (${count} gallery items) - ${elapsed}s`,
+        "info"
       );
     }
   }
 
   const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
-  console.log(`✅ Seeded ${count} article media gallery items in ${totalTime} seconds.`);
+  log(`✅ Seeded ${count} article media gallery items in ${totalTime} seconds.`, "success");
 }
 
 export interface SeedSummary {
@@ -1730,32 +1855,35 @@ export interface SeedSummary {
 export async function runFullSeed(options: {
   articleCount: number;
   useOpenAI: boolean;
+  logCallback?: (message: string, level?: "info" | "success" | "error") => void;
 }): Promise<SeedSummary> {
-  const { articleCount, useOpenAI } = options;
-  console.log("Starting comprehensive seed process via runFullSeed...");
+  const { articleCount, useOpenAI, logCallback } = options;
+  const log = logCallback || console.log;
+  log("Starting comprehensive seed process via runFullSeed...", "info");
   const startTime = Date.now();
 
-  await clearDatabase();
+  await clearDatabase(logCallback);
 
-  const industries = await seedIndustries();
-  const clients = await seedClients(industries);
-  const author = await seedAuthors();
-  const categories = await seedCategories();
-  const tags = await seedTags();
-  const articles = await seedArticles(clients, author, categories, articleCount, useOpenAI);
+  const tierConfigs = await seedSubscriptionTierConfigs(logCallback);
+  const industries = await seedIndustries(logCallback);
+  const clients = await seedClients(industries, tierConfigs, logCallback);
+  const author = await seedAuthors(logCallback);
+  const categories = await seedCategories(logCallback);
+  const tags = await seedTags(logCallback);
+  const articles = await seedArticles(clients, author, categories, articleCount, useOpenAI, logCallback);
 
-  await seedArticleTags(articles, tags);
-  await seedMedia(articles, clients, author);
-  await seedAnalytics(articles);
-  await seedFAQs(articles);
-  await seedRelatedArticles(articles);
-  await seedSubscribers(clients);
-  await seedSettings();
-  await seedArticleVersions(articles);
-  await seedArticleMedia(articles);
+  await seedArticleTags(articles, tags, logCallback);
+  await seedMedia(articles, clients, author, logCallback);
+  await seedAnalytics(articles, logCallback);
+  await seedFAQs(articles, logCallback);
+  await seedRelatedArticles(articles, logCallback);
+  await seedSubscribers(clients, logCallback);
+  await seedSettings(logCallback);
+  await seedArticleVersions(articles, logCallback);
+  await seedArticleMedia(articles, logCallback);
 
   const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-  console.log(`\n✅ Comprehensive seed process completed successfully in ${duration} seconds.`);
+  log(`\n✅ Comprehensive seed process completed successfully in ${duration} seconds.`, "success");
 
   const publishedCount = articles.filter((a) => a.status === ArticleStatus.PUBLISHED).length;
   const draftCount = articles.filter((a) => a.status === ArticleStatus.DRAFT).length;

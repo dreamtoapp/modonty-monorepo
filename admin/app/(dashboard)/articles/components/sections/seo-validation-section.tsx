@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { validateJsonLdComplete } from '@/lib/seo/jsonld-validator';
 import type { ValidationReport } from '@/lib/seo/jsonld-validator';
-import { getArticleJsonLd } from '../../actions/jsonld-actions';
+import { getArticleJsonLd } from '../../actions/jsonld-actions/get-article-jsonld';
 import { format } from 'date-fns';
 
 export function SEOValidationSection() {

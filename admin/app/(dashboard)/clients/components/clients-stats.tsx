@@ -1,43 +1,71 @@
 import { AnalticCard } from "@/components/shared/analtic-card";
 import { SEOScoreOverall } from "@/components/shared/seo-doctor";
-import { Building2, FileText, FileX, Calendar } from "lucide-react";
+import type { ClientsStats as ClientsStatsType } from "../actions/clients-actions/types";
 
 interface ClientsStatsProps {
-  stats: {
-    total: number;
-    withArticles: number;
-    withoutArticles: number;
-    createdThisMonth: number;
-    averageSEO: number;
-  };
+  stats: ClientsStatsType;
+}
+
+function formatNumber(num: number): string {
+  if (num >= 1000000) {
+    return `${(num / 1000000).toFixed(1)}M`;
+  }
+  if (num >= 1000) {
+    return `${(num / 1000).toFixed(1)}K`;
+  }
+  return num.toString();
 }
 
 export function ClientsStats({ stats }: ClientsStatsProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3">
       <AnalticCard
-        title="Total Clients"
-        value={stats.total}
-        icon={Building2}
-        description="All clients in the system"
+        title="Articles"
+        value={formatNumber(stats.articles.total)}
+        icon="FileText"
+        description={`${stats.articles.thisMonth} this month`}
       />
       <AnalticCard
-        title="With Articles"
-        value={stats.withArticles}
-        icon={FileText}
-        description="Clients with published articles"
+        title="Total Views"
+        value={formatNumber(stats.views.total)}
+        icon="Eye"
+        description={`${formatNumber(stats.views.thisMonth)} this month`}
       />
       <AnalticCard
-        title="Without Articles"
-        value={stats.withoutArticles}
-        icon={FileX}
-        description="Clients with no articles"
+        title="Engagement"
+        value={`${stats.engagement.engagementScore}%`}
+        icon="BarChart3"
+        description={`${Math.round(stats.engagement.avgTimeOnPage)}s avg time`}
       />
       <AnalticCard
-        title="This Month"
+        title="Bounce Rate"
+        value={`${stats.engagement.bounceRate}%`}
+        icon="TrendingUp"
+        description={`${Math.round(stats.engagement.avgScrollDepth)}% scroll`}
+      />
+      <AnalticCard
+        title="Organic"
+        value={formatNumber(stats.traffic.organic)}
+        icon="Search"
+        description="Organic search"
+      />
+      <AnalticCard
+        title="New Clients"
         value={stats.createdThisMonth}
-        icon={Calendar}
-        description="Created this month"
+        icon="Users"
+        description={`${stats.growth.newClientsTrend >= 0 ? "+" : ""}${stats.growth.newClientsTrend}% trend`}
+      />
+      <AnalticCard
+        title="Delivery"
+        value={`${stats.delivery.deliveryRate}%`}
+        icon="Package"
+        description={`${stats.delivery.totalDelivered}/${stats.delivery.totalPromised}`}
+      />
+      <AnalticCard
+        title="Retention"
+        value={`${stats.growth.retentionRate}%`}
+        icon="Target"
+        description={`${stats.withArticles} with content`}
       />
       <SEOScoreOverall value={stats.averageSEO} />
     </div>

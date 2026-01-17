@@ -35,12 +35,17 @@ export async function generateMetadata({ params }: ClientPageProps): Promise<Met
     const { slug } = await params;
     const client = await db.client.findUnique({
       where: { slug },
-      select: {
-        name: true,
-        seoTitle: true,
-        seoDescription: true,
-        logo: true,
-        ogImage: true,
+      include: {
+        logoMedia: {
+          select: {
+            url: true,
+          },
+        },
+        ogImageMedia: {
+          select: {
+            url: true,
+          },
+        },
       },
     });
 
@@ -53,7 +58,7 @@ export async function generateMetadata({ params }: ClientPageProps): Promise<Met
     return generateMetadataFromSEO({
       title: client.seoTitle || client.name,
       description: client.seoDescription || `استكشف مقالات ${client.name}`,
-      image: client.ogImage || client.logo || undefined,
+      image: client.ogImageMedia?.url || client.logoMedia?.url || undefined,
       url: `/clients/${slug}`,
       type: "website",
     });
@@ -72,6 +77,16 @@ export default async function ClientPage({ params }: ClientPageProps) {
     const client = await db.client.findUnique({
       where: { slug },
       include: {
+        logoMedia: {
+          select: {
+            url: true,
+          },
+        },
+        ogImageMedia: {
+          select: {
+            url: true,
+          },
+        },
         articles: {
           where: {
             status: ArticleStatus.PUBLISHED,
@@ -123,7 +138,7 @@ export default async function ClientPage({ params }: ClientPageProps) {
       name: client.name,
       description: (client as any).description || client.seoDescription || undefined,
       url: client.url || `/clients/${slug}`,
-      image: client.logo || client.ogImage || undefined,
+      image: client.logoMedia?.url || client.ogImageMedia?.url || undefined,
       "@type": "Organization",
       legalName: client.legalName || undefined,
       email: client.email || undefined,
@@ -173,7 +188,7 @@ export default async function ClientPage({ params }: ClientPageProps) {
                 <CardHeader>
                   <div className="flex items-center gap-4">
                     <Avatar className="h-20 w-20">
-                      <AvatarImage src={client.logo || undefined} alt={client.name} />
+                      <AvatarImage src={client.logoMedia?.url || undefined} alt={client.name} />
                       <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1">

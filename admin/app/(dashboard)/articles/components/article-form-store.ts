@@ -329,8 +329,11 @@ export const useArticleFormStore = create<ArticleFormStore>()(
               return { success: false, error: 'Submit handler not set. Please save the article first.' };
             }
 
-            const { publishArticle } = await import('../actions/publish-action');
-            const result = await publishArticle(state.formData);
+            const publishActionModule = await import('../actions/publish-action');
+            if (!('publishArticle' in publishActionModule) || typeof publishActionModule.publishArticle !== 'function') {
+              return { success: false, error: 'Publish action not available' };
+            }
+            const result = await publishActionModule.publishArticle(state.formData);
 
             if (result.success) {
               set(

@@ -1,13 +1,18 @@
 import { redirect } from "next/navigation";
 import { getClientById, createClient } from "../../actions/clients-actions";
 import { getIndustries } from "../../../industries/actions/industries-actions";
-import { PageHeader } from "@/components/shared/page-header";
+import { getClientsForSelect } from "../../actions/clients-actions/get-clients-for-select";
 import { ClientForm } from "../../components/client-form";
+import { ClientFormHeaderWrapper } from "../../components/client-form-header-wrapper";
 import { DeleteClientButton } from "../components/delete-client-button";
 
 export default async function EditClientPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [client, industries] = await Promise.all([getClientById(id), getIndustries()]);
+  const [client, industries, clients] = await Promise.all([
+    getClientById(id),
+    getIndustries(),
+    getClientsForSelect(id), // Exclude current client from parent options
+  ]);
 
   if (!client) {
     redirect("/clients");
@@ -15,14 +20,16 @@ export default async function EditClientPage({ params }: { params: Promise<{ id:
 
   return (
     <div className="container mx-auto max-w-[1128px]">
-      <PageHeader
+      <ClientFormHeaderWrapper
         title="Edit Client"
-        description="Review core details first, then expand advanced sections only when you need to adjust them."
-      />
-      <div className="mb-6">
-        <DeleteClientButton clientId={id} />
-      </div>
-      <ClientForm initialData={client} industries={industries} onSubmit={createClient} clientId={id} />
+      >
+        <>
+          <div className="mb-6">
+            <DeleteClientButton clientId={id} />
+          </div>
+          <ClientForm initialData={client} industries={industries} clients={clients} onSubmit={createClient} clientId={id} />
+        </>
+      </ClientFormHeaderWrapper>
     </div>
   );
 }

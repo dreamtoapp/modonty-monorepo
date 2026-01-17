@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: UserPageProps): Promise<Metad
           image: true,
           seoTitle: true,
           seoDescription: true,
-          twitterCreator: true,
+          twitter: true,
         },
       });
 
@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: UserPageProps): Promise<Metad
           type: "profile",
           firstName: author.firstName || undefined,
           lastName: author.lastName || undefined,
-          twitterCreator: author.twitterCreator || undefined,
+          twitterCreator: author.twitter ? author.twitter.replace(/^@/, "") : undefined,
         });
       }
 
@@ -132,8 +132,9 @@ export default async function UserPage({ params }: UserPageProps) {
       articles = author.articles;
     } else {
       // For regular users, check if they have linked author
+      // Note: Author model doesn't have userId field, checking by email match
       author = await db.author.findFirst({
-        where: { userId: id },
+        where: { email: user.email || undefined },
         include: {
           articles: {
             where: {

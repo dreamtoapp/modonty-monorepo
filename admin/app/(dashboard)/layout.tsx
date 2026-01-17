@@ -4,6 +4,8 @@ import { Sidebar } from "@/components/admin/sidebar";
 import { Header } from "@/components/admin/header";
 import { SidebarProvider } from "@/components/contexts/sidebar-context";
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardLayout({
   children,
 }: {

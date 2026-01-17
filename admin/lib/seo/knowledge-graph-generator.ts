@@ -292,17 +292,24 @@ function buildImageArray(
  * Generate Organization node (Publisher)
  */
 function generateOrganizationNode(
-  client: Client & { logoMedia?: Media | null },
+  client: Client & {
+    logoMedia?: Media | null;
+    parentOrganization?: { name: string; id?: string; url?: string } | null;
+  },
   id: string,
   siteUrl: string
 ): JsonLdNode {
   const node: JsonLdNode = {
-    "@type": "Organization",
+    "@type": (client.organizationType as string) || "Organization",
     "@id": id,
     name: client.name,
     ...(client.legalName && { legalName: client.legalName }),
+    ...(client.alternateName && { alternateName: client.alternateName }),
     ...(client.url && { url: client.url }),
     ...(client.description && { description: client.description }),
+    ...(client.slogan && { slogan: client.slogan }),
+    ...(Array.isArray(client.keywords) && client.keywords.length > 0 && { keywords: client.keywords }),
+    ...(Array.isArray(client.knowsLanguage) && client.knowsLanguage.length > 0 && { knowsLanguage: client.knowsLanguage }),
   };
 
   // Logo (required for Article rich results)
@@ -315,24 +322,112 @@ function generateOrganizationNode(
     };
   }
 
-  // Contact point
-  if (client.email || client.phone) {
-    node.contactPoint = {
-      "@type": "ContactPoint",
-      ...(client.contactType && { contactType: client.contactType }),
-      ...(client.email && { email: client.email }),
-      ...(client.phone && { telephone: client.phone }),
-    };
+  // Saudi Arabia & Gulf Identifiers
+  const identifiers: Array<Record<string, unknown>> = [];
+  if (client.commercialRegistrationNumber) {
+    identifiers.push({
+      "@type": "PropertyValue",
+      name: "Commercial Registration Number",
+      value: client.commercialRegistrationNumber,
+    });
+  }
+  if (identifiers.length > 0) {
+    node.identifier = identifiers;
+  }
+  if (client.vatID) {
+    node.vatID = client.vatID;
+  }
+  if (client.taxID) {
+    node.taxID = client.taxID;
   }
 
-  // Address
-  if (client.addressStreet || client.addressCity || client.addressCountry) {
+  // Contact point (array support)
+  const contactPoints: Array<Record<string, unknown>> = [];
+  if (client.email || client.phone) {
+    const contactPoint: Record<string, unknown> = {
+      "@type": "ContactPoint",
+    };
+    if (client.contactType) {
+      contactPoint.contactType = client.contactType;
+    } else if (client.email && client.phone) {
+      contactPoint.contactType = "customer service";
+    }
+    if (client.email) {
+      contactPoint.email = client.email;
+    }
+    if (client.phone) {
+      contactPoint.telephone = client.phone;
+    }
+    contactPoint.areaServed = client.addressCountry || "SA";
+    contactPoint.availableLanguage = Array.isArray(client.knowsLanguage) && client.knowsLanguage.length > 0
+      ? client.knowsLanguage
+      : ["Arabic", "English"];
+    contactPoints.push(contactPoint);
+  }
+  if (contactPoints.length > 0) {
+    node.contactPoint = contactPoints.length === 1 ? contactPoints[0] : contactPoints;
+  }
+
+  // Enhanced Address (National Address Format)
+  if (
+    client.addressStreet ||
+    client.addressCity ||
+    client.addressCountry ||
+    client.addressRegion ||
+    client.addressNeighborhood ||
+    client.addressBuildingNumber
+  ) {
     node.address = {
       "@type": "PostalAddress",
       ...(client.addressStreet && { streetAddress: client.addressStreet }),
+      ...(client.addressNeighborhood && { addressNeighborhood: client.addressNeighborhood }),
       ...(client.addressCity && { addressLocality: client.addressCity }),
+      ...(client.addressRegion && { addressRegion: client.addressRegion }),
       ...(client.addressCountry && { addressCountry: client.addressCountry }),
       ...(client.addressPostalCode && { postalCode: client.addressPostalCode }),
+    };
+  }
+
+  // Classification
+  if (client.isicV4) {
+    node.isicV4 = client.isicV4;
+  }
+
+  // Number of employees as QuantitativeValue
+  if (client.numberOfEmployees) {
+    const empValue = client.numberOfEmployees;
+    if (empValue.includes("-")) {
+      const [min, max] = empValue.split("-").map((v) => parseInt(v.trim()));
+      if (!isNaN(min) && !isNaN(max)) {
+        node.numberOfEmployees = {
+          "@type": "QuantitativeValue",
+          minValue: min,
+          maxValue: max,
+        };
+      }
+    } else {
+      const numValue = parseInt(empValue);
+      if (!isNaN(numValue)) {
+        node.numberOfEmployees = {
+          "@type": "QuantitativeValue",
+          value: numValue,
+        };
+      } else {
+        node.numberOfEmployees = {
+          "@type": "QuantitativeValue",
+          value: empValue,
+        };
+      }
+    }
+  }
+
+  // Parent organization relationship
+  if (client.parentOrganization) {
+    node.parentOrganization = {
+      "@type": "Organization",
+      name: client.parentOrganization.name,
+      ...(client.parentOrganization.id && { "@id": client.parentOrganization.id }),
+      ...(client.parentOrganization.url && { url: client.parentOrganization.url }),
     };
   }
 

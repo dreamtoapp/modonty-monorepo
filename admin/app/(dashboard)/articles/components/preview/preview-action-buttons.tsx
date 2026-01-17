@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, XCircle, ArrowLeft, Loader2 } from 'lucide-react';
-import { publishArticleById } from '../../actions/publish-action';
+import { publishArticleById } from '../../actions/publish-action/publish-article-by-id';
 import { requestChanges } from '../../actions/request-changes-action';
 import type { Article } from '@prisma/client';
 

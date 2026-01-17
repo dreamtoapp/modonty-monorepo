@@ -25,6 +25,16 @@ type AnalyticsData = {
   avgScrollDepth: number;
   topArticles: TopArticle[];
   trafficSources: Record<string, number>;
+  channelSummary?: Record<
+    string,
+    {
+      views: number;
+      sessions: number;
+      avgTimeOnPage: number;
+      bounceRate: number;
+      avgScrollDepth: number;
+    }
+  >;
 };
 
 type ViewsTrendData = {
@@ -123,6 +133,7 @@ export function AnalyticsPageClient({
           <AnalyticsCharts
             topArticles={analytics.topArticles}
             trafficSources={analytics.trafficSources}
+            channelSummary={analytics.channelSummary}
           />
         </>
       )}

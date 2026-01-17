@@ -118,32 +118,76 @@ export function generateAuthorStructuredData(author: Author): PersonStructuredDa
 import { OrganizationStructuredData } from "@/lib/types";
 
 export function generateOrganizationStructuredData(client: Client & {
-  logoMedia?: { url: string } | null;
+  logoMedia?: { url: string; width?: number | null; height?: number | null } | null;
+  parentOrganization?: { name: string; id?: string; url?: string } | null;
 }): OrganizationStructuredData {
   const structuredData: OrganizationStructuredData = {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": (client.organizationType as "Organization" | "Corporation" | "LocalBusiness" | "NonProfit" | undefined) || "Organization",
     name: client.name,
     ...(client.legalName && { legalName: client.legalName }),
+    ...(client.alternateName && { alternateName: client.alternateName }),
     ...(client.url && { url: client.url }),
-    ...(client.logoMedia?.url && { logo: { "@type": "ImageObject", url: client.logoMedia.url } }),
+    ...(client.slogan && { slogan: client.slogan }),
+    ...(client.logoMedia?.url && {
+      logo: {
+        "@type": "ImageObject",
+        url: client.logoMedia.url,
+        ...(client.logoMedia.width && { width: client.logoMedia.width }),
+        ...(client.logoMedia.height && { height: client.logoMedia.height }),
+      },
+    }),
     ...(client.description && { description: client.description }),
     ...(!client.description && client.seoDescription && { description: client.seoDescription }),
     ...(client.foundingDate && { foundingDate: client.foundingDate.toISOString().split("T")[0] }),
+    ...(Array.isArray(client.keywords) && client.keywords.length > 0 && { keywords: client.keywords }),
+    ...(Array.isArray(client.knowsLanguage) && client.knowsLanguage.length > 0 && { knowsLanguage: client.knowsLanguage }),
   };
 
-  // ContactPoint structure
+  // Saudi Arabia & Gulf Identifiers
+  const identifiers: Array<{ "@type": "PropertyValue"; name: string; value: string }> = [];
+  if (client.commercialRegistrationNumber) {
+    identifiers.push({
+      "@type": "PropertyValue",
+      name: "Commercial Registration Number",
+      value: client.commercialRegistrationNumber,
+    });
+  }
+  if (identifiers.length > 0) {
+    structuredData.identifier = identifiers;
+  }
+  if (client.vatID) {
+    structuredData.vatID = client.vatID;
+  }
+  if (client.taxID) {
+    structuredData.taxID = client.taxID;
+  }
+
+  // ContactPoint structure (array support)
+  const contactPoints: Array<{
+    "@type": "ContactPoint";
+    contactType?: string;
+    email?: string;
+    telephone?: string;
+    availableLanguage?: string[];
+    areaServed?: string | string[];
+  }> = [];
+  
   if (client.email || client.phone) {
     const contactPoint: {
       "@type": "ContactPoint";
       contactType?: string;
       email?: string;
       telephone?: string;
+      availableLanguage?: string[];
+      areaServed?: string | string[];
     } = {
       "@type": "ContactPoint",
     };
     if (client.contactType) {
       contactPoint.contactType = client.contactType;
+    } else if (client.email && client.phone) {
+      contactPoint.contactType = "customer service";
     }
     if (client.email) {
       contactPoint.email = client.email;
@@ -151,28 +195,82 @@ export function generateOrganizationStructuredData(client: Client & {
     if (client.phone) {
       contactPoint.telephone = client.phone;
     }
-    structuredData.contactPoint = contactPoint;
+    contactPoint.areaServed = client.addressCountry || "SA";
+    contactPoint.availableLanguage = Array.isArray(client.knowsLanguage) && client.knowsLanguage.length > 0
+      ? client.knowsLanguage
+      : ["Arabic", "English"];
+    contactPoints.push(contactPoint);
+  }
+  
+  if (contactPoints.length > 0) {
+    structuredData.contactPoint = contactPoints.length === 1 ? [contactPoints[0]] : contactPoints;
   }
 
-  // Address structure (for LocalBusiness)
-  if (client.addressStreet || client.addressCity || client.addressCountry) {
-    const address: {
-      "@type": "PostalAddress";
-      streetAddress?: string;
-      addressLocality?: string;
-      addressCountry?: string;
-      postalCode?: string;
-    } = {
+  // Enhanced Address structure (National Address Format)
+  if (
+    client.addressStreet ||
+    client.addressCity ||
+    client.addressCountry ||
+    client.addressRegion ||
+    client.addressNeighborhood ||
+    client.addressBuildingNumber
+  ) {
+    structuredData.address = {
       "@type": "PostalAddress",
+      ...(client.addressStreet && { streetAddress: client.addressStreet }),
+      ...(client.addressNeighborhood && { addressNeighborhood: client.addressNeighborhood }),
+      ...(client.addressCity && { addressLocality: client.addressCity }),
+      ...(client.addressRegion && { addressRegion: client.addressRegion }),
+      ...(client.addressCountry && { addressCountry: client.addressCountry }),
+      ...(client.addressPostalCode && { postalCode: client.addressPostalCode }),
     };
-    if (client.addressStreet) address.streetAddress = client.addressStreet;
-    if (client.addressCity) address.addressLocality = client.addressCity;
-    if (client.addressCountry) address.addressCountry = client.addressCountry;
-    if (client.addressPostalCode) address.postalCode = client.addressPostalCode;
-    structuredData.address = address;
   }
 
-  if (client.sameAs && client.sameAs.length > 0) {
+  // Classification
+  if (client.isicV4) {
+    structuredData.isicV4 = client.isicV4;
+  }
+
+  // Number of employees as QuantitativeValue
+  if (client.numberOfEmployees) {
+    const empValue = client.numberOfEmployees;
+    if (empValue.includes("-")) {
+      const [min, max] = empValue.split("-").map((v) => parseInt(v.trim()));
+      if (!isNaN(min) && !isNaN(max)) {
+        structuredData.numberOfEmployees = {
+          "@type": "QuantitativeValue",
+          minValue: min,
+          maxValue: max,
+        };
+      }
+    } else {
+      const numValue = parseInt(empValue);
+      if (!isNaN(numValue)) {
+        structuredData.numberOfEmployees = {
+          "@type": "QuantitativeValue",
+          value: numValue,
+        };
+      } else {
+        structuredData.numberOfEmployees = {
+          "@type": "QuantitativeValue",
+          value: empValue,
+        };
+      }
+    }
+  }
+
+  // Parent organization relationship
+  if (client.parentOrganization) {
+    structuredData.parentOrganization = {
+      "@type": "Organization",
+      name: client.parentOrganization.name,
+      ...(client.parentOrganization.id && { "@id": client.parentOrganization.id }),
+      ...(client.parentOrganization.url && { url: client.parentOrganization.url }),
+    };
+  }
+
+  // Social profiles
+  if (Array.isArray(client.sameAs) && client.sameAs.length > 0) {
     structuredData.sameAs = client.sameAs;
   }
 

@@ -41,6 +41,7 @@ interface FormInputProps {
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   disabled?: boolean;
+  readOnly?: boolean;
   hint?: string;
 }
 
@@ -54,6 +55,7 @@ export function FormInput({
   value,
   onChange,
   disabled,
+  readOnly,
   hint,
 }: FormInputProps) {
   return (
@@ -66,6 +68,7 @@ export function FormInput({
         value={value}
         onChange={onChange}
         disabled={disabled}
+        readOnly={readOnly}
         className={error ? "border-destructive" : ""}
       />
     </FormField>
@@ -80,6 +83,7 @@ interface FormTextareaProps {
   required?: boolean;
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLTextAreaElement>) => void;
   rows?: number;
   disabled?: boolean;
   hint?: string;
@@ -93,6 +97,7 @@ export function FormTextarea({
   required,
   value,
   onChange,
+  onBlur,
   rows = 4,
   disabled,
   hint,
@@ -105,6 +110,7 @@ export function FormTextarea({
         placeholder={placeholder}
         value={value}
         onChange={onChange}
+        onBlur={onBlur}
         disabled={disabled}
         rows={rows}
         className={error ? "border-destructive" : ""}

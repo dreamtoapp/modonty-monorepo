@@ -30,6 +30,7 @@ import {
 } from "../../helpers/url-validation";
 import { SEOHealthGauge } from "@/components/shared/seo-doctor/seo-health-gauge";
 import { organizationSEOConfig } from "../../helpers/client-seo-config";
+import { DeleteClientButton } from "./delete-client-button";
 
 interface Client {
   id: string;
@@ -73,6 +74,14 @@ interface Client {
   subscriptionStartDate: Date | null;
   subscriptionEndDate: Date | null;
   articlesPerMonth: number | null;
+  subscriptionTierConfig?: {
+    id: string;
+    tier: string;
+    name: string;
+    articlesPerMonth: number;
+    price: number;
+    isPopular: boolean;
+  } | null;
   subscriptionStatus: string;
   paymentStatus: string;
   contactType: string | null;
@@ -98,21 +107,6 @@ interface ClientViewProps {
   client: Client;
 }
 
-const getArticlesPerMonth = (tier: string | null): number => {
-  if (!tier) return 0;
-  switch (tier) {
-    case "BASIC":
-      return 2;
-    case "STANDARD":
-      return 4;
-    case "PRO":
-      return 8;
-    case "PREMIUM":
-      return 12;
-    default:
-      return 0;
-  }
-};
 
 const getTierName = (tier: string | null): string => {
   if (!tier) return "Not Set";
@@ -161,6 +155,7 @@ export function ClientView({ client }: ClientViewProps) {
             <Button asChild>
               <Link href={`/clients/${client.id}/edit`}>Edit</Link>
             </Button>
+            <DeleteClientButton clientId={client.id} />
           </div>
         </div>
       </div>
@@ -223,14 +218,29 @@ export function ClientView({ client }: ClientViewProps) {
                   )}
                 </div>
               )}
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Total Articles</p>
-                <Link
-                  href={`/articles?clientId=${client.id}`}
-                  className="text-sm text-primary hover:underline font-medium"
-                >
-                  {client._count.articles} {client._count.articles === 1 ? "article" : "articles"}
-                </Link>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Total Articles</p>
+                  <Link
+                    href={`/articles?clientId=${client.id}`}
+                    className="text-sm text-primary hover:underline font-medium"
+                  >
+                    {client._count.articles} {client._count.articles === 1 ? "article" : "articles"}
+                  </Link>
+                </div>
+                {client.url && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Website</p>
+                    <a
+                      href={client.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-primary hover:underline font-medium"
+                    >
+                      Visit Site
+                    </a>
+                  </div>
+                )}
               </div>
             </CardContent>
           </CollapsibleContent>
@@ -320,13 +330,13 @@ export function ClientView({ client }: ClientViewProps) {
                   <p className="text-sm">{format(new Date(client.subscriptionEndDate), "MMM d, yyyy")}</p>
                 </div>
               )}
-              {(client.articlesPerMonth !== null || client.subscriptionTier) && (
+              {(client.articlesPerMonth !== null || client.subscriptionTierConfig) && (
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Articles Per Month</p>
                   <p className="text-sm">
                     {client.articlesPerMonth !== null
                       ? client.articlesPerMonth
-                      : getArticlesPerMonth(client.subscriptionTier)}
+                      : client.subscriptionTierConfig?.articlesPerMonth || 0}
                   </p>
                 </div>
               )}

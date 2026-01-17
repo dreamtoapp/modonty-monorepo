@@ -1,6 +1,5 @@
 import { AnalticCard } from "@/components/shared/analtic-card";
 import { SEOScoreOverall } from "@/components/shared/seo-doctor";
-import { FolderTree, FileText, FileX, Calendar } from "lucide-react";
 
 interface CategoriesStatsProps {
   stats: {
@@ -18,25 +17,25 @@ export function CategoriesStats({ stats }: CategoriesStatsProps) {
       <AnalticCard
         title="Total Categories"
         value={stats.total}
-        icon={FolderTree}
+        icon="FolderTree"
         description="All categories in the system"
       />
       <AnalticCard
         title="With Articles"
         value={stats.withArticles}
-        icon={FileText}
+        icon="FileText"
         description="Categories with published articles"
       />
       <AnalticCard
         title="Without Articles"
         value={stats.withoutArticles}
-        icon={FileX}
+        icon="FileX"
         description="Categories with no articles"
       />
       <AnalticCard
         title="This Month"
         value={stats.createdThisMonth}
-        icon={Calendar}
+        icon="Calendar"
         description="Created this month"
       />
       <SEOScoreOverall value={stats.averageSEO} />

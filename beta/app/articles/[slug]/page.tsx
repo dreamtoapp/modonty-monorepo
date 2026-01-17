@@ -86,10 +86,30 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       where: { slug, status: ArticleStatus.PUBLISHED },
       include: {
         client: {
+          include: {
+            logoMedia: {
+              select: {
+                url: true,
+              },
+            },
+            ogImageMedia: {
+              select: {
+                url: true,
+              },
+            },
+          },
           select: {
             name: true,
-            logo: true,
-            ogImage: true,
+            logoMedia: {
+              select: {
+                url: true,
+              },
+            },
+            ogImageMedia: {
+              select: {
+                url: true,
+              },
+            },
           },
         },
         author: {
@@ -119,8 +139,8 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     const description = articleForGeneration.seoDescription || articleForGeneration.excerpt || "";
     const image =
       articleForGeneration.featuredImage?.url ||
-      articleForGeneration.client.ogImage ||
-      articleForGeneration.client.logo ||
+      articleForGeneration.client.ogImageMedia?.url ||
+      articleForGeneration.client.logoMedia?.url ||
       undefined;
 
     return generateMetadataFromSEO({
@@ -129,7 +149,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       image,
       url: articleForGeneration.canonicalUrl || `/articles/${slug}`,
       type: "article",
-      locale: articleForGeneration.inLanguage || articleForGeneration.ogLocale || "ar_SA",
+      locale: articleForGeneration.inLanguage || "ar_SA",
     });
   } catch (error) {
     console.error("Error generating metadata:", error);
@@ -150,17 +170,17 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       },
       include: {
         client: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            logo: true,
-            url: true,
-            legalName: true,
-            email: true,
-            phone: true,
-            sameAs: true,
-            seoDescription: true,
+          include: {
+            logoMedia: {
+              select: {
+                url: true,
+              },
+            },
+            ogImageMedia: {
+              select: {
+                url: true,
+              },
+            },
           },
         },
         author: {

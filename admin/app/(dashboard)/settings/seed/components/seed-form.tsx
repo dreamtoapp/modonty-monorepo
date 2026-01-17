@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,10 +8,17 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { runSeed, testOpenAI } from "../actions/seed-actions";
+import { testOpenAI } from "../actions/seed-actions";
+import { SeedLogViewer } from "./seed-log-viewer";
 
 const MIN_ARTICLES = 10;
 const MAX_ARTICLES = 300;
+
+interface LogEntry {
+  message: string;
+  level: "info" | "success" | "error";
+  timestamp: string;
+}
 
 export function SeedForm() {
   const { toast } = useToast();
@@ -20,6 +27,9 @@ export function SeedForm() {
   const [progress, setProgress] = useState(0);
   const [useOpenAI, setUseOpenAI] = useState(false);
   const [isTestingOpenAI, setIsTestingOpenAI] = useState(false);
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [isConnected, setIsConnected] = useState(false);
+  const eventSourceRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
     if (!isRunning) {
@@ -57,6 +67,15 @@ export function SeedForm() {
     };
   }, [articleCount]);
 
+  useEffect(() => {
+    return () => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
+    };
+  }, []);
+
   const handleRunSeed = async () => {
     if (!isDev) {
       toast({
@@ -78,31 +97,72 @@ export function SeedForm() {
 
     try {
       setIsRunning(true);
-      const result = await runSeed({ articleCount: distributions.total, useOpenAI });
+      setLogs([]);
+      setIsConnected(false);
 
-      if (result?.success) {
+      const url = `/api/seed/stream?articleCount=${distributions.total}&useOpenAI=${useOpenAI}`;
+      const eventSource = new EventSource(url);
+      eventSourceRef.current = eventSource;
+
+      setIsConnected(true);
+
+      eventSource.onmessage = (event) => {
+        try {
+          const logEntry: LogEntry = JSON.parse(event.data);
+          
+          if (logEntry.message === "[COMPLETE]") {
+            setIsRunning(false);
+            setIsConnected(false);
+            eventSource.close();
+            eventSourceRef.current = null;
+            toast({
+              title: "Seed completed",
+              description: `Cleared DB and seeded ${distributions.total} articles (${distributions.statuses.published} published, ${distributions.statuses.draft} draft).`,
+            });
+            return;
+          }
+
+          setLogs((prev) => [...prev, logEntry]);
+        } catch (error) {
+          console.error("Error parsing log entry:", error);
+        }
+      };
+
+      eventSource.onerror = (error) => {
+        console.error("SSE error:", error);
+        setIsConnected(false);
+        setIsRunning(false);
+        eventSource.close();
+        eventSourceRef.current = null;
+        
+        setLogs((prev) => [
+          ...prev,
+          {
+            message: "❌ Connection error. Seed process may have failed.",
+            level: "error",
+            timestamp: new Date().toISOString(),
+          },
+        ]);
+
         toast({
-          title: "Seed completed",
-          description:
-            result.message ??
-            `Cleared DB and seeded ${distributions.total} articles (${distributions.statuses.published} published, ${distributions.statuses.draft} draft).`,
-        });
-      } else {
-        toast({
-          title: "Failed to trigger seed",
-          description: result?.error ?? "Unknown error while starting the seed process.",
+          title: "Connection error",
+          description: "Lost connection to seed stream. Check logs for details.",
           variant: "destructive",
         });
-      }
+      };
     } catch (error) {
+      setIsRunning(false);
+      setIsConnected(false);
       toast({
         title: "Error",
         description: "An unexpected error occurred while starting the seed process.",
         variant: "destructive",
       });
-    } finally {
-      setIsRunning(false);
     }
+  };
+
+  const handleClearLogs = () => {
+    setLogs([]);
   };
 
   return (
@@ -258,6 +318,12 @@ export function SeedForm() {
           </div>
         </CardContent>
       </Card>
+
+      <SeedLogViewer
+        logs={logs}
+        onClear={handleClearLogs}
+        isConnected={isConnected}
+      />
     </div>
   );
 }

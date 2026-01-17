@@ -13,24 +13,29 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Search, ArrowUpDown, ArrowUp, ArrowDown, Stethoscope } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SEOHealthGauge } from "@/components/shared/seo-doctor/seo-health-gauge";
-import { articleSEOConfig } from "../helpers/article-seo-config";
+import { analyzeArticleSEO } from "../analyzer";
+import type { Article as ArticleViewType } from "../[id]/helpers/article-view-types";
 
-interface Article {
-  id: string;
-  title: string;
-  status: ArticleStatus;
-  createdAt: Date;
-  datePublished: Date | null;
-  scheduledAt: Date | null;
+type Article = ArticleViewType & {
   views: number;
-  client: { name: string } | null;
-  category: { name: string } | null;
-  author: { name: string } | null;
-  seoTitle?: string | null;
-  seoDescription?: string | null;
-  canonicalUrl?: string | null;
-  [key: string]: unknown;
+};
+
+// Small component to display SEO score in table
+function ArticleTableSEOScore({ article }: { article: ArticleViewType }) {
+  const scoreResult = useMemo(() => analyzeArticleSEO(article), [article]);
+  const score = scoreResult.percentage;
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'bg-green-500 text-white';
+    if (score >= 60) return 'bg-yellow-500 text-white';
+    return 'bg-red-500 text-white';
+  };
+
+  return (
+    <Badge className={cn('px-2 py-0.5 text-xs font-semibold', getScoreColor(score))}>
+      {score}%
+    </Badge>
+  );
 }
 
 interface ArticleTableProps {
@@ -301,7 +306,7 @@ export function ArticleTable({ articles, onSelectionChange }: ArticleTableProps)
                     />
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
-                    <SEOHealthGauge data={article} config={articleSEOConfig} size="xs" />
+                    <ArticleTableSEOScore article={article} />
                   </TableCell>
                   <TableCell>
                     <Link

@@ -1,6 +1,5 @@
 import { AnalticCard } from "@/components/shared/analtic-card";
 import { SEOScoreOverall } from "@/components/shared/seo-doctor";
-import { Building2, Users, UserX, Calendar } from "lucide-react";
 
 interface IndustriesStatsProps {
   stats: {
@@ -18,25 +17,25 @@ export function IndustriesStats({ stats }: IndustriesStatsProps) {
       <AnalticCard
         title="Total Industries"
         value={stats.total}
-        icon={Building2}
+        icon="Building2"
         description="All industries in the system"
       />
       <AnalticCard
         title="With Clients"
         value={stats.withClients}
-        icon={Users}
+        icon="Users"
         description="Industries with clients"
       />
       <AnalticCard
         title="Without Clients"
         value={stats.withoutClients}
-        icon={UserX}
+        icon="UserX"
         description="Industries with no clients"
       />
       <AnalticCard
         title="This Month"
         value={stats.createdThisMonth}
-        icon={Calendar}
+        icon="Calendar"
         description="Created this month"
       />
       <SEOScoreOverall value={stats.averageSEO} />

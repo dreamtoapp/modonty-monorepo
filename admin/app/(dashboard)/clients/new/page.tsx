@@ -1,18 +1,22 @@
 import { createClient } from "../actions/clients-actions";
 import { getIndustries } from "../../industries/actions/industries-actions";
-import { PageHeader } from "@/components/shared/page-header";
+import { getClientsForSelect } from "../actions/clients-actions/get-clients-for-select";
 import { ClientForm } from "../components/client-form";
+import { ClientFormHeaderWrapper } from "../components/client-form-header-wrapper";
 
 export default async function NewClientPage() {
-  const industries = await getIndustries();
+  const [industries, clients] = await Promise.all([
+    getIndustries(),
+    getClientsForSelect(),
+  ]);
 
   return (
     <div className="container mx-auto max-w-[1128px]">
-      <PageHeader
+      <ClientFormHeaderWrapper
         title="Create Client"
-        description="Start with the essentials, then optionally expand advanced sections as needed."
-      />
-      <ClientForm industries={industries} onSubmit={createClient} />
+      >
+        <ClientForm industries={industries} clients={clients} onSubmit={createClient} />
+      </ClientFormHeaderWrapper>
     </div>
   );
 }

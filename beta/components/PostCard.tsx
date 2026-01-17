@@ -27,6 +27,7 @@ export function PostCard({ post }: PostCardProps) {
     return clientMap[post.clientName] || "";
   };
 
+
   const articleStructuredData = {
     "@context": "https://schema.org",
     "@type": "Article",

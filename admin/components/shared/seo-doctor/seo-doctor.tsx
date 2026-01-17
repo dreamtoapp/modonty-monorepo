@@ -1,14 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useMemo } from "react";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import {
   Tooltip,
   TooltipContent,
@@ -21,8 +21,6 @@ import {
   AlertCircle,
   Info,
   Stethoscope,
-  ChevronDown,
-  ChevronUp,
   Code,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -63,8 +61,6 @@ export interface SEODoctorProps {
 }
 
 export function SEODoctor({ data, config, title = "SEO Doctor" }: SEODoctorProps) {
-  const [showSchema, setShowSchema] = useState(false);
-
   const structuredDataPreview = useMemo(() => {
     return config.generateStructuredData(data);
   }, [data, config]);
@@ -73,10 +69,9 @@ export function SEODoctor({ data, config, title = "SEO Doctor" }: SEODoctorProps
 
   const healthChecks = useMemo(() => {
     const checks: SEOHealthCheck[] = [];
-    const seenFields = new Set<string>(); // Track duplicates like calculateSEOScore
+    const seenFields = new Set<string>();
 
     for (const fieldConfig of config.fields) {
-      // Skip duplicates to match calculateSEOScore behavior
       if (seenFields.has(fieldConfig.name)) {
         continue;
       }
@@ -123,95 +118,111 @@ export function SEODoctor({ data, config, title = "SEO Doctor" }: SEODoctorProps
     }
   };
 
+  const errorCount = healthChecks.checks.filter(c => c.status === "error").length;
+  const warningCount = healthChecks.checks.filter(c => c.status === "warning").length;
+  const goodCount = healthChecks.checks.filter(c => c.status === "good").length;
+
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Stethoscope className="h-5 w-5 text-primary" />
-            <CardTitle>{title}</CardTitle>
-          </div>
-          <Badge
-            variant={getScoreBadgeVariant(scorePercentage)}
-            className="text-sm font-semibold"
-          >
-            {scorePercentage}%
-          </Badge>
-        </div>
-        <div className="mt-2">
-          <div className="flex items-center justify-between text-sm text-muted-foreground mb-1">
-            <span>SEO Health Score</span>
-            <span className={cn("font-semibold", getScoreColor(scorePercentage))}>
-              {healthChecks.totalScore} / {healthChecks.maxScore} points
-            </span>
-          </div>
-          <Progress value={scorePercentage} className="h-2" />
-        </div>
-      </CardHeader>
-      <CardContent>
-        <TooltipProvider>
-          <div className="flex flex-wrap gap-2">
-            {healthChecks.checks.map((check, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border bg-card w-fit"
+    <div className="w-full">
+      <HoverCard>
+        <HoverCardTrigger asChild>
+          <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer w-full">
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Stethoscope className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium text-muted-foreground">SEO</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <Progress value={scorePercentage} className="h-1.5" />
+            </div>
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <div className="flex items-center gap-1.5">
+                {errorCount > 0 && (
+                  <div className="flex items-center gap-1">
+                    <XCircle className="h-3.5 w-3.5 text-red-600" />
+                    <span className="text-xs font-medium text-red-600">{errorCount}</span>
+                  </div>
+                )}
+                {warningCount > 0 && (
+                  <div className="flex items-center gap-1">
+                    <AlertCircle className="h-3.5 w-3.5 text-yellow-600" />
+                    <span className="text-xs font-medium text-yellow-600">{warningCount}</span>
+                  </div>
+                )}
+                {goodCount > 0 && (
+                  <div className="flex items-center gap-1">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+                    <span className="text-xs font-medium text-green-600">{goodCount}</span>
+                  </div>
+                )}
+              </div>
+              <Badge
+                variant={getScoreBadgeVariant(scorePercentage)}
+                className={cn(
+                  "text-xs font-semibold px-2 py-0.5",
+                  scorePercentage >= 80 && "bg-green-600 hover:bg-green-700",
+                  scorePercentage >= 60 && scorePercentage < 80 && "bg-yellow-600 hover:bg-yellow-700",
+                  scorePercentage < 60 && "bg-red-600 hover:bg-red-700"
+                )}
               >
-                <div className="flex-shrink-0">{getStatusIcon(check.status)}</div>
-                <div className="flex items-center gap-1">
-                  <p className="text-xs font-medium">{check.field}</p>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Info className="h-3 w-3 text-muted-foreground cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="max-w-xs">{check.message}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-                {check.score > 0 && (
-                  <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">
-                    +{check.score}
-                  </Badge>
-                )}
-              </div>
-            ))}
+                {scorePercentage}%
+              </Badge>
+            </div>
           </div>
-        </TooltipProvider>
-        <div className="mt-3 p-2 rounded-md bg-muted/50 border">
-          <p className="text-[10px] text-muted-foreground">
-            <strong>Tip:</strong> Aim for 80%+ score for optimal SEO performance. All fields
-            marked in green contribute to better search engine visibility and Schema.org
-            structured data.
-          </p>
-        </div>
-        <div suppressHydrationWarning>
-          <Collapsible open={showSchema} onOpenChange={setShowSchema}>
-            <CollapsibleTrigger className="w-full mt-3">
-              <div className="flex items-center justify-between p-2 rounded-md border bg-muted/30 hover:bg-muted/50 transition-colors">
-                <div className="flex items-center gap-2">
-                  <Code className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="text-xs font-medium">Schema.org Preview</span>
+        </HoverCardTrigger>
+        <HoverCardContent className="w-[500px] max-h-[80vh] overflow-y-auto" align="start" side="bottom" sideOffset={8}>
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-sm font-semibold mb-3">SEO Health Analysis</h4>
+              <TooltipProvider>
+                <div className="flex flex-wrap gap-2">
+                  {healthChecks.checks.map((check, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border bg-card w-fit"
+                    >
+                      <div className="flex-shrink-0">{getStatusIcon(check.status)}</div>
+                      <div className="flex items-center gap-1">
+                        <p className="text-xs font-medium">{check.field}</p>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">{check.message}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      {check.score > 0 && (
+                        <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">
+                          +{check.score}
+                        </Badge>
+                      )}
+                    </div>
+                  ))}
                 </div>
-                {showSchema ? (
-                  <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-                )}
+              </TooltipProvider>
+            </div>
+
+            <div className="p-2 rounded-md bg-muted/50 border">
+              <p className="text-[10px] text-muted-foreground">
+                <strong>Tip:</strong> Aim for 80%+ score for optimal SEO performance. All fields
+                marked in green contribute to better search engine visibility and Schema.org
+                structured data.
+              </p>
+            </div>
+
+            <div className="p-3 rounded-md border bg-background">
+              <div className="flex items-center gap-2 mb-2">
+                <Code className="h-3.5 w-3.5 text-muted-foreground" />
+                <p className="text-xs font-medium">Schema.org Preview</p>
               </div>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <div className="mt-2 p-3 rounded-md border bg-background">
-                <p className="text-[10px] text-muted-foreground mb-2">
-                  This is how your Schema.org structured data will appear:
-                </p>
-                <pre className="text-[10px] overflow-x-auto p-2 rounded bg-muted/30 border font-mono">
-                  {JSON.stringify(structuredDataPreview, null, 2)}
-                </pre>
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-        </div>
-      </CardContent>
-    </Card>
+              <pre className="text-[10px] overflow-x-auto p-2 rounded bg-muted/30 border font-mono max-h-40 overflow-y-auto">
+                {JSON.stringify(structuredDataPreview, null, 2)}
+              </pre>
+            </div>
+          </div>
+        </HoverCardContent>
+      </HoverCard>
+    </div>
   );
 }

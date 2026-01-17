@@ -5,7 +5,10 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, AlertCircle, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { CategoryScore } from '../../helpers/seo-guidance-analyzer';
+import type { ArticleSEOCategory } from '../../analyzer';
+
+// Alias for backward compatibility
+type CategoryScore = ArticleSEOCategory;
 
 interface SEOHealthScoreProps {
   score: number;

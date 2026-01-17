@@ -1,11 +1,9 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Stethoscope, CheckCircle2, AlertCircle, AlertTriangle, LucideIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { AnalticCard } from "@/components/shared/analtic-card";
 
 export interface SEOScoreOverallProps {
   value: number;
   title?: string;
-  icon?: LucideIcon;
+  icon?: string;
   className?: string;
   thresholds?: {
     excellent: number;
@@ -17,7 +15,7 @@ export interface SEOScoreOverallProps {
 export function SEOScoreOverall({
   value,
   title = "SEO Health",
-  icon: Icon = Stethoscope,
+  icon = "Stethoscope",
   className,
   thresholds = {
     excellent: 90,
@@ -47,9 +45,9 @@ export function SEOScoreOverall({
   };
 
   const getStatusIcon = (score: number) => {
-    if (score >= thresholds.excellent) return CheckCircle2;
-    if (score >= thresholds.good) return AlertTriangle;
-    return AlertCircle;
+    if (score >= thresholds.excellent) return "CheckCircle2";
+    if (score >= thresholds.good) return "AlertTriangle";
+    return "AlertCircle";
   };
 
   const getStatusHint = (score: number) => {
@@ -62,37 +60,22 @@ export function SEOScoreOverall({
   const scoreColor = getScoreColor(value);
   const progressColor = getProgressColor(value);
   const borderColor = getBorderColor(value);
-  const StatusIcon = getStatusIcon(value);
+  const statusIcon = getStatusIcon(value);
   const statusHint = getStatusHint(value);
 
   return (
-    <Card
-      className={cn("hover:shadow-md transition-shadow border-l-4 flex flex-col", className)}
-      style={{ borderLeftColor: borderColor }}
-    >
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <div className="flex items-center justify-between w-full">
-          <span className="text-sm font-medium">{title}</span>
-          <Icon className="h-4 w-4 text-primary" />
-        </div>
-      </CardHeader>
-      <CardContent className="flex-1 flex flex-col">
-        <div className={cn("text-2xl font-semibold mb-2", scoreColor)}>
-          {value}%
-        </div>
-        <div className="relative h-2 w-full overflow-hidden rounded-full bg-muted mb-2">
-          <div
-            className={cn("h-full transition-all duration-500 ease-out", progressColor)}
-            style={{ width: `${value}%` }}
-          />
-        </div>
-        <div className="flex items-center gap-1.5 mt-auto">
-          <StatusIcon className={cn("h-3.5 w-3.5", scoreColor)} />
-          <span className={cn("text-xs font-medium", scoreColor)}>
-            {statusHint}
-          </span>
-        </div>
-      </CardContent>
-    </Card>
+    <AnalticCard
+      title={title}
+      value={`${value}%`}
+      icon={icon}
+      className={className}
+      showProgress={true}
+      progressValue={value}
+      progressColor={progressColor}
+      borderLeftColor={borderColor}
+      statusIcon={statusIcon}
+      statusText={statusHint}
+      valueColor={scoreColor}
+    />
   );
 }

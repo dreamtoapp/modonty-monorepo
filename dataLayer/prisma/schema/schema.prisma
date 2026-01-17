@@ -183,6 +183,7 @@ model Client {
   seoTitle       String?
   seoDescription String?
   description    String? // Schema.org Organization description (separate from seoDescription)
+  metaRobots     String? // index, noindex, follow, nofollow
 
   // Business Information
   businessBrief     String? // Business description for content writers
@@ -200,6 +201,35 @@ model Client {
   addressCountry    String?
   addressPostalCode String?
 
+  // Saudi Arabia & Gulf Identifiers (CRITICAL)
+  commercialRegistrationNumber String? // CR Number - CRITICAL
+  vatID                        String? // VAT registration number (ZATCA)
+  taxID                        String? // Tax identification number (ZATCA/Zakat)
+  legalForm                    String? // Entity type: LLC, JSC, Sole Proprietorship, Partnership, etc.
+
+  // Address Enhancement (National Address Format)
+  addressRegion                String? // Province/region (Saudi has 13 regions)
+  addressNeighborhood          String? // Neighborhood/district (National Address)
+  addressBuildingNumber        String? // Building number (National Address)
+  addressAdditionalNumber      String? // Additional number (National Address)
+
+  // Classification & Business Info
+  businessActivityCode         String? // Local business activity classification code
+  isicV4                       String? // International Standard Industrial Classification (V4)
+  numberOfEmployees            String? // Employee count (QuantitativeValue as string)
+  licenseNumber                String? // License number (for regulated sectors)
+  licenseAuthority             String? // Regulatory authority
+
+  // Additional Properties
+  alternateName                String? // Alternative names (Arabic name, trade name, etc.)
+  slogan                       String? // Company slogan/motto
+  keywords                     String[] // Keywords for classification
+  knowsLanguage                String[] // Languages: ["Arabic", "English"]
+  organizationType             String? // Subtype: Organization, Corporation, LocalBusiness, NonProfit, etc.
+
+  // Organization Relationships
+  parentOrganizationId         String? @db.ObjectId // Parent company reference
+
   // Twitter Cards
   twitterCard        String? // summary_large_image, summary
   twitterTitle       String?
@@ -213,10 +243,12 @@ model Client {
   gtmId String? // Google Tag Manager ID
 
   // Subscription Management
-  subscriptionTier      SubscriptionTier?
+  subscriptionTier      SubscriptionTier
+  subscriptionTierConfigId String? @db.ObjectId // Reference to tier config
+  subscriptionTierConfig SubscriptionTierConfig? @relation("ClientTierConfig", fields: [subscriptionTierConfigId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   subscriptionStartDate DateTime?
   subscriptionEndDate   DateTime?
-  articlesPerMonth      Int? // Calculated from tier
+  articlesPerMonth      Int? // Calculated from tier (can be overridden manually)
   subscriptionStatus    SubscriptionStatus @default(PENDING)
   paymentStatus         PaymentStatus      @default(PENDING)
 
@@ -225,13 +257,48 @@ model Client {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
+  // ============================================
+  // JSON-LD Knowledge Graph
+  // ============================================
+  jsonLdStructuredData   String?   @db.String // Cached @graph JSON string (source of truth)
+  jsonLdLastGenerated    DateTime? // When JSON-LD was last generated
+  jsonLdValidationReport Json? // {adobe: {valid, errors, warnings}, custom: {...}, richResults: {...}}
+  
+  // Complete Meta Tags Object
+  metaTags Json? // Complete meta tags object (standard SEO, Open Graph, Twitter Cards, etc.)
+
   // Relationships
-  articles    Article[]
-  subscribers Subscriber[]
-  media       Media[]      @relation("ClientMedia")
+  articles          Article[]
+  subscribers       Subscriber[]
+  media             Media[]      @relation("ClientMedia")
+  parentOrganization Client?     @relation("ClientParent", fields: [parentOrganizationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subOrganizations  Client[]     @relation("ClientParent")
 
   @@index([industryId])
   @@map("clients")
+}
+
+// ============================================
+// SUBSCRIPTION TIER CONFIG
+// ============================================
+
+model SubscriptionTierConfig {
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  tier            SubscriptionTier @unique
+  name            String          // "Basic", "Standard", "Pro", "Premium"
+  articlesPerMonth Int            // 2, 4, 8, 12
+  price           Float           // 2499, 3999, 6999, 9999 (store as number, format in UI)
+  isActive        Boolean         @default(true)
+  isPopular       Boolean         @default(false) // For "Most Popular" badge
+  description     String?         // Optional tier description
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relationships
+  clients         Client[]        @relation("ClientTierConfig")
+
+  @@map("subscription_tier_configs")
+  @@index([isActive])
 }
 
 // ============================================

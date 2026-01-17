@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Search, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ArticleRowActions } from "@/app/(dashboard)/articles/components/article-row-actions";
 
 interface Article {
   id: string;
@@ -139,9 +138,11 @@ export function ClientArticles({ articles, clientId }: ClientArticlesProps) {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Articles</CardTitle>
-          <Button variant="outline" size="sm" asChild>
-            <Link href={`/articles?clientId=${clientId}`}>View All Articles</Link>
-          </Button>
+          {articles.length > 0 && (
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/articles?clientId=${clientId}`}>View All Articles</Link>
+            </Button>
+          )}
         </div>
       </CardHeader>
       <CardContent>
@@ -211,13 +212,12 @@ export function ClientArticles({ articles, clientId }: ClientArticlesProps) {
                       {getSortIcon("datePublished")}
                     </div>
                   </TableHead>
-                  <TableHead className="w-[70px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginatedData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                       <div className="flex flex-col items-center gap-2">
                         <p className="text-sm font-medium">No articles found</p>
                         <p className="text-xs">Try adjusting your search terms</p>
@@ -249,9 +249,6 @@ export function ClientArticles({ articles, clientId }: ClientArticlesProps) {
                           : article.scheduledAt
                             ? `Scheduled: ${format(new Date(article.scheduledAt), "MMM d, yyyy")}`
                             : "-"}
-                      </TableCell>
-                      <TableCell>
-                        <ArticleRowActions articleId={article.id} />
                       </TableCell>
                     </TableRow>
                   ))

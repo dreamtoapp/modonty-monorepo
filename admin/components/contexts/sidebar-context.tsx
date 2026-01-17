@@ -12,7 +12,7 @@ const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 const STORAGE_KEY = "sidebar-collapsed";
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       // localStorage might not be available
-      setCollapsed(false);
+      setCollapsed(true);
     }
   }, []);
 

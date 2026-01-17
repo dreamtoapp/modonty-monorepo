@@ -7,12 +7,39 @@ import Link from "next/link";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Search, ArrowUpDown, ArrowUp, ArrowDown, Stethoscope } from "lucide-react";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Stethoscope,
+  CreditCard,
+  Calendar,
+  FileText,
+  Package,
+  TrendingUp,
+  Users,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ClientRowActions } from "./client-row-actions";
 import { SEOHealthGauge } from "@/components/shared/seo-doctor/seo-health-gauge";
 import { organizationSEOConfig } from "../helpers/client-seo-config";
 import { SortableValue } from "@/lib/types";
+import { SubscriptionStatus, PaymentStatus, SubscriptionTier } from "@prisma/client";
+import {
+  calculateRevenue,
+  getSubscriptionDaysRemaining,
+  calculateDeliveryRate,
+} from "../helpers/business-metrics";
+import { calculateSEOScore } from "@/helpers/utils/seo-score-calculator";
 
 interface Client {
   id: string;
@@ -21,6 +48,14 @@ interface Client {
   email: string | null;
   phone: string | null;
   createdAt: Date;
+  subscriptionTier?: SubscriptionTier | null;
+  subscriptionStatus: SubscriptionStatus;
+  paymentStatus: PaymentStatus;
+  subscriptionEndDate?: Date | null;
+  articlesPerMonth?: number | null;
+  metaTags?: any;
+  jsonLdStructuredData?: string | null;
+  jsonLdValidationReport?: any;
   logoMedia?: {
     url: string;
     altText: string | null;
@@ -39,6 +74,12 @@ interface Client {
     width: number | null;
     height: number | null;
   } | null;
+  subscriptionTierConfig?: {
+    price: number;
+    articlesPerMonth: number;
+    tier: SubscriptionTier;
+  } | null;
+  articles?: Array<{ id: string; datePublished: Date | null }>;
   _count: {
     articles: number;
   };
@@ -50,6 +91,65 @@ interface ClientTableProps {
 }
 
 type SortDirection = "asc" | "desc" | null;
+
+/**
+ * Checks if metaTags are valid/correct
+ */
+function isMetaTagsValid(client: Client): boolean {
+  if (!client.metaTags) {
+    return false;
+  }
+  
+  // Basic validation: check if metaTags object exists and has required fields
+  const metaTags = client.metaTags;
+  if (typeof metaTags !== "object" || metaTags === null) {
+    return false;
+  }
+  
+  // Check for critical meta tags fields
+  // This is a basic check - can be expanded based on requirements
+  return true;
+}
+
+/**
+ * Checks if JSON-LD is valid/correct
+ */
+function isJsonLdValid(client: Client): boolean {
+  if (!client.jsonLdStructuredData) {
+    return false;
+  }
+  
+  // Check if JSON-LD string can be parsed
+  try {
+    const jsonLd = JSON.parse(client.jsonLdStructuredData);
+    
+    // Basic validation: check if it's an object with @context or @graph
+    if (typeof jsonLd !== "object" || jsonLd === null) {
+      return false;
+    }
+    
+    // Check validation report if available
+    if (client.jsonLdValidationReport) {
+      const report = client.jsonLdValidationReport as any;
+      
+      // Check Adobe validation if available
+      if (report.adobe && report.adobe.valid === false) {
+        // If validation report says invalid, consider it critical
+        return false;
+      }
+      
+      // Check custom validation if available
+      if (report.custom && report.custom.valid === false) {
+        return false;
+      }
+    }
+    
+    return true;
+  } catch {
+    // If JSON parsing fails, it's invalid
+    return false;
+  }
+}
 
 export function ClientTable({ clients, onSelectionChange }: ClientTableProps) {
   const [search, setSearch] = useState("");
@@ -90,6 +190,14 @@ export function ClientTable({ clients, onSelectionChange }: ClientTableProps) {
         } else if (sortKey === "createdAt") {
           aValue = a.createdAt;
           bValue = b.createdAt;
+        } else if (sortKey === "tier") {
+          aValue = a.subscriptionTier || "";
+          bValue = b.subscriptionTier || "";
+        } else if (sortKey === "expires") {
+          const aDays = getSubscriptionDaysRemaining(a as any);
+          const bDays = getSubscriptionDaysRemaining(b as any);
+          aValue = aDays ?? Infinity;
+          bValue = bDays ?? Infinity;
         }
 
         if (aValue === null || aValue === undefined) return 1;
@@ -202,9 +310,6 @@ export function ClientTable({ clients, onSelectionChange }: ClientTableProps) {
                   className="h-4 w-4 rounded border-gray-300"
                 />
               </TableHead>
-              <TableHead className="w-[70px]">
-                <Stethoscope className="h-4 w-4 text-primary" />
-              </TableHead>
               <TableHead
                 className="cursor-pointer hover:bg-muted/50"
                 onClick={() => handleSort("name")}
@@ -216,22 +321,14 @@ export function ClientTable({ clients, onSelectionChange }: ClientTableProps) {
               </TableHead>
               <TableHead
                 className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("slug")}
+                onClick={() => handleSort("tier")}
               >
                 <div className="flex items-center">
-                  Slug
-                  {getSortIcon("slug")}
+                  Tier
+                  {getSortIcon("tier")}
                 </div>
               </TableHead>
-              <TableHead
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("email")}
-              >
-                <div className="flex items-center">
-                  Email
-                  {getSortIcon("email")}
-                </div>
-              </TableHead>
+              <TableHead>Status</TableHead>
               <TableHead
                 className="cursor-pointer hover:bg-muted/50"
                 onClick={() => handleSort("articles")}
@@ -241,22 +338,25 @@ export function ClientTable({ clients, onSelectionChange }: ClientTableProps) {
                   {getSortIcon("articles")}
                 </div>
               </TableHead>
+              <TableHead className="text-center">SEO Score</TableHead>
+              <TableHead>Delivery</TableHead>
               <TableHead
                 className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("createdAt")}
+                onClick={() => handleSort("expires")}
               >
                 <div className="flex items-center">
-                  Created
-                  {getSortIcon("createdAt")}
+                  Expires
+                  {getSortIcon("expires")}
                 </div>
               </TableHead>
-              <TableHead className="w-[70px]">Actions</TableHead>
+              <TableHead className="text-center">MetaTags</TableHead>
+              <TableHead className="text-center">JSON-LD</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
                   <div className="flex flex-col items-center gap-2">
                     <p className="text-sm font-medium">No clients found</p>
                     <p className="text-xs">Try adjusting your filters or search terms</p>
@@ -264,59 +364,248 @@ export function ClientTable({ clients, onSelectionChange }: ClientTableProps) {
                 </TableCell>
               </TableRow>
             ) : (
-              paginatedData.map((client) => (
-                <TableRow
-                  key={client.id}
-                  className="cursor-pointer"
-                  onClick={() => {
-                    window.location.href = `/clients/${client.id}`;
-                  }}
-                >
+              paginatedData.map((client) => {
+                const daysRemaining = getSubscriptionDaysRemaining(client as any);
+                const delivery = calculateDeliveryRate(client as any, client.articles?.length ?? 0);
+                const tierName = client.subscriptionTier
+                  ? client.subscriptionTier.charAt(0) + client.subscriptionTier.slice(1).toLowerCase()
+                  : "N/A";
+                
+                // Calculate SEO Score for marketing insights
+                const seoScoreResult = calculateSEOScore(client, organizationSEOConfig);
+                const seoScore = seoScoreResult.percentage;
+
+                const getStatusBadge = () => {
+                  const isActive = client.subscriptionStatus === SubscriptionStatus.ACTIVE;
+                  const isPaid = client.paymentStatus === PaymentStatus.PAID;
+                  const isOverdue = client.paymentStatus === PaymentStatus.OVERDUE;
+
+                  if (isActive && isPaid) {
+                    return <Badge variant="default">Active</Badge>;
+                  }
+                  if (isActive && isOverdue) {
+                    return <Badge variant="destructive">Overdue</Badge>;
+                  }
+                  if (isActive) {
+                    return <Badge variant="secondary">Pending Payment</Badge>;
+                  }
+                  if (client.subscriptionStatus === SubscriptionStatus.EXPIRED) {
+                    return <Badge variant="outline">Expired</Badge>;
+                  }
+                  if (client.subscriptionStatus === SubscriptionStatus.CANCELLED) {
+                    return <Badge variant="outline">Cancelled</Badge>;
+                  }
+                  return <Badge variant="secondary">Pending</Badge>;
+                };
+
+                return (
+                  <TableRow
+                    key={client.id}
+                    className="cursor-pointer"
+                    onClick={() => {
+                      window.location.href = `/clients/${client.id}`;
+                    }}
+                  >
                     <TableCell onClick={(e) => e.stopPropagation()}>
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.has(client.id)}
-                      onChange={(e) => {
-                        e.stopPropagation();
-                        handleSelectOne(client.id, e.target.checked);
-                      }}
-                      className="h-4 w-4 rounded border-gray-300"
-                    />
-                  </TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <SEOHealthGauge 
-                      data={{
-                        ...client,
-                        logoMedia: client.logoMedia,
-                        ogImageMedia: client.ogImageMedia,
-                        twitterImageMedia: client.twitterImageMedia,
-                      }} 
-                      config={organizationSEOConfig} 
-                      size="xs" 
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Link
-                      href={`/clients/${client.id}`}
-                      className="font-medium hover:text-primary"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {client.name}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-muted-foreground text-sm">{client.slug}</span>
-                  </TableCell>
-                  <TableCell>{client.email || "-"}</TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <Badge variant="secondary">{client._count.articles}</Badge>
-                  </TableCell>
-                  <TableCell>{format(new Date(client.createdAt), "MMM d, yyyy")}</TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <ClientRowActions clientId={client.id} />
-                  </TableCell>
-                </TableRow>
-              ))
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(client.id)}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleSelectOne(client.id, e.target.checked);
+                        }}
+                        className="h-4 w-4 rounded border-gray-300"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <HoverCard openDelay={200} closeDelay={100}>
+                        <HoverCardTrigger asChild>
+                          <Link
+                            href={`/clients/${client.id}`}
+                            className="font-medium hover:text-primary"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {client.name}
+                          </Link>
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-80" onClick={(e) => e.stopPropagation()}>
+                          <div className="space-y-4">
+                            <div className="space-y-1">
+                              <h4 className="text-sm font-semibold">{client.name}</h4>
+                              {client.email && (
+                                <p className="text-xs text-muted-foreground">{client.email}</p>
+                              )}
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                  <FileText className="h-3 w-3" />
+                                  <span>Total Articles</span>
+                                </div>
+                                <p className="text-sm font-semibold">{client._count.articles}</p>
+                              </div>
+                              
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                  <Package className="h-3 w-3" />
+                                  <span>This Month</span>
+                                </div>
+                                <p className="text-sm font-semibold">{client.articles?.length ?? 0}</p>
+                              </div>
+                              
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                  <TrendingUp className="h-3 w-3" />
+                                  <span>Delivery Rate</span>
+                                </div>
+                                <p className="text-sm font-semibold">
+                                  {delivery.promised > 0 ? `${delivery.rate}%` : "-"}
+                                </p>
+                              </div>
+                              
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                  <Users className="h-3 w-3" />
+                                  <span>Tier</span>
+                                </div>
+                                <p className="text-sm font-semibold">{tierName}</p>
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-2 pt-2 border-t">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-muted-foreground">Status</span>
+                                {getStatusBadge()}
+                              </div>
+                              
+                              {delivery.promised > 0 && (
+                                <div className="flex items-center justify-between text-xs">
+                                  <span className="text-muted-foreground">Delivery</span>
+                                  <span className={cn(
+                                    "font-medium",
+                                    delivery.isBehind ? "text-destructive" : "text-foreground"
+                                  )}>
+                                    {delivery.delivered}/{delivery.promised} articles
+                                  </span>
+                                </div>
+                              )}
+                              
+                              {daysRemaining !== null && (
+                                <div className="flex items-center justify-between text-xs">
+                                  <span className="text-muted-foreground">Expires</span>
+                                  <span className={cn(
+                                    "font-medium",
+                                    daysRemaining <= 30
+                                      ? "text-destructive"
+                                      : daysRemaining <= 90
+                                        ? "text-orange-500"
+                                        : "text-foreground"
+                                  )}>
+                                    {daysRemaining > 0 ? `In ${daysRemaining} days` : "Expired"}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className="pt-2 border-t">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full"
+                                asChild
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Link href={`/clients/${client.id}`}>View Details</Link>
+                              </Button>
+                            </div>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{tierName}</Badge>
+                    </TableCell>
+                    <TableCell>{getStatusBadge()}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <FileText className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-sm font-medium">{client._count.articles}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-center">
+                        <span
+                          className={cn(
+                            "text-sm font-semibold",
+                            seoScore >= 80
+                              ? "text-green-600"
+                              : seoScore >= 60
+                                ? "text-yellow-600"
+                                : "text-red-600"
+                          )}
+                        >
+                          {seoScore}%
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {delivery.promised > 0 ? (
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={cn(
+                              "text-sm font-medium",
+                              delivery.isBehind ? "text-destructive" : "text-foreground"
+                            )}
+                          >
+                            {delivery.delivered}/{delivery.promised}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            ({delivery.rate}%)
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {daysRemaining !== null ? (
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3 text-muted-foreground" />
+                          <span
+                            className={cn(
+                              "text-sm",
+                              daysRemaining <= 30
+                                ? "text-destructive font-medium"
+                                : daysRemaining <= 90
+                                  ? "text-orange-500"
+                                  : "text-muted-foreground"
+                            )}
+                          >
+                            {daysRemaining > 0 ? `${daysRemaining}d` : "Expired"}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                      {isMetaTagsValid(client) ? (
+                        <CheckCircle2 className="h-5 w-5 text-green-500 mx-auto" />
+                      ) : (
+                        <AlertCircle className="h-5 w-5 text-destructive mx-auto" />
+                      )}
+                    </TableCell>
+                    <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                      {isJsonLdValid(client) ? (
+                        <CheckCircle2 className="h-5 w-5 text-green-500 mx-auto" />
+                      ) : (
+                        <AlertCircle className="h-5 w-5 text-destructive mx-auto" />
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>

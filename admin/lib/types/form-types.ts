@@ -150,13 +150,44 @@ export interface ClientFormData {
   twitterDescription?: string | null;
   twitterSite?: string | null;
   canonicalUrl?: string | null;
+  metaRobots?: string | null;
   gtmId?: string;
   subscriptionTier?: SubscriptionTier | null;
   subscriptionStartDate?: Date | null;
   subscriptionEndDate?: Date | null;
   articlesPerMonth?: number;
+  subscriptionTierConfigId?: string | null;
   subscriptionStatus?: SubscriptionStatus;
   paymentStatus?: PaymentStatus;
+
+  // Saudi Arabia & Gulf Identifiers
+  commercialRegistrationNumber?: string | null;
+  vatID?: string | null;
+  taxID?: string | null;
+  legalForm?: string | null;
+
+  // Address Enhancement
+  addressRegion?: string | null;
+  addressNeighborhood?: string | null;
+  addressBuildingNumber?: string | null;
+  addressAdditionalNumber?: string | null;
+
+  // Classification & Business Info
+  businessActivityCode?: string | null;
+  isicV4?: string | null;
+  numberOfEmployees?: string | null;
+  licenseNumber?: string | null;
+  licenseAuthority?: string | null;
+
+  // Additional Properties
+  alternateName?: string | null;
+  slogan?: string | null;
+  keywords?: string[];
+  knowsLanguage?: string[];
+  organizationType?: string | null;
+
+  // Relationships
+  parentOrganizationId?: string | null;
 }
 
 export interface AuthorFormData {

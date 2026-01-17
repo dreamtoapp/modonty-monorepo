@@ -19,6 +19,7 @@ import {
   Download,
   ChevronLeft,
   ChevronRight,
+  CreditCard,
 } from "lucide-react";
 import { useSidebar } from "@/components/contexts/sidebar-context";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ const menuItems = [
   { icon: Users, label: "Users", href: "/users" },
   { icon: Mail, label: "Subscribers", href: "/subscribers" },
   { icon: BarChart3, label: "Analytics", href: "/analytics" },
+  { icon: CreditCard, label: "Subscription Tiers", href: "/subscription-tiers" },
   { icon: Settings, label: "Settings", href: "/settings" },
 ];
 

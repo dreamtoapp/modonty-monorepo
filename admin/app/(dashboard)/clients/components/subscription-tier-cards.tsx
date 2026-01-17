@@ -15,53 +15,38 @@ import { Check, Info } from "lucide-react";
 interface Tier {
   value: string;
   name: string;
-  price: string;
+  price: number;
   articlesPerMonth: number;
   popular?: boolean;
 }
 
-const tiers: Tier[] = [
-  {
-    value: "BASIC",
-    name: "Basic",
-    price: "2,499",
-    articlesPerMonth: 2,
-  },
-  {
-    value: "STANDARD",
-    name: "Standard",
-    price: "3,999",
-    articlesPerMonth: 4,
-    popular: true,
-  },
-  {
-    value: "PRO",
-    name: "Pro",
-    price: "6,999",
-    articlesPerMonth: 8,
-  },
-  {
-    value: "PREMIUM",
-    name: "Premium",
-    price: "9,999",
-    articlesPerMonth: 12,
-  },
-];
-
 interface SubscriptionTierCardsProps {
   selectedTier?: string;
   onSelect: (tier: string) => void;
+  tiers?: Tier[];
 }
 
-export function SubscriptionTierCards({ selectedTier, onSelect }: SubscriptionTierCardsProps) {
+export function SubscriptionTierCards({ selectedTier, onSelect, tiers = [] }: SubscriptionTierCardsProps) {
   const [selectedTierDetails, setSelectedTierDetails] = useState<Tier | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("en-US").format(price);
+  };
 
   const handleInfoClick = (e: React.MouseEvent, tier: Tier) => {
     e.stopPropagation();
     setSelectedTierDetails(tier);
     setDialogOpen(true);
   };
+
+  if (tiers.length === 0) {
+    return (
+      <div className="text-sm text-muted-foreground">
+        Loading subscription tiers...
+      </div>
+    );
+  }
 
   return (
     <>
@@ -121,7 +106,7 @@ export function SubscriptionTierCards({ selectedTier, onSelect }: SubscriptionTi
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold">{selectedTierDetails.price}</span>
+                  <span className="text-3xl font-bold">{formatPrice(selectedTierDetails.price)}</span>
                   <span className="text-sm text-muted-foreground">SAR/year</span>
                 </div>
               </div>

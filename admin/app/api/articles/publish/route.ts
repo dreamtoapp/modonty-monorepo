@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { publishArticle } from '@/app/(dashboard)/articles/actions/publish-action';
+import { publishArticle } from '@/app/(dashboard)/articles/actions/publish-action/publish-article';
 import type { ArticleFormData } from '@/lib/types/form-types';
 
 /**
