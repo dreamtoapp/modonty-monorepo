@@ -11,7 +11,7 @@ export function RightSidebar() {
         <div className="absolute top-2 right-2 h-6 w-6 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center z-10">
           4
         </div>
-        <CardHeader>
+        <CardHeader className="pb-3">
           <CardTitle className="text-sm font-semibold">أخبار مودونتي</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">

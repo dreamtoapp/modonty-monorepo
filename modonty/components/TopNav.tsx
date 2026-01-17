@@ -7,6 +7,8 @@ import { Search, Home, Tags, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { LoginButton } from "@/components/auth/LoginButton";
+import { MobileMenu } from "@/components/MobileMenu";
+import { MobileSearch } from "@/components/MobileSearch";
 
 export function TopNav() {
   const pathname = usePathname();
@@ -17,6 +19,7 @@ export function TopNav() {
       <div className="container mx-auto max-w-[1128px]">
         <div className="flex h-14 items-center justify-between px-4">
           <div className="flex items-center gap-4">
+            <MobileMenu />
             <Link href="/" className="flex items-center gap-2">
               <div className="h-8 w-8 rounded bg-primary flex items-center justify-center">
                 <span className="text-white font-bold text-lg">M</span>
@@ -36,10 +39,12 @@ export function TopNav() {
           </div>
 
           <nav className="flex items-center gap-1">
-            <NavItem icon={Home} label="الرئيسية" href="/" active={pathname === "/"} />
-            <NavItem icon={Tags} label="الفئات" href="/categories" active={pathname?.startsWith("/categories")} />
-            <NavItem icon={Building2} label="العملاء" href="/clients" active={pathname?.startsWith("/clients")} />
-
+            <div className="hidden md:flex items-center gap-1">
+              <NavItem icon={Home} label="الرئيسية" href="/" active={pathname === "/"} />
+              <NavItem icon={Tags} label="الفئات" href="/categories" active={pathname?.startsWith("/categories")} />
+              <NavItem icon={Building2} label="العملاء" href="/clients" active={pathname?.startsWith("/clients")} />
+            </div>
+            <MobileSearch />
             {session?.user ? (
               <UserMenu />
             ) : (
@@ -67,12 +72,12 @@ function NavItem({
     <Link
       href={href}
       className={cn(
-        "flex flex-col items-center justify-center px-4 py-2 text-xs hover:text-primary transition-colors",
+        "flex flex-col items-center justify-center px-4 py-2 text-xs hover:text-primary transition-colors min-h-11",
         active ? "text-primary" : "text-muted-foreground"
       )}
     >
       <Icon className="h-5 w-5" />
-      <span className="mt-1 hidden lg:inline">{label}</span>
+      <span className="mt-1">{label}</span>
     </Link>
   );
 }

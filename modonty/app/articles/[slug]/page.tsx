@@ -258,7 +258,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         )}
 
         <div className="min-h-screen bg-background">
-          <div className="container mx-auto max-w-4xl px-4 py-8">
+          <div className="container mx-auto max-w-full md:max-w-4xl px-4 py-8">
             <nav aria-label="Breadcrumb" className="mb-6">
               <ol className="flex items-center gap-2 text-sm text-muted-foreground">
                 <li>
@@ -313,7 +313,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                 </div>
 
                 {article.featuredImage && (
-                  <div className="relative w-full h-96 rounded-lg overflow-hidden mb-6">
+                  <div className="relative w-full aspect-video rounded-lg overflow-hidden mb-6">
                     <Image
                       src={article.featuredImage.url}
                       alt={article.featuredImage.altText || article.title}

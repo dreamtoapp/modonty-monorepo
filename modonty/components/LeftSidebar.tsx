@@ -18,7 +18,7 @@ export function LeftSidebar({ currentCategory = "تقنية" }: LeftSidebarProps
         <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center z-10">
           1
         </div>
-        <CardContent className="p-3 pt-5">
+        <CardContent className="p-3 pt-6">
           <div className="flex items-center gap-2 mb-3 pb-3 border-b">
             <BarChart3 className="h-4 w-4 text-primary" />
             <h4 className="text-xs font-semibold text-foreground">
