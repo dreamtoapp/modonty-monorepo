@@ -26,7 +26,7 @@
 | **Root Directory** | `admin` | `modonty` | `console` |
 | **Framework** | Next.js | Next.js | Next.js |
 | **Node Version** | `20.x` | `20.x` | `20.x` |
-| **Build Command** | `cd ../.. && pnpm install && pnpm build:admin` | `cd ../.. && pnpm install && pnpm build:modonty` | `cd ../.. && pnpm install && pnpm build:console` |
+| **Build Command** | `pnpm --filter @modonty/admin build` | `pnpm --filter @modonty/modonty build` | `pnpm --filter @modonty/console build` |
 | **Install Command** | `pnpm install` | `pnpm install` | `pnpm install` |
 | **Output Directory** | `.next` (auto) | `.next` (auto) | `.next` (auto) |
 
@@ -102,8 +102,8 @@ Create `admin/vercel.json`, `modonty/vercel.json`, `console/vercel.json`:
 **admin/vercel.json:**
 ```json
 {
-  "buildCommand": "cd ../.. && pnpm build:admin",
-  "installCommand": "cd ../.. && pnpm install",
+  "buildCommand": "pnpm --filter @modonty/admin build",
+  "installCommand": "pnpm install",
   "framework": "nextjs",
   "outputDirectory": ".next"
 }
@@ -112,8 +112,8 @@ Create `admin/vercel.json`, `modonty/vercel.json`, `console/vercel.json`:
 **modonty/vercel.json:**
 ```json
 {
-  "buildCommand": "cd ../.. && pnpm build:modonty",
-  "installCommand": "cd ../.. && pnpm install",
+  "buildCommand": "pnpm --filter @modonty/modonty build",
+  "installCommand": "pnpm install",
   "framework": "nextjs",
   "outputDirectory": ".next"
 }
@@ -122,17 +122,19 @@ Create `admin/vercel.json`, `modonty/vercel.json`, `console/vercel.json`:
 **console/vercel.json:**
 ```json
 {
-  "buildCommand": "cd ../.. && pnpm build:console",
-  "installCommand": "cd ../.. && pnpm install",
+  "buildCommand": "pnpm --filter @modonty/console build",
+  "installCommand": "pnpm install",
   "framework": "nextjs",
   "outputDirectory": ".next"
 }
 ```
 
-**Why separate installCommand and buildCommand?**
-- Vercel runs `installCommand` first, then `buildCommand`
-- This allows Vercel to cache the install step separately
-- More efficient and follows Vercel's standard build flow
+**Important:** 
+- ⚠️ **Root Directory should be set to the app folder** (e.g., `admin`, `modonty`, `console`) in Vercel Dashboard
+- **pnpm automatically detects workspace root** when `pnpm-workspace.yaml` exists in a parent directory
+- No need for `cd ../..` - pnpm finds the root automatically
+- Using pnpm filters (`--filter`) works from any directory within the workspace
+- Output Directory is relative to Root Directory: `.next` (not `admin/.next`)
 
 #### Option 3: Via Vercel CLI
 
@@ -215,10 +217,10 @@ NEXTAUTH_SECRET="your-nextauth-secret"
 2. Configure project:
    - **Name**: `modonty-admin` (or your preferred name)
    - **Framework Preset**: Next.js
-   - **Root Directory**: `admin` ⚠️
-   - **Build Command**: `cd ../.. && pnpm build:admin` (or use `vercel.json` - recommended)
-   - **Output Directory**: Leave empty (auto-detected)
-   - **Install Command**: `cd ../.. && pnpm install` ⚠️ **Must navigate to root**
+   - **Root Directory**: `admin` ⚠️ **Set to app folder, pnpm auto-detects workspace root**
+   - **Build Command**: `pnpm --filter @modonty/admin build` (or use `vercel.json` - recommended)
+   - **Output Directory**: `.next` (auto-detected, relative to Root Directory)
+   - **Install Command**: `pnpm install` (pnpm auto-detects workspace root)
    - **Node.js Version**: `20.x`
 3. Add environment variables (see above)
 4. Click **Deploy**
@@ -230,9 +232,10 @@ NEXTAUTH_SECRET="your-nextauth-secret"
 3. Configure project:
    - **Name**: `modonty-platform`
    - **Framework Preset**: Next.js
-   - **Root Directory**: `modonty` ⚠️
-   - **Build Command**: `cd ../.. && pnpm build:modonty` (or use `vercel.json` - recommended)
-   - **Install Command**: `cd ../.. && pnpm install` ⚠️ **Must navigate to root**
+   - **Root Directory**: `modonty` ⚠️ **Set to app folder, pnpm auto-detects workspace root**
+   - **Build Command**: `pnpm --filter @modonty/modonty build` (or use `vercel.json` - recommended)
+   - **Output Directory**: `.next` (auto-detected, relative to Root Directory)
+   - **Install Command**: `pnpm install` (pnpm auto-detects workspace root)
    - **Node.js Version**: `20.x`
 4. Add environment variables
 5. Click **Deploy**
@@ -244,9 +247,10 @@ NEXTAUTH_SECRET="your-nextauth-secret"
 3. Configure project:
    - **Name**: `modonty-console`
    - **Framework Preset**: Next.js
-   - **Root Directory**: `console` ⚠️
-   - **Build Command**: `cd ../.. && pnpm build:console` (or use `vercel.json` - recommended)
-   - **Install Command**: `cd ../.. && pnpm install` ⚠️ **Must navigate to root**
+   - **Root Directory**: `console` ⚠️ **Set to app folder, pnpm auto-detects workspace root**
+   - **Build Command**: `pnpm --filter @modonty/console build` (or use `vercel.json` - recommended)
+   - **Output Directory**: `.next` (auto-detected, relative to Root Directory)
+   - **Install Command**: `pnpm install` (pnpm auto-detects workspace root)
    - **Node.js Version**: `20.x`
 4. Add environment variables
 5. Click **Deploy**
