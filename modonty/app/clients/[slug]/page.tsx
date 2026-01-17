@@ -24,8 +24,7 @@ export async function generateStaticParams() {
     return clients.map((client) => ({
       slug: client.slug,
     }));
-  } catch (error) {
-    console.error("Error generating static params for clients:", error);
+  } catch {
     return [];
   }
 }
@@ -62,8 +61,7 @@ export async function generateMetadata({ params }: ClientPageProps): Promise<Met
       url: `/clients/${slug}`,
       type: "website",
     });
-  } catch (error) {
-    console.error("Error generating metadata for client:", error);
+  } catch {
     return {
       title: "العملاء - مودونتي",
     };
@@ -283,13 +281,9 @@ export default async function ClientPage({ params }: ClientPageProps) {
                         <CardContent>
                           <div className="flex items-center justify-between text-xs text-muted-foreground">
                             {article.category && (
-                              <Link
-                                href={`/categories/${article.category.slug}`}
-                                className="hover:text-primary"
-                                onClick={(e) => e.stopPropagation()}
-                              >
+                              <span className="text-muted-foreground">
                                 {article.category.name}
-                              </Link>
+                              </span>
                             )}
                             {article.datePublished && (
                               <span>
@@ -308,8 +302,7 @@ export default async function ClientPage({ params }: ClientPageProps) {
         </div>
       </>
     );
-  } catch (error) {
-    console.error("Error fetching client:", error);
+  } catch {
     notFound();
   }
 }

@@ -67,8 +67,7 @@ export async function generateMetadata({ params }: UserPageProps): Promise<Metad
       url: `/users/${id}`,
       type: "profile",
     });
-  } catch (error) {
-    console.error("Error generating metadata for user:", error);
+  } catch {
     return {
       title: "الملف الشخصي - مودونتي",
     };
@@ -298,8 +297,7 @@ export default async function UserPage({ params }: UserPageProps) {
         </div>
       </>
     );
-  } catch (error) {
-    console.error("Error fetching user:", error);
+  } catch {
     notFound();
   }
 }

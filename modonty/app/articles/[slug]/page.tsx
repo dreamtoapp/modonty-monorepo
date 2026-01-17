@@ -28,8 +28,7 @@ export async function generateStaticParams() {
     return articles.map((article) => ({
       slug: article.slug,
     }));
-  } catch (error) {
-    console.error("Error generating static params:", error);
+  } catch {
     return [];
   }
 }
@@ -77,7 +76,6 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
         }
       } catch {
         // Invalid JSON, fall through to generation
-        console.warn('Invalid stored metadata for article:', slug);
       }
     }
 
@@ -86,18 +84,6 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       where: { slug, status: ArticleStatus.PUBLISHED },
       include: {
         client: {
-          include: {
-            logoMedia: {
-              select: {
-                url: true,
-              },
-            },
-            ogImageMedia: {
-              select: {
-                url: true,
-              },
-            },
-          },
           select: {
             name: true,
             logoMedia: {
@@ -151,8 +137,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       type: "article",
       locale: articleForGeneration.inLanguage || "ar_SA",
     });
-  } catch (error) {
-    console.error("Error generating metadata:", error);
+  } catch {
     return {
       title: "مقال - مودونتي",
     };
@@ -234,18 +219,18 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       },
     });
 
+    if (!article) {
+      notFound();
+    }
+
     // Get cached JSON-LD from database (Phase 6)
     let jsonLdGraph: object | null = null;
-    if (article?.jsonLdStructuredData) {
+    if (article.jsonLdStructuredData) {
       try {
         jsonLdGraph = JSON.parse(article.jsonLdStructuredData);
       } catch {
-        console.error("Failed to parse cached JSON-LD for article:", slug);
+        // Invalid JSON-LD, continue without it
       }
-    }
-
-    if (!article) {
-      notFound();
     }
 
     return (
@@ -415,8 +400,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </div>
       </>
     );
-  } catch (error) {
-    console.error("Error fetching article:", error);
+  } catch {
     notFound();
   }
 }

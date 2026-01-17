@@ -22,8 +22,7 @@ export async function generateStaticParams() {
     return categories.map((category) => ({
       slug: category.slug,
     }));
-  } catch (error) {
-    console.error("Error generating static params for categories:", error);
+  } catch {
     return [];
   }
 }
@@ -54,8 +53,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
       url: `/categories/${slug}`,
       type: "website",
     });
-  } catch (error) {
-    console.error("Error generating metadata for category:", error);
+  } catch {
     return {
       title: "الفئات - مودونتي",
     };
@@ -197,13 +195,9 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                       </CardHeader>
                       <CardContent>
                         <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <Link
-                            href={`/clients/${article.client.slug}`}
-                            className="hover:text-primary"
-                            onClick={(e) => e.stopPropagation()}
-                          >
+                          <span className="text-muted-foreground">
                             {article.client.name}
-                          </Link>
+                          </span>
                           {article.datePublished && (
                             <span>
                               {new Date(article.datePublished).toLocaleDateString("ar-SA")}
@@ -220,8 +214,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         </div>
       </>
     );
-  } catch (error) {
-    console.error("Error fetching category:", error);
+  } catch {
     notFound();
   }
 }
